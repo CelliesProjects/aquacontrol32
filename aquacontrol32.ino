@@ -4,6 +4,7 @@
 #include "time.h"
 #include <Preferences.h>
 #include "SSD1306.h"              //https://github.com/squix78/esp8266-oled-ssd1306
+#include <ESP32WebServer.h>
 
 #define mDNSname "aquacontrol32"
 
@@ -47,7 +48,7 @@ unsigned long sensorReadTime;
 SSD1306  OLED( 0x3c, 23, 19 );
 
 // TCP server at port 80 will respond to HTTP requests
-WiFiServer server(80);
+ESP32WebServer server(80);
 
 double brightness = 0;    // how bright the LED is
 int fadeAmount = 1;    // how many points to fade the LED by
@@ -65,6 +66,7 @@ void setup()
   pinMode(16, OUTPUT);
   pinMode(26, OUTPUT);
 
+  btStop();
 
   OLED.init();
   OLED.clear();
@@ -108,91 +110,14 @@ void setup()
     sensorReadTime = millis() + 750;
   }
 
-  for (byte nos = 1; nos <= numberOfSensors; nos++)
-  {
-    for ( byte i = 0; i < 8; i++) {
-      Serial.write(' ');
-      Serial.print( sensor[nos].addr[i], HEX );
-    }
-    Serial.println();
-  }
+  setupWiFi();
 
-  WiFi.onEvent( WiFiEvent );
-  btStop();
-
-  //if no NVS data is found start an AP
-  preferences.begin( "aquacontrol32", false );
-  if ( preferences.getString( "ssid" ) != "" )
-  {
-    Serial.println( F( "Preferences found." ) );
-  }
-  else
-  {
-    Serial.println( "No WiFi preferences found. Starting SmartConfig." );
-
-    //Init WiFi as Station, start SmartConfig
-    WiFi.mode( WIFI_STA );
-    WiFi.beginSmartConfig();
-
-    //Wait for SmartConfig packet from mobile
-    Serial.println("Waiting for SmartConfig. Use the app. RTM.");
-    while ( !WiFi.smartConfigDone() )
-    {
-      delay(500);
-      Serial.print(".");
-    }
-    Serial.println("");
-    Serial.println("SmartConfig received.");
-  }
-
-  Serial.print( F( "Connecting to SSID:" ) ); Serial.println( preferences.getString( "ssid" ) );
-  //Serial.print( F( "With password:" ) ); Serial.println( F( "*********" ) /* preferences.getString( "psk" ) */ );
-
-  //Wait for WiFi to connect to AP
-  Serial.println("Waiting for connection...");
-  WiFi.mode( WIFI_STA );
-  WiFi.begin( preferences.getString( "ssid" ).c_str(), preferences.getString( "psk" ).c_str() );
-
-  unsigned long WiFiStartTime = millis();
-  while ( WiFi.status() != WL_CONNECTED && millis() - WiFiStartTime <= 10000 )
-  {
-    //pick nose while WiFi connects...
-  }
-
-  if ( WiFi.status() == WL_CONNECTED )
-  {
-    //We have succesfully connected...
-    //Save current in use SSID and PSK if they differ from what is currently saved in NVS
-
-    //Serial.println( "WiFi connected.");
-
-    if ( preferences.getString( "ssid" ) != WiFi.SSID() )
-    {
-      preferences.putString( "ssid", WiFi.SSID() );
-      Serial.println( F( "WiFi SSID saved in NVS." ) );
-    }
-    if ( preferences.getString( "psk" ) != WiFi.psk() )
-    {
-      preferences.putString( "psk", WiFi.psk() );
-      Serial.println( F( "WiFi PSK saved in NVS." ) );
-    }
-
-    String NTPpoolAdress = COUNTRY_CODE_ISO_3166;
-    NTPpoolAdress += ".pool.ntp.org";
-    configTime( -3600, 3600, NTPpoolAdress.c_str() );  //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md
-    //https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
-    printLocalTime();
-  }
-  else
-  {
-    Serial.println( F ("WiFi Connection failed. Check supplied password." ) );
-    Serial.println( WiFi.status() );
-    // restart the AP to try again
-    delay(5000);
-    ESP.restart();
-  }
-
-  preferences.end();
+  // Set up RTC with NTP
+  String NTPpoolAdress = COUNTRY_CODE_ISO_3166;
+  NTPpoolAdress += ".pool.ntp.org";
+  configTime( -3600, 3600, NTPpoolAdress.c_str() );  //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md
+  //https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
+  printLocalTime();
 
   // Set up mDNS responder:
   // - first argument is the domain name, in this example
@@ -206,16 +131,12 @@ void setup()
       delay(1000);
     }
   }
+  // Add service to MDNS-SD
+  MDNS.addService("http", "tcp", 80);
   Serial.println("mDNS responder started");
   Serial.print( "mDNS name: ");  Serial.print( mDNSname );  Serial.println( ".local" );
 
-
-  // Start TCP (HTTP) server
-  server.begin();
-  Serial.println("TCP server started");
-
-  // Add service to MDNS-SD
-  MDNS.addService("http", "tcp", 80);
+  setupWebServer();
 
   //WiFi.printDiag( Serial );
 
@@ -232,6 +153,8 @@ void setup()
 
 void loop()
 {
+  server.handleClient();
+
   // set the brightness on LEDC channel 0
   ledcWrite(LEDC_CHANNEL_0, brightness);
 

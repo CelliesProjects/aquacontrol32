@@ -39,11 +39,11 @@ void printLocalTime()
 
 void readTempSensors()
 {
-  byte data[12];
-  float celsius, fahrenheit;
-
   for ( byte thisSensor = 1; thisSensor <= numberOfSensors; thisSensor++)
   {
+    byte data[12];
+    byte dallasCRC;
+
     ds.reset();
     ds.select( sensor[thisSensor].addr );
     ds.write(0xBE);         // Read Scratchpad
@@ -57,9 +57,12 @@ void readTempSensors()
       //Serial.print(data[i], HEX);
       //Serial.print(" ");
     }
-    //Serial.print(" CRC=");
-    //Serial.print(OneWire::crc8(data, 8), HEX);
-    //Serial.println();
+    dallasCRC = OneWire::crc8(data, 8);
+    if ( dallasCRC != data[8])
+    {
+      Serial.print( millis() / 1000.0 ); Serial.print( " - CRC error from device " ); Serial.println( thisSensor );
+      return;
+    }
     byte type_s;
     int16_t raw = (data[1] << 8) | data[0];
     if (type_s)
@@ -80,14 +83,10 @@ void readTempSensors()
       else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
       //// default is 12 bit resolution, 750 ms conversion time
     }
-    celsius = (float)raw / 16.0;
-    fahrenheit = celsius * 1.8 + 32.0;
-
     sensor[thisSensor].temp = raw;
-
     ds.reset();
     ds.select( sensor[thisSensor].addr  );
-    ds.write( 0x44, 1);        // start conversion, with parasite power on at the end
+    ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
   }
 }
 

@@ -1,6 +1,6 @@
-const String PROGMEM indexHTML = R"-----(<p>You just loaded the root of your ESP WebServer.</p>
-<a href='test'>test</a>
-)-----";
+const String PROGMEM indexHTML  = R"#####(<p>You just loaded the root of your ESP WebServer.</p>
+<a href="wasietsmet.nl/">test</a>
+)#####";
 
 void setupWebServer()
 {

@@ -103,7 +103,7 @@ void setup()
   {
     ds.reset();
     ds.select( sensor[thisSensor].addr );
-    ds.write( 0x44, 1);        // start conversion, with parasite power on at the end
+    ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
   }
 
   if ( numberOfSensors > 0 ) {

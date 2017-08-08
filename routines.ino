@@ -37,7 +37,7 @@ void printLocalTime()
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
-void readTemps()
+void readTempSensors()
 {
   byte data[12];
   float celsius, fahrenheit;
@@ -89,8 +89,6 @@ void readTemps()
     ds.select( sensor[thisSensor].addr  );
     ds.write( 0x44, 1);        // start conversion, with parasite power on at the end
   }
-
-  sensorReadTime = millis() + 750;
 }
 
 void WiFiEvent(WiFiEvent_t event)

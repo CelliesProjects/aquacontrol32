@@ -245,9 +245,10 @@ void loop()
   }
   OLEDprintLocalTime();
 
-  if ( millis() >= sensorReadTime )
+  if ( (long)( millis() - sensorReadTime ) >= 0 )
   {
-    readTemps();
+    readTempSensors();
+    sensorReadTime = millis() + 750;
   }
 }
 

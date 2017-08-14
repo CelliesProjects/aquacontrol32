@@ -39,10 +39,9 @@ void printLocalTime()
 
 void readTempSensors()
 {
-  for ( byte thisSensor = 1; thisSensor <= numberOfSensors; thisSensor++)
+  for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
   {
     byte data[12];
-    byte dallasCRC;
 
     ds.reset();
     ds.select( sensor[thisSensor].addr );
@@ -57,13 +56,38 @@ void readTempSensors()
       //Serial.print(data[i], HEX);
       //Serial.print(" ");
     }
-    dallasCRC = OneWire::crc8(data, 8);
-    if ( dallasCRC != data[8])
+
+    byte type_s;
+    // the first ROM byte indicates which chip
+    switch ( sensor[thisSensor].addr[0] )
     {
+      case 0x10:
+        //Serial.println("  Chip = DS18S20");  // or old DS1820
+        type_s = 1;
+        break;
+      case 0x28:
+        //Serial.println("  Chip = DS18B20");
+        type_s = 0;
+        break;
+      case 0x22:
+        //Serial.println("  Chip = DS1822");
+        type_s = 0;
+        break;
+      default:
+        Serial.println("Device is not a DS18x20 family device.");
+        return;
+    }
+
+    if ( OneWire::crc8(data, 8) != data[8])
+    {
+      // CRC of temperature reading indicates an error, so we print a error message and discard this reading
       Serial.print( millis() / 1000.0 ); Serial.print( " - CRC error from device " ); Serial.println( thisSensor );
+      ds.reset();
+      ds.select( sensor[thisSensor].addr  );
+      ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
       return;
     }
-    byte type_s;
+
     int16_t raw = (data[1] << 8) | data[0];
     if (type_s)
     {

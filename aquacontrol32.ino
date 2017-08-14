@@ -25,9 +25,18 @@
 // fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
 #define LED_PIN            22
 
+// the number of LED channels
+#define NUMBER_OF_CHANNELS 5
+
+// Dallas sensors are connected to this pin
+#define ONEWIRE_PIN        5
+
+// maximum number of Dallas sensors
+#define MAX_NUMBER_OF_SENSORS 3
+
 Preferences preferences;
 
-OneWire  ds(5);  // on pin 5 (a 4.7K resistor is necessary)
+OneWire  ds( ONEWIRE_PIN );  // on pin 5 (a 4.7K resistor is necessary)
 
 /*
        To get from temp saved as float in SensorStruct do:
@@ -38,9 +47,10 @@ struct sensorStruct
 {
   byte addr[8];
   float temp;
-} sensor[3];
+  String name;
+} sensor[MAX_NUMBER_OF_SENSORS];
 
-int  numberOfSensors;
+byte numberOfFoundSensors;
 
 unsigned long sensorReadTime;
 
@@ -86,27 +96,28 @@ void setup()
 
   //sensor setup
   byte currentAddr[8];
-  while ( ds.search(currentAddr) )
+  while ( ds.search(currentAddr) && numberOfFoundSensors <= MAX_NUMBER_OF_SENSORS )
   {
-    numberOfSensors++;
-    Serial.write( "Sensor "); Serial.print( numberOfSensors ); Serial.print( ":" );
+    numberOfFoundSensors++;
+    Serial.write( "Sensor "); Serial.print( numberOfFoundSensors ); Serial.print( ":" );
     for ( byte i = 0; i < 8; i++) {
       Serial.write(' ');
       Serial.print(currentAddr[i], HEX);
-      sensor[numberOfSensors].addr[i] = currentAddr[i];
+      sensor[numberOfFoundSensors].addr[i] = currentAddr[i];
     }
     Serial.println();
   }
 
-  Serial.print(numberOfSensors); Serial.println( " sensors found." );
-  for ( byte thisSensor = 0; thisSensor < numberOfSensors; thisSensor++)
+  Serial.print(numberOfFoundSensors); Serial.println( " sensors found." );
+  for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
   {
     ds.reset();
     ds.select( sensor[thisSensor].addr );
     ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
   }
 
-  if ( numberOfSensors > 0 ) {
+  if ( numberOfFoundSensors > 0 )
+  {
     sensorReadTime = millis() + 750;
   }
 

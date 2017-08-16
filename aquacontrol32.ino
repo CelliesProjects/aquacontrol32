@@ -151,16 +151,19 @@ void setup()
 
   //WiFi.printDiag( Serial );
 
-  // Setup timer and attach timer to a led pin
-  ledcActualFrequency = ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT);
+  for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+  {
+    // Setup timers and attach timer to a led pin
+    ledcActualFrequency = ledcSetup(thisChannel, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT);
+    Serial.print( "\nChannel: " ); Serial.println( thisChannel + 1 );
+    Serial.print( "PWM frequency requested: " ); Serial.print( LEDC_BASE_FREQ / 1000.0 ); Serial.println( "kHz." );
+    Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );
+    Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH ); Serial.println( " steps." );
 
-  Serial.print( "PWM frequency requested: " ); Serial.print( LEDC_BASE_FREQ / 1000.0 ); Serial.println( "kHz." );
-  Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );
-  Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH ); Serial.println( " steps." );
+    ledcAttachPin(LED_PIN, LEDC_CHANNEL_0);
 
-  ledcAttachPin(LED_PIN, LEDC_CHANNEL_0);
+  }
 }
-
 
 void loop()
 {

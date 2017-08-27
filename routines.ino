@@ -37,9 +37,20 @@ void printLocalTime()
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
+void printLocalTimeTFT()
+{
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo))
+  {
+    tft.println("Failed to obtain time");
+    return;
+  }
+  tft.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
+
 void readTempSensors()
 {
-  for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
+  for ( byte thisSensor = 1; thisSensor <= numberOfFoundSensors; thisSensor++)
   {
     byte data[12];
 
@@ -56,6 +67,7 @@ void readTempSensors()
       //Serial.print(data[i], HEX);
       //Serial.print(" ");
     }
+    //Serial.println();
 
     byte type_s;
     // the first ROM byte indicates which chip

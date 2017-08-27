@@ -1,3 +1,6 @@
+#include <SPI.h>
+#include "Adafruit_GFX.h"
+#include "Adafruit_ILI9341.h"
 #include "MHDS18B20.h"
 #include <WiFi.h>
 #include <ESPmDNS.h>
@@ -33,6 +36,20 @@
 
 // maximum number of Dallas sensors
 #define MAX_NUMBER_OF_SENSORS 3
+
+//HWSPI pin definitions
+#define _cs   0   // Goes to TFT CS
+#define _dc   2   // Goes to TFT DC
+#define _mosi 32  // Goes to TFT MOSI
+#define _sclk 12  // Goes to TFT SCK/CLK
+#define _rst  0  // ESP RST goes to TFT RESET
+#define _miso 4   // Goes to TFT MISO
+//       3.3V     // Goes to TFT LED
+//       5v       // Goes to TFT Vcc
+//       Gnd      // Goes to TFT Gnd
+
+// Use hardware SPI
+Adafruit_ILI9341 tft = Adafruit_ILI9341( _cs, _dc );
 
 Preferences preferences;
 
@@ -86,6 +103,19 @@ void setup()
   OLED.drawString( 64, 30, F( "Booting..." ) );
   OLED.display();
 
+  SPI.setHwCs(true);
+  SPI.begin( _sclk, _miso, _mosi, _cs );
+  SPI.setFrequency(1000000);
+
+  tft.begin();
+  uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
+  Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
+
+  tft.setRotation(3);
+  tft.setCursor(0, 0);
+  tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
+  tft.println( "TFT started.");
+
   Serial.begin(115200);
 
   Serial.println( F( "aquacontrol32" ) );
@@ -116,19 +146,28 @@ void setup()
     ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
   }
 
+  tft.print( numberOfFoundSensors );  tft.println( " Dallas temperature sensors found." );
+
   if ( numberOfFoundSensors > 0 )
   {
     sensorReadTime = millis() + 750;
   }
+
+  tft.println( "Starting WiFi..." );
 
   setupWiFi();
 
   // Set up RTC with NTP
   String NTPpoolAdress = COUNTRY_CODE_ISO_3166;
   NTPpoolAdress += ".pool.ntp.org";
+
+  tft.print( "Getting time from " );  tft.println( NTPpoolAdress );
+
+
   configTime( -3600, 3600, NTPpoolAdress.c_str() );  //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md
   //https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
   printLocalTime();
+  printLocalTimeTFT();
 
   // Set up mDNS responder:
   // - first argument is the domain name, in this example
@@ -147,6 +186,8 @@ void setup()
   Serial.println("mDNS responder started");
   Serial.print( "mDNS name: ");  Serial.print( mDNSname );  Serial.println( ".local" );
 
+  tft.println( "Starting webserver. " );
+
   setupWebServer();
 
   //WiFi.printDiag( Serial );
@@ -163,6 +204,8 @@ void setup()
     ledcAttachPin(LED_PIN, LEDC_CHANNEL_0);
 
   }
+  tft.println( "Setup done." );
+
 }
 
 void loop()
@@ -181,7 +224,7 @@ void loop()
     fadeAmount = -fadeAmount;
   }
   OLEDprintLocalTime();
-
+  
   if ( (long)( millis() - sensorReadTime ) >= 0 )
   {
     readTempSensors();

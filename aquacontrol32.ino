@@ -48,6 +48,9 @@
 //       5v       // Goes to TFT Vcc
 //       Gnd      // Goes to TFT Gnd
 
+//LED pins
+const byte PROGMEM ledPin[NUMBER_OF_CHANNELS] =  { 22, 21, 17, 16, 26 } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries. D1 through D8 are the exposed pins on 'Wemos D1 mini'
+
 // Use hardware SPI
 Adafruit_ILI9341 tft = Adafruit_ILI9341( _cs, _dc );
 
@@ -87,11 +90,11 @@ void setup()
   //TODO:
   //make pins low/high or whatever they should be
 
-  pinMode(22, OUTPUT);
-  pinMode(21, OUTPUT);
-  pinMode(17, OUTPUT);
-  pinMode(16, OUTPUT);
-  pinMode(26, OUTPUT);
+  pinMode(ledPin[0], OUTPUT);
+  pinMode(ledPin[1], OUTPUT);
+  pinMode(ledPin[2], OUTPUT);
+  pinMode(ledPin[3], OUTPUT);
+  pinMode(ledPin[4], OUTPUT);
 
   btStop();
 
@@ -201,7 +204,7 @@ void setup()
     Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );
     Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH ); Serial.println( " steps." );
 
-    ledcAttachPin(LED_PIN, LEDC_CHANNEL_0);
+    ledcAttachPin( ledPin[thisChannel], thisChannel );
 
   }
   tft.println( "Setup done." );
@@ -214,6 +217,10 @@ void loop()
 
   // set the brightness on LEDC channel 0
   ledcWrite(LEDC_CHANNEL_0, brightness);
+  for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+  {
+    ledcWrite( thisChannel, brightness );
+  }
 
   // change the brightness for next time through the loop:
   brightness = brightness + fadeAmount;
@@ -224,7 +231,7 @@ void loop()
     fadeAmount = -fadeAmount;
   }
   OLEDprintLocalTime();
-  
+
   if ( (long)( millis() - sensorReadTime ) >= 0 )
   {
     readTempSensors();

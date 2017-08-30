@@ -20,14 +20,11 @@
 // number of bit precission for LEDC timer
 #define LEDC_NUMBER_OF_BIT  16
 
-// use 5000 Hz as a LEDC base request frequency
+// use 10kHz as a LEDC base request frequency
 #define LEDC_BASE_FREQ    10000
 
 // PWM depth is the number of discrete steps between fully on and off
 #define LEDC_PWM_DEPTH     pow( 2, LEDC_NUMBER_OF_BIT ) - 1
-
-// fade LED PIN (replace with LED_BUILTIN constant for built-in LED)
-#define LED_PIN            22
 
 // the number of LED channels
 #define NUMBER_OF_CHANNELS 5
@@ -46,7 +43,7 @@
 #define _rst  0  // ESP RST goes to TFT RESET
 #define _miso 4   // Goes to TFT MISO
 //       3.3V     // Goes to TFT LED
-//       5v       // Goes to TFT Vcc
+//       5v       // Goes to TFT Vcc-
 //       Gnd      // Goes to TFT Gnd
 
 //LED pins
@@ -114,16 +111,50 @@ void setup()
   Serial.begin(115200);
 
   //http://marekburiak.github.io/ILI9341_due/
-  SPI.setHwCs(true);
-  //SPI.begin( _sclk, _miso, _mosi, _cs );
+  //SPI.setHwCs(true);
   SPI.begin( _sclk, _miso, _mosi );
   SPI.setFrequency(1000000);
 
   Serial.print("Initializing SD card...");
-  if (!SD.begin(SD_CS)) {
+  if (!SD.begin(SD_CS, SPI, 1000000 )) {
     Serial.println("failed!");
   }
+    uint8_t cardType = SD.cardType();
 
+    if(cardType == CARD_NONE){
+        Serial.println("No SD card attached");
+        return;
+    }
+
+  Serial.print("SD Card Type: ");
+  if(cardType == CARD_MMC){
+      Serial.println("MMC");
+  } else if(cardType == CARD_SD){
+      Serial.println("SDSC");
+  } else if(cardType == CARD_SDHC){
+      Serial.println("SDHC");
+  } else {
+      Serial.println("UNKNOWN");
+  }
+
+
+    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+    Serial.printf("SD Card Size: %lluMB\n", cardSize);
+
+    listDir(SD, "/", 0);
+/*
+    createDir(SD, "/mydir");
+    listDir(SD, "/", 0);
+    removeDir(SD, "/mydir");
+    listDir(SD, "/", 2);
+    writeFile(SD, "/hello.txt", "Hello ");
+    appendFile(SD, "/hello.txt", "World!\n");
+    readFile(SD, "/hello.txt");
+    deleteFile(SD, "/foo.txt");
+    renameFile(SD, "/hello.txt", "/foo.txt");
+    readFile(SD, "/foo.txt");
+    testFileIO(SD, "/test.txt");  
+*/  
   Serial.println( F( "aquacontrol32" ) );
 
   Serial.print( "ESP32 SDK: " );

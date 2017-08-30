@@ -110,57 +110,15 @@ void setup()
 
   Serial.begin(115200);
 
-  //http://marekburiak.github.io/ILI9341_due/
-  //SPI.setHwCs(true);
-  SPI.begin( _sclk, _miso, _mosi );
-  SPI.setFrequency(1000000);
-
-  Serial.print("Initializing SD card...");
-  if (!SD.begin(SD_CS, SPI, 1000000 )) {
-    Serial.println("failed!");
-  }
-    uint8_t cardType = SD.cardType();
-
-    if(cardType == CARD_NONE){
-        Serial.println("No SD card attached");
-        return;
-    }
-
-  Serial.print("SD Card Type: ");
-  if(cardType == CARD_MMC){
-      Serial.println("MMC");
-  } else if(cardType == CARD_SD){
-      Serial.println("SDSC");
-  } else if(cardType == CARD_SDHC){
-      Serial.println("SDHC");
-  } else {
-      Serial.println("UNKNOWN");
-  }
-
-
-    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-    Serial.printf("SD Card Size: %lluMB\n", cardSize);
-
-    listDir(SD, "/", 0);
-/*
-    createDir(SD, "/mydir");
-    listDir(SD, "/", 0);
-    removeDir(SD, "/mydir");
-    listDir(SD, "/", 2);
-    writeFile(SD, "/hello.txt", "Hello ");
-    appendFile(SD, "/hello.txt", "World!\n");
-    readFile(SD, "/hello.txt");
-    deleteFile(SD, "/foo.txt");
-    renameFile(SD, "/hello.txt", "/foo.txt");
-    readFile(SD, "/foo.txt");
-    testFileIO(SD, "/test.txt");  
-*/  
   Serial.println( F( "aquacontrol32" ) );
 
   Serial.print( "ESP32 SDK: " );
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
-   
+
+  SPI.begin( _sclk, _miso, _mosi );
+  SPI.setFrequency(1000000);
+
   tft.begin( 10000000 );
 
   uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
@@ -172,7 +130,34 @@ void setup()
   tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
   tft.println( "TFT started.");
 
-  
+  Serial.print("Initializing SD card...");
+  if (!SD.begin( SD_CS, SPI, 1000000 )) {
+    Serial.println("failed!");
+  }
+  uint8_t cardType = SD.cardType();
+  if ( cardType == CARD_NONE ) {
+    Serial.println("No SD card attached");
+    tft.println("No SD card attached");
+    return;
+  }
+  Serial.print("SD Card Type: ");
+  if (cardType == CARD_MMC) {
+    Serial.println("MMC");
+  } else if (cardType == CARD_SD) {
+    Serial.println("SDSC");
+  } else if (cardType == CARD_SDHC) {
+    Serial.println("SDHC");
+  } else {
+    Serial.println("UNKNOWN");
+  }
+
+
+  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+  Serial.printf("SD Card Size: %lluMB\n", cardSize);
+  tft.printf("SD Card Size: %lluMB\n", cardSize);
+
+  listDir(SD, "/", 0);
+
   //sensor setup
   byte currentAddr[8];
   while ( ds.search(currentAddr) && numberOfFoundSensors <= MAX_NUMBER_OF_SENSORS )

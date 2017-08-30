@@ -1,4 +1,5 @@
-#include <SPI.h>
+#include "SPI.h"
+#include <SD.h>
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
 #include "MHDS18B20.h"
@@ -52,7 +53,7 @@
 const byte PROGMEM ledPin[NUMBER_OF_CHANNELS] =  { 22, 21, 17, 16, 26 } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries. D1 through D8 are the exposed pins on 'Wemos D1 mini'
 
 // Use hardware SPI
-Adafruit_ILI9341 tft = Adafruit_ILI9341( _cs, _dc );
+Adafruit_ILI9341 tft = Adafruit_ILI9341( _cs, _dc, _rst );
 
 Preferences preferences;
 
@@ -85,6 +86,8 @@ int fadeAmount = 1;    // how many points to fade the LED by
 
 int ledcActualFrequency;
 
+#define SD_CS 27
+
 void setup()
 {
   //TODO:
@@ -106,27 +109,39 @@ void setup()
   OLED.drawString( 64, 30, F( "Booting..." ) );
   OLED.display();
 
-  SPI.setHwCs(true);
-  SPI.begin( _sclk, _miso, _mosi, _cs );
-  SPI.setFrequency(1000000);
 
-  tft.begin();
-  uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
-  Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
-
-  tft.setRotation(3);
-  tft.setCursor(0, 0);
-  tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
-  tft.println( "TFT started.");
 
   Serial.begin(115200);
+
+  //http://marekburiak.github.io/ILI9341_due/
+  SPI.setHwCs(true);
+  //SPI.begin( _sclk, _miso, _mosi, _cs );
+  SPI.begin( _sclk, _miso, _mosi );
+  SPI.setFrequency(1000000);
+
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(SD_CS)) {
+    Serial.println("failed!");
+  }
 
   Serial.println( F( "aquacontrol32" ) );
 
   Serial.print( "ESP32 SDK: " );
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
+   
+  tft.begin( 10000000 );
 
+  uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
+  Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
+
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setRotation(3);
+  tft.setCursor(0, 0);
+  tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
+  tft.println( "TFT started.");
+
+  
   //sensor setup
   byte currentAddr[8];
   while ( ds.search(currentAddr) && numberOfFoundSensors <= MAX_NUMBER_OF_SENSORS )
@@ -159,6 +174,8 @@ void setup()
   tft.println( "Starting WiFi..." );
 
   setupWiFi();
+
+  tft.println( WiFi.localIP() );
 
   // Set up RTC with NTP
   String NTPpoolAdress = COUNTRY_CODE_ISO_3166;

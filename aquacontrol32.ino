@@ -117,9 +117,9 @@ void setup()
   Serial.println();
 
   SPI.begin( _sclk, _miso, _mosi );
-  SPI.setFrequency(1000000);
+  SPI.setFrequency(4000000);
 
-  tft.begin( 10000000 );
+  tft.begin( 38000000 );
 
   uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
   Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
@@ -131,7 +131,7 @@ void setup()
   tft.println( "TFT started.");
 
   Serial.print("Initializing SD card...");
-  if (!SD.begin( SD_CS, SPI, 1000000 )) {
+  if (!SD.begin( SD_CS, SPI, 2000000 )) {
     Serial.println("failed!");
   }
   uint8_t cardType = SD.cardType();

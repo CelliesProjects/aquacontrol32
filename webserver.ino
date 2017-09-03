@@ -523,7 +523,7 @@ void setupWebServer()
 
   server.on( "/api/hostname", []()
   {
-    String response = "testhostname";
+    String response = WiFi.getHostname();
     size_t response_length = response.length();
     server.setContentLength( response_length );
     server.send( 200, texthtmlHEADER, response );

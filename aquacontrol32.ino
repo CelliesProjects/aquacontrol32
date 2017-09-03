@@ -30,6 +30,7 @@
 
 // the number of LED channels
 #define NUMBER_OF_CHANNELS 5
+#define MAX_TIMERS         50
 
 // Dallas sensors are connected to this pin
 #define ONEWIRE_PIN        5
@@ -47,6 +48,29 @@
 //       3.3V     // Goes to TFT LED
 //       5v       // Goes to TFT Vcc-
 //       Gnd      // Goes to TFT Gnd
+
+//the beef of the program is constructed here
+//first define a list of timers
+struct lightTimer
+{
+  time_t        time;                                                 //time in seconds since midnight so range is 0-86400
+  byte          percentage;                                           // in percentage so range is 0-100
+};
+
+//then a struct for general housekeeping of a ledstrip
+struct lightTable
+{
+  lightTimer timer[MAX_TIMERS];
+  String     name;                                                    //initially set to 'channel 1' 'channel 2' etc.
+  String     color;                                                   //!!interface color, not light color! Can be 'red' or '#ff0000' or 'rgba(255,0,0,1)', basically anything a browser understands
+  float      currentPercentage;                                       //what percentage is this channel set to
+  byte       pin;                                                     //which pin is this channel on
+  byte       numberOfTimers;                                          //actual number of timers for this channel
+  float      minimumLevel;                                            //never dim this channel below this percentage
+};
+
+//and make 5 instances
+struct lightTable channel[NUMBER_OF_CHANNELS];                           //all channels are now memory allocated
 
 String mDNSname = "aquacontrol32";
 
@@ -109,6 +133,14 @@ void setup()
   OLED.drawString( 64, 30, F( "Booting..." ) );
   OLED.display();
 
+  //setup channel names
+  for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+  {
+    channel[thisChannel].name = "Channel " + ( thisChannel + 1 );
+    channel[ thisChannel ].color = "undefined" ;
+    channel[ thisChannel ].pin = ledPin[ thisChannel ];
+    channel[ thisChannel ].minimumLevel = 0;
+  }
 
   Serial.begin(115200);
 

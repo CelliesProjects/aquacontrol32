@@ -16,9 +16,12 @@ void oledTask( void * pvParameters )
     //OLED.drawString( 64, 10, String( sensor[1].temp / 16 ) + "C  " + String( sensor[2].temp / 16 ) + "C" );
     OLED.drawString( 64, 10, String( esp_get_free_heap_size() / 1024.0 ) + " KB RAM FREE" );
     OLED.drawString( 64, 20, "IP: " +  WiFi.localIP().toString() );
-    OLED.drawString( 64, 30, numberOfFoundSensors + " Dallas sensors"  );
-    OLED.drawString( 64, 40, String( LEDC_NUMBER_OF_BIT ) + "bit - " + String( ledcActualFrequency / 1000.0 ) + "kHz" );
-    OLED.drawString( 64, 50, String( millis() / 1000.0 ) + " Sec" );
+    OLED.drawString( 64, 30, String( numberOfFoundSensors ) + " Dallas sensors" );
+    OLED.drawString( 64, 40, "System start:" );
+
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &systemStart);
+
+    OLED.drawString( 64, 50, strftime_buf  );
     OLED.display();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }

@@ -49,6 +49,9 @@
 //       5v       // Goes to TFT Vcc-
 //       Gnd      // Goes to TFT Gnd
 
+//Boot time is saved
+struct tm systemStart;
+
 //the beef of the program is constructed here
 //first define a list of timers
 struct lightTimer
@@ -105,6 +108,7 @@ SSD1306  OLED( 0x3c, 23, 19 );
 
 // TCP server at port 80 will respond to HTTP requests
 ESP32WebServer server(80);
+
 
 double brightness = 0;    // how bright the LED is
 int fadeAmount = 1;    // how many points to fade the LED by
@@ -224,8 +228,13 @@ void setup()
 
   configTime( -3600, 3600, NTPpoolAdress.c_str() );  //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md
   //https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
-  printLocalTime();
-  //printLocalTimeTFT();
+
+  if (!getLocalTime(&systemStart))
+  {
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println( &systemStart, "System start: " "%A, %B %d %Y %H:%M:%S" );
 
   // Set up mDNS responder:
   // - first argument is the domain name, in this example

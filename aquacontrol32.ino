@@ -207,20 +207,9 @@ void setup()
   }
 
   Serial.print(numberOfFoundSensors); Serial.println( " sensors found." );
-  for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
-  {
-    ds.reset();
-    ds.select( sensor[thisSensor].addr );
-    ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
-  }
 
   tft.print( numberOfFoundSensors );  tft.println( " Dallas temperature sensors found." );
-/*
-  if ( numberOfFoundSensors > 0 )
-  {
-    sensorReadTime = millis() + 750;
-  }
-*/
+
   tft.println( "Starting WiFi..." );
 
   setupWiFi();

@@ -1,26 +1,25 @@
 void tempTask( void * pvParameters )
 {
-  while(1)
+  while (1)
   {
     for ( byte thisSensor = 1; thisSensor <= numberOfFoundSensors; thisSensor++)
     {
       byte data[12];
-  
+
       ds.reset();
       ds.select( sensor[thisSensor].addr );
       ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
     }
-    
+
     vTaskDelay( 750 / portTICK_PERIOD_MS); //wait for conversion ready
-  
-  
+
     for ( byte thisSensor = 1; thisSensor <= numberOfFoundSensors; thisSensor++)
     {
       byte data[12];
       ds.reset();
       ds.select( sensor[thisSensor].addr );
       ds.write(0xBE);         // Read Scratchpad
-  
+
       //Serial.print( thisSensor ); Serial.print("  Data = ");
       //Serial.print(present, HEX);
       //Serial.print(" ");
@@ -31,7 +30,7 @@ void tempTask( void * pvParameters )
         //Serial.print(" ");
       }
       //Serial.println();
-  
+
       byte type_s;
       // the first ROM byte indicates which chip
       switch ( sensor[thisSensor].addr[0] )
@@ -57,13 +56,7 @@ void tempTask( void * pvParameters )
       {
         // CRC of temperature reading indicates an error, so we print a error message and discard this reading
         Serial.print( millis() / 1000.0 ); Serial.print( " - CRC error from device " ); Serial.println( thisSensor );
-/*
-        ds.reset();
-        ds.select( sensor[thisSensor].addr  );
-        ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
-        //return;
-*/        
-      } 
+      }
       else
       {
         raw = (data[1] << 8) | data[0];
@@ -86,8 +79,8 @@ void tempTask( void * pvParameters )
           //// default is 12 bit resolution, 750 ms conversion time
         }
       }
-        sensor[thisSensor].temp = raw;
-        Serial.print( thisSensor );Serial.println( raw / 16.0 );
+      sensor[thisSensor].temp = raw;
+      //Serial.print( thisSensor ); Serial.print( " " );Serial.println( sensor[thisSensor].temp / 16.0 );
     }
   }
 }

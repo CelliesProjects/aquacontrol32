@@ -18,9 +18,10 @@ void oledTask( void * pvParameters )
     OLED.clear();
     OLED.setFont( ArialMT_Plain_10 );
     OLED.drawString( 64, 0, strftime_buf );
-    OLED.drawString( 64, 10, String( sensor[1].temp / 16 ) + "C  " + String( sensor[2].temp / 16 ) + "C" );
-    OLED.drawString( 64, 20, String( (int)brightness) + " - " + mapFloat( brightness, 0, LEDC_PWM_DEPTH, 0, 100 ) + "%" );
-    OLED.drawString( 64, 30, String( (int)LEDC_PWM_DEPTH ) + " steps."  );
+    //OLED.drawString( 64, 10, String( sensor[1].temp / 16 ) + "C  " + String( sensor[2].temp / 16 ) + "C" );
+    OLED.drawString( 64, 10, String( esp_get_free_heap_size() / 1024.0 ) + " KB RAM FREE" );
+    OLED.drawString( 64, 20, "IP: " +  WiFi.localIP().toString() );
+    OLED.drawString( 64, 30, numberOfFoundSensors + " Dallas sensors"  );
     OLED.drawString( 64, 40, String( LEDC_NUMBER_OF_BIT ) + "bit - " + String( ledcActualFrequency / 1000.0 ) + "kHz" );
     OLED.drawString( 64, 50, String( millis() / 1000.0 ) + " Sec" );
     OLED.display();
@@ -50,7 +51,7 @@ void tftTask( void * pvParameters )
       return;
     }
     tft.setCursor(0, 0);
-    tft.setTextColor( ILI9341_BLUE , ILI9341_BLACK );
+    tft.setTextColor( ILI9341_YELLOW , ILI9341_BLACK );
     tft.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
     tft.println( ledcReadFreq( 0 ) );
     vTaskDelay(500 / portTICK_PERIOD_MS);

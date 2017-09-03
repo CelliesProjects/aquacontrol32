@@ -215,12 +215,12 @@ void setup()
   }
 
   tft.print( numberOfFoundSensors );  tft.println( " Dallas temperature sensors found." );
-
+/*
   if ( numberOfFoundSensors > 0 )
   {
     sensorReadTime = millis() + 750;
   }
-
+*/
   tft.println( "Starting WiFi..." );
 
   setupWiFi();
@@ -313,6 +313,18 @@ void setup()
     3,                              /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
+
+  if ( numberOfFoundSensors )
+  {
+    xTaskCreatePinnedToCore(
+      tempTask,                        /* Function to implement the task */
+      "tftTask ",                     /* Name of the task */
+      10000,                          /* Stack size in words */
+      NULL,                           /* Task input parameter */
+      3,                              /* Priority of the task */
+      NULL,                           /* Task handle. */
+      1);                             /* Core where the task should run */
+  }
 }
 
 void loop()

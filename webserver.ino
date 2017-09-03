@@ -502,8 +502,17 @@ const char index_html[] = {
 };
 const unsigned int index_html_len = 5949;
 
-  static const char textplainHEADER[]  = "text/plain";
-  static const char texthtmlHEADER[]  = "text/html";
+static const char textplainHEADER[]  = "text/plain";
+static const char texthtmlHEADER[]  = "text/html";
+
+void webServerTask ( void * pvParameters )
+{
+  while (1)
+  {
+    server.handleClient();
+    vTaskDelay(2 / portTICK_PERIOD_MS);
+  }
+}
 
 //https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
 

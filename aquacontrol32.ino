@@ -233,7 +233,6 @@ void setup()
 
   tft.print( "Getting time from " );  tft.println( NTPpoolAdress );
 
-
   configTime( -3600, 3600, NTPpoolAdress.c_str() );  //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md
   //https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
   printLocalTime();
@@ -316,40 +315,6 @@ void setup()
     1);                             /* Core where the task should run */
 }
 
-
-void webServerTask ( void * pvParameters )
-{
-  while (1)
-  {
-    server.handleClient();
-    vTaskDelay(2 / portTICK_PERIOD_MS);
-  }
-}
-
-void dimmerTask ( void * pvParameters )
-{
-  while (1)
-  {
-    // set the brightness on LEDC channel 0
-    ledcWrite(LEDC_CHANNEL_0, brightness);
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
-    {
-      ledcWrite( thisChannel, brightness );
-    }
-
-    // change the brightness for next time through the loop:
-    brightness = brightness + fadeAmount;
-
-    // reverse the direction of the fading at the ends of the fade:
-    if (brightness <= 0 || brightness >= LEDC_PWM_DEPTH )
-    {
-      fadeAmount = -fadeAmount;
-    }
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-  }
-}
-
 void loop()
 {
 }
-

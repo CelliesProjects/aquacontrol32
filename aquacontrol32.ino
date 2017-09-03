@@ -321,7 +321,7 @@ void setup()
       "tftTask ",                     /* Name of the task */
       10000,                          /* Stack size in words */
       NULL,                           /* Task input parameter */
-      3,                              /* Priority of the task */
+      5,                              /* Priority of the task */
       NULL,                           /* Task handle. */
       1);                             /* Core where the task should run */
   }

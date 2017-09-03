@@ -5,7 +5,7 @@
 #include "MHDS18B20.h"
 #include <WiFi.h>
 #include <ESPmDNS.h>
-#include "time.h"
+//#include "time.h"
 #include <Preferences.h>
 #include "SSD1306.h"              //https://github.com/squix78/esp8266-oled-ssd1306
 #include <ESP32WebServer.h>       //http://www.fisch.lu/junk/ESP32-WebServer.zip
@@ -256,6 +256,7 @@ void setup()
   Serial.println("mDNS responder started");
   Serial.print( "mDNS name: ");  Serial.print( mDNSname );  Serial.println( ".local" );
 
+  WiFi.setHostname( mDNSname.c_str() );
   tft.println( "Starting webserver. " );
 
   setupWebServer();

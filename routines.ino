@@ -3,27 +3,29 @@ float mapFloat( double x, const double in_min, const double in_max, const double
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-void OLEDprintLocalTime()
+void oledTask( void * pvParameters )
 {
-  //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
-  struct tm timeinfo;
-  time_t now;
-  time(&now);
-  localtime_r(&now, &timeinfo);
-  char strftime_buf[64];
-  strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+  while (1)
+  {
+    //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
+    struct tm timeinfo;
+    time_t now;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    char strftime_buf[64];
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
 
-  OLED.clear();
-  OLED.setFont( ArialMT_Plain_10 );
-  OLED.drawString( 64, 0, strftime_buf );
-  OLED.drawString( 64, 10, String( sensor[1].temp / 16 ) + "C  " + String( sensor[2].temp / 16 ) + "C" );
-  OLED.drawString( 64, 20, String( (int)brightness) + " - " + mapFloat( brightness, 0, LEDC_PWM_DEPTH, 0, 100 ) + "%" );
-
-  OLED.drawString( 64, 30, String( (int)LEDC_PWM_DEPTH ) + " steps."  );
-  OLED.drawString( 64, 40, String( LEDC_NUMBER_OF_BIT ) + "bit - " + String( ledcActualFrequency / 1000.0 ) + "kHz" );
-  OLED.drawString( 64, 50, String( millis() / 1000.0 ) + " Sec" );
-  OLED.display();
-
+    OLED.clear();
+    OLED.setFont( ArialMT_Plain_10 );
+    OLED.drawString( 64, 0, strftime_buf );
+    OLED.drawString( 64, 10, String( sensor[1].temp / 16 ) + "C  " + String( sensor[2].temp / 16 ) + "C" );
+    OLED.drawString( 64, 20, String( (int)brightness) + " - " + mapFloat( brightness, 0, LEDC_PWM_DEPTH, 0, 100 ) + "%" );
+    OLED.drawString( 64, 30, String( (int)LEDC_PWM_DEPTH ) + " steps."  );
+    OLED.drawString( 64, 40, String( LEDC_NUMBER_OF_BIT ) + "bit - " + String( ledcActualFrequency / 1000.0 ) + "kHz" );
+    OLED.drawString( 64, 50, String( millis() / 1000.0 ) + " Sec" );
+    OLED.display();
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
 }
 
 void printLocalTime()
@@ -37,15 +39,22 @@ void printLocalTime()
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
-void printLocalTimeTFT()
+void tftTask( void * pvParameters )
 {
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo))
+  while (1)
   {
-    tft.println("Failed to obtain time");
-    return;
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo))
+    {
+      tft.println("Failed to obtain time");
+      return;
+    }
+    tft.setCursor(0, 0);
+    tft.setTextColor( ILI9341_BLUE , ILI9341_BLACK );
+    tft.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+    tft.println( ledcReadFreq( 0 ) );
+    vTaskDelay(500 / portTICK_PERIOD_MS);
   }
-  tft.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
 void readTempSensors()

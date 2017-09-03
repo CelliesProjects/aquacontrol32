@@ -10,8 +10,6 @@
 #include "SSD1306.h"              //https://github.com/squix78/esp8266-oled-ssd1306
 #include <ESP32WebServer.h>
 
-#define mDNSname "aquacontrol32"
-
 #define COUNTRY_CODE_ISO_3166 "nl"  //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 
 // use first channel of 16 channels (started from zero)
@@ -46,8 +44,10 @@
 //       5v       // Goes to TFT Vcc-
 //       Gnd      // Goes to TFT Gnd
 
+String mDNSname = "aquacontrol32";
+
 //LED pins
-const byte PROGMEM ledPin[NUMBER_OF_CHANNELS] =  { 22, 21, 17, 16, 26 } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries. D1 through D8 are the exposed pins on 'Wemos D1 mini'
+const byte ledPin[NUMBER_OF_CHANNELS] =  { 22, 21, 17, 16, 26 } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries. D1 through D8 are the exposed pins on 'Wemos D1 mini'
 
 // Use hardware SPI
 Adafruit_ILI9341 tft = Adafruit_ILI9341( _cs, _dc, _rst );
@@ -97,7 +97,6 @@ void setup()
   pinMode(ledPin[4], OUTPUT);
 
   btStop();
-
   OLED.init();
   OLED.clear();
   OLED.setTextAlignment( TEXT_ALIGN_CENTER );
@@ -105,7 +104,6 @@ void setup()
   OLED.drawString( 64, 10, F( "AquaControl32" ) );
   OLED.drawString( 64, 30, F( "Booting..." ) );
   OLED.display();
-
 
 
   Serial.begin(115200);
@@ -203,14 +201,14 @@ void setup()
   configTime( -3600, 3600, NTPpoolAdress.c_str() );  //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md
   //https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
   printLocalTime();
-  printLocalTimeTFT();
+  //printLocalTimeTFT();
 
   // Set up mDNS responder:
   // - first argument is the domain name, in this example
   //   the fully-qualified domain name is "esp8266.local"
   // - second argument is the IP address to advertise
   //   we send our IP address on the WiFi network
-  if (!MDNS.begin( mDNSname ))
+  if (!MDNS.begin( mDNSname.c_str() ))
   {
     Serial.println("Error setting up MDNS responder!");
     while (1) {
@@ -240,35 +238,81 @@ void setup()
     ledcAttachPin( ledPin[thisChannel], thisChannel );
 
   }
-  tft.println( "Setup done." );
+  tft.fillScreen(ILI9341_BLACK);
 
+  //http://exploreembedded.com/wiki/Task_Switching
+
+  xTaskCreatePinnedToCore(
+    webServerTask,                  /* Function to implement the task */
+    "webServerTask ",               /* Name of the task */
+    10000,                          /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    4,                              /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);                             /* Core where the task should run */
+
+  xTaskCreatePinnedToCore(
+    oledTask,                       /* Function to implement the task */
+    "oledTask ",                    /* Name of the task */
+    10000,                          /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    3,                              /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);                             /* Core where the task should run */
+
+  xTaskCreatePinnedToCore(
+    dimmerTask,                     /* Function to implement the task */
+    "dimmerTask ",                  /* Name of the task */
+    10000,                          /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    3,                              /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);                             /* Core where the task should run */
+
+  xTaskCreatePinnedToCore(
+    tftTask,                        /* Function to implement the task */
+    "tftTask ",                     /* Name of the task */
+    10000,                          /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    3,                              /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);                             /* Core where the task should run */
+}
+
+
+void webServerTask ( void * pvParameters )
+{
+  while (1)
+  {
+    server.handleClient();
+    vTaskDelay(2 / portTICK_PERIOD_MS);
+  }
+}
+
+void dimmerTask ( void * pvParameters )
+{
+  while (1)
+  {
+    // set the brightness on LEDC channel 0
+    ledcWrite(LEDC_CHANNEL_0, brightness);
+    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    {
+      ledcWrite( thisChannel, brightness );
+    }
+
+    // change the brightness for next time through the loop:
+    brightness = brightness + fadeAmount;
+
+    // reverse the direction of the fading at the ends of the fade:
+    if (brightness <= 0 || brightness >= LEDC_PWM_DEPTH )
+    {
+      fadeAmount = -fadeAmount;
+    }
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+  }
 }
 
 void loop()
 {
-  server.handleClient();
-
-  // set the brightness on LEDC channel 0
-  ledcWrite(LEDC_CHANNEL_0, brightness);
-  for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
-  {
-    ledcWrite( thisChannel, brightness );
-  }
-
-  // change the brightness for next time through the loop:
-  brightness = brightness + fadeAmount;
-
-  // reverse the direction of the fading at the ends of the fade:
-  if (brightness <= 0 || brightness >= LEDC_PWM_DEPTH )
-  {
-    fadeAmount = -fadeAmount;
-  }
-  OLEDprintLocalTime();
-
-  if ( (long)( millis() - sensorReadTime ) >= 0 )
-  {
-    readTempSensors();
-    sensorReadTime = millis() + 750;
-  }
 }
 

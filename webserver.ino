@@ -509,19 +509,50 @@ const unsigned int index_html_len = 5949;
 
 //https://github.com/esp8266/ESPWebServer/blob/master/examples/SDWebServer/SDWebServer.ino
 
+//https://github.com/copercini/arduino-esp32-SPIFFS
+
 void setupWebServer()
 {
   // Set up the web server
 
   //home page or 'index.html'
-  server.on( "/", []() {
-    server.setContentLength( index_html_len );
-    server.send_P( 200, texthtmlHEADER, index_html );
+  server.on( "/", []()
+  {
+    server.send_P( 200, texthtmlHEADER, index_html, index_html_len );
+  });
+
+  server.on( "/api/hostname", []()
+  {
+    String response = "testhostname";
+    size_t response_length = response.length();
+    server.setContentLength( response_length );
+    server.send( 200, texthtmlHEADER, response );
+  });
+
+  server.on( "/api/status", []()
+  {
+    String HTML =  "100.00,100.00,100.00,100.00,100.00,19:05:34,Dummy setup";
+    server.setContentLength( HTML.length() );
+    server.send( 200, textplainHEADER, HTML );
+  });
+
+  server.on( "/channelcolors.txt", []()
+  {
+    String response = "red\ngreen\nblue\n\white\nwhite-blue\n";
+    server.setContentLength( response.length() );
+    server.send( 200, textplainHEADER, response );
+  });
+
+  server.on( "/channelnames.txt", []()
+  {
+    String response = "rood\ngroen\nblauw\n\wit\nwit-blauw\n";
+    server.setContentLength( response.length()  );
+    server.send( 200, textplainHEADER, response );
   });
 
   //start the web server
   server.begin();
-  Serial.println("TCP server started");  
+  Serial.println("TCP server started");
 }
 
 

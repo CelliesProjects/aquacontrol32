@@ -534,6 +534,27 @@ void setupWebServer()
     server.send( 200, texthtmlHEADER, response );
   });
 
+  server.on( "/api/setchannelcolor", []() {
+    int thisChannel;
+    if ( server.hasArg( "channel" ) ) {
+      thisChannel = server.arg( "channel" ).toInt();
+      Serial.println(thisChannel);
+      if ( thisChannel < 0 || thisChannel > NUMBER_OF_CHANNELS ) {
+        server.send( 400,  textplainHEADER, "Invalid channel." );
+        return;
+      }
+    }
+    if ( server.hasArg( "newcolor" ) ) {
+      String newColor = "#" + server.arg( "newcolor" );
+      newColor.trim();
+      channel[thisChannel].color = newColor;
+      saveChannelColors();
+      server.send( 200, textplainHEADER , "Success" );
+      return;
+    }
+    server.send( 400, textplainHEADER , "Invalid input." );
+  });
+
   server.on( "/api/status", []()
   {
     String HTML;
@@ -541,8 +562,11 @@ void setupWebServer()
     {
       HTML += String( channel[thisChannel].currentPercentage ) + ",";
     }
-
-    HTML +=  "19:05:34,Dummy setup";
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    HTML +=  String( timeinfo.tm_hour) + ":" + String( timeinfo.tm_min ) + ":" + String( timeinfo.tm_sec ) + ",debug unit";
     server.setContentLength( HTML.length() );
     server.send( 200, textplainHEADER, HTML );
   });

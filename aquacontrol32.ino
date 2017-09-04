@@ -290,7 +290,7 @@ void setup()
     "oledTask ",                    /* Name of the task */
     10000,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
-    3,                              /* Priority of the task */
+    2,                              /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 
@@ -308,7 +308,7 @@ void setup()
     "tftTask ",                     /* Name of the task */
     10000,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
-    3,                              /* Priority of the task */
+    1,                              /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 

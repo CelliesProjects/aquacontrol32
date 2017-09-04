@@ -1,8 +1,19 @@
-const String PROGMEM indexHTML  = R"#####(<p>You just loaded the root of your ESP WebServer.</p>
-<a href="wasietsmet.nl/">test</a>
-)#####";
+void webServerTask ( void * pvParameters )
+{
+  while (1)
+  {
+    server.handleClient();
+    vTaskDelay( 2 / portTICK_PERIOD_MS);
+  }
+}
 
-const char index_html[] = {
+//https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
+
+//https://github.com/esp8266/ESPWebServer/blob/master/examples/SDWebServer/SDWebServer.ino
+
+//https://github.com/copercini/arduino-esp32-SPIFFS
+
+static const char index_html[] = {
   0x3c, 0x21, 0x64, 0x6f, 0x63, 0x74, 0x79, 0x70, 0x65, 0x20, 0x48, 0x54,
   0x4d, 0x4c, 0x3e, 0x0a, 0x3c, 0x68, 0x74, 0x6d, 0x6c, 0x20, 0x6c, 0x61,
   0x6e, 0x67, 0x3d, 0x22, 0x65, 0x6e, 0x22, 0x3e, 0x0a, 0x3c, 0x68, 0x65,
@@ -500,25 +511,10 @@ const char index_html[] = {
   0x69, 0x70, 0x74, 0x3e, 0x0a, 0x3c, 0x2f, 0x62, 0x6f, 0x64, 0x79, 0x3e,
   0x0a, 0x3c, 0x2f, 0x68, 0x74, 0x6d, 0x6c, 0x3e, 0x0a
 };
-const unsigned int index_html_len = 5949;
+static const unsigned int index_html_len = 5949;
 
 static const char textplainHEADER[]  = "text/plain";
 static const char texthtmlHEADER[]  = "text/html";
-
-void webServerTask ( void * pvParameters )
-{
-  while (1)
-  {
-    server.handleClient();
-    vTaskDelay(2 / portTICK_PERIOD_MS);
-  }
-}
-
-//https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
-
-//https://github.com/esp8266/ESPWebServer/blob/master/examples/SDWebServer/SDWebServer.ino
-
-//https://github.com/copercini/arduino-esp32-SPIFFS
 
 void setupWebServer()
 {
@@ -540,7 +536,13 @@ void setupWebServer()
 
   server.on( "/api/status", []()
   {
-    String HTML =  "100.00,100.00,100.00,100.00,100.00,19:05:34,Dummy setup";
+    String HTML;
+    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    {
+      HTML += String( channel[thisChannel].currentPercentage ) + ",";
+    }
+
+    HTML +=  "19:05:34,Dummy setup";
     server.setContentLength( HTML.length() );
     server.send( 200, textplainHEADER, HTML );
   });

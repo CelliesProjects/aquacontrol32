@@ -23,7 +23,7 @@ void oledTask( void * pvParameters )
 
     OLED.drawString( 64, 50, strftime_buf  );
     OLED.display();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay( 960 / portTICK_PERIOD_MS);
   }
 }
 

@@ -21,6 +21,14 @@ void tftTask( void * pvParameters )
         tft.print( String( sensor[thisSensor].temp / 16.0 ) + "C  " );
       }
     }
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    tft.println();
+    String s;
+    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    {
+      s += String( channel[thisChannel].currentPercentage ) + " ";
+    }
+    tft.println(s);
+
+    vTaskDelay( 233 / portTICK_PERIOD_MS );
   }
 }

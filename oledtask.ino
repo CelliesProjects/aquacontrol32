@@ -14,10 +14,10 @@ void oledTask( void * pvParameters )
     OLED.setFont( ArialMT_Plain_10 );
     OLED.drawString( 64, 0, strftime_buf );
     //OLED.drawString( 64, 10, String( sensor[1].temp / 16 ) + "C  " + String( sensor[2].temp / 16 ) + "C" );
-    OLED.drawString( 64, 10, String( esp_get_free_heap_size() / 1024.0 ) + " KB RAM FREE" );
+    OLED.drawString( 64, 10, String( esp_get_free_heap_size() / 1024.0 ) + " kB RAM FREE" );
     OLED.drawString( 64, 20, "IP: " +  WiFi.localIP().toString() );
     OLED.drawString( 64, 30, String( numberOfFoundSensors ) + " Dallas sensors" );
-    OLED.drawString( 64, 40, "System start:" );
+    OLED.drawString( 64, 40, "SYSTEM START:" );
 
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &systemStart);
 

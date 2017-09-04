@@ -110,8 +110,8 @@ SSD1306  OLED( 0x3c, 23, 19 );
 ESP32WebServer server(80);
 
 
-double brightness = 0;    // how bright the LED is
-int fadeAmount = 1;    // how many points to fade the LED by
+double brightness = 200;    // how bright the LED is
+int fadeAmount = 1;         // how many points to fade the LED by
 
 int ledcActualFrequency;
 

@@ -4,8 +4,6 @@ void tempTask( void * pvParameters )
   {
     for ( byte thisSensor = 1; thisSensor <= numberOfFoundSensors; thisSensor++)
     {
-      byte data[12];
-
       ds.reset();
       ds.select( sensor[thisSensor].addr );
       ds.write( 0x44, 0);        // start conversion, with parasite power off at the end

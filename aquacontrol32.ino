@@ -40,14 +40,15 @@
 
 //HWSPI pin definitions
 #define _cs   0   // Goes to TFT CS
-#define _dc   25   // Goes to TFT DC
+#define _dc   25  // Goes to TFT DC
 #define _mosi 32  // Goes to TFT MOSI
 #define _sclk 12  // Goes to TFT SCK/CLK
-#define _rst  0  // ESP RST goes to TFT RESET
+#define _rst  0   // ESP RST goes to TFT RESET
 #define _miso 4   // Goes to TFT MISO
 //       3.3V     // Goes to TFT LED
 //       5v       // Goes to TFT Vcc-
 //       Gnd      // Goes to TFT Gnd
+#define  SD_CS 27 // Goes to SD CS
 
 //i2c pin definitions for oled
 #define I2C_SCL_PIN 19
@@ -105,20 +106,13 @@ struct sensorStruct
 
 byte numberOfFoundSensors;
 
-unsigned long sensorReadTime;
-
 SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
 
 // TCP server at port 80 will respond to HTTP requests
 ESP32WebServer server(80);
 
-
 double brightness = 200;    // how bright the LED is
 int fadeAmount = 1;         // how many points to fade the LED by
-
-int ledcActualFrequency;
-
-#define SD_CS 27
 
 void setup()
 {
@@ -268,7 +262,7 @@ void setup()
   for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
   {
     // Setup timers and attach timer to a led pin
-    ledcActualFrequency = ledcSetup(thisChannel, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT);
+    int ledcActualFrequency = ledcSetup(thisChannel, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT);
     Serial.print( "\nChannel: " ); Serial.println( thisChannel + 1 );
     Serial.print( "PWM frequency requested: " ); Serial.print( LEDC_BASE_FREQ / 1000.0 ); Serial.println( "kHz." );
     Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );

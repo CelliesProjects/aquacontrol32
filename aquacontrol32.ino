@@ -32,7 +32,7 @@
 #define NUMBER_OF_CHANNELS 5
 #define MAX_TIMERS         50
 
-// Dallas sensors are connected to this pin
+// OneWire Dallas sensors are connected to this pin
 #define ONEWIRE_PIN        5
 
 // maximum number of Dallas sensors
@@ -40,7 +40,7 @@
 
 //HWSPI pin definitions
 #define _cs   0   // Goes to TFT CS
-#define _dc   2   // Goes to TFT DC
+#define _dc   25   // Goes to TFT DC
 #define _mosi 32  // Goes to TFT MOSI
 #define _sclk 12  // Goes to TFT SCK/CLK
 #define _rst  0  // ESP RST goes to TFT RESET
@@ -48,6 +48,10 @@
 //       3.3V     // Goes to TFT LED
 //       5v       // Goes to TFT Vcc-
 //       Gnd      // Goes to TFT Gnd
+
+//i2c pin definitions for oled
+#define I2C_SCL_PIN 19
+#define I2C_SDA_PIN 23
 
 //Boot time is saved
 struct tm systemStart;
@@ -103,8 +107,7 @@ byte numberOfFoundSensors;
 
 unsigned long sensorReadTime;
 
-// I2C OLED @ SDA=pin 23, SCL= pin 19
-SSD1306  OLED( 0x3c, 23, 19 );
+SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
 
 // TCP server at port 80 will respond to HTTP requests
 ESP32WebServer server(80);
@@ -127,6 +130,8 @@ void setup()
   pinMode(ledPin[2], OUTPUT);
   pinMode(ledPin[3], OUTPUT);
   pinMode(ledPin[4], OUTPUT);
+
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 500000 );
 
   btStop();
   OLED.init();

@@ -42,6 +42,6 @@ void tftTask( void * pvParameters )
       tft.print( buffer );
     }
 
-    vTaskDelay( 233 / portTICK_PERIOD_MS );
+    vTaskDelay( 500 / portTICK_PERIOD_MS );
   }
 }

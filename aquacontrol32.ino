@@ -50,6 +50,9 @@
 #define I2C_SCL_PIN 19
 #define I2C_SDA_PIN 23
 
+// if programOverride is set to true, the duty cycle of the leds is not updated
+bool programOverride = false;
+
 //Boot time is saved
 struct tm systemStart;
 
@@ -164,15 +167,15 @@ void setup()
   tft.println( "TFT started.");
 
   Serial.print("Initializing SD card...");
-  if (!SD.begin( SD_CS, SPI, 2000000 )) {
+  if (!SD.begin( SD_CS, SPI, 2000000 ) ) {
     Serial.println("failed!");
   }
   uint8_t cardType = SD.cardType();
   if ( cardType == CARD_NONE ) {
     Serial.println("No SD card attached");
     tft.println("No SD card attached");
-    return;
   }
+
   Serial.print("SD Card Type: ");
   if (cardType == CARD_MMC) {
     Serial.println("MMC");
@@ -184,12 +187,15 @@ void setup()
     Serial.println("UNKNOWN");
   }
 
-
   uint64_t cardSize = SD.cardSize() / (1024 * 1024);
   Serial.printf("SD Card Size: %lluMB\n", cardSize);
   tft.printf("SD Card Size: %lluMB\n", cardSize);
 
-  listDir(SD, "/", 0);
+  if ( loadDefaultTimers() )
+  {
+    Serial.println("Default timers loaded");
+    tft.println("Default timers loaded");
+  }
 
   //sensor setup
   byte currentAddr[8];
@@ -236,17 +242,20 @@ void setup()
   //   the fully-qualified domain name is "esp8266.local"
   // - second argument is the IP address to advertise
   //   we send our IP address on the WiFi network
-  if (!MDNS.begin( mDNSname.c_str() ))
+  bool mDNS = false;
+  if (MDNS.begin( mDNSname.c_str() ))
+  {
+    // Add service to MDNS-SD
+    MDNS.addService("http", "tcp", 80);
+    Serial.println("mDNS responder started");
+    Serial.print( "mDNS name: ");  Serial.print( mDNSname );  Serial.println( ".local" );
+  }
+  else
   {
     Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
-    }
+    bool mDNS = false;
   }
-  // Add service to MDNS-SD
-  MDNS.addService("http", "tcp", 80);
-  Serial.println("mDNS responder started");
-  Serial.print( "mDNS name: ");  Serial.print( mDNSname );  Serial.println( ".local" );
+
 
   WiFi.setHostname( mDNSname.c_str() );
   tft.println( "Starting webserver. " );
@@ -274,7 +283,7 @@ void setup()
   xTaskCreatePinnedToCore(
     webServerTask,                  /* Function to implement the task */
     "webServerTask ",               /* Name of the task */
-    10000,                          /* Stack size in words */
+    2000,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
     4,                              /* Priority of the task */
     NULL,                           /* Task handle. */
@@ -283,7 +292,7 @@ void setup()
   xTaskCreatePinnedToCore(
     oledTask,                       /* Function to implement the task */
     "oledTask ",                    /* Name of the task */
-    10000,                          /* Stack size in words */
+    2000,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
     2,                              /* Priority of the task */
     NULL,                           /* Task handle. */
@@ -292,7 +301,7 @@ void setup()
   xTaskCreatePinnedToCore(
     dimmerTask,                     /* Function to implement the task */
     "dimmerTask ",                  /* Name of the task */
-    10000,                          /* Stack size in words */
+    800,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
     3,                              /* Priority of the task */
     NULL,                           /* Task handle. */
@@ -301,7 +310,7 @@ void setup()
   xTaskCreatePinnedToCore(
     tftTask,                        /* Function to implement the task */
     "tftTask ",                     /* Name of the task */
-    10000,                          /* Stack size in words */
+    2000,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
     1,                              /* Priority of the task */
     NULL,                           /* Task handle. */
@@ -311,8 +320,8 @@ void setup()
   {
     xTaskCreatePinnedToCore(
       tempTask,                        /* Function to implement the task */
-      "tftTask ",                     /* Name of the task */
-      10000,                          /* Stack size in words */
+      "tempTask ",                     /* Name of the task */
+      4000,                          /* Stack size in words */
       NULL,                           /* Task input parameter */
       5,                              /* Priority of the task */
       NULL,                           /* Task handle. */

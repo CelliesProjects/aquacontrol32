@@ -3,7 +3,7 @@ void webServerTask ( void * pvParameters )
   while (1)
   {
     server.handleClient();
-    vTaskDelay( 2 / portTICK_PERIOD_MS);
+    vTaskDelay( 1 / portTICK_PERIOD_MS);
   }
 }
 
@@ -553,6 +553,20 @@ void setupWebServer()
       return;
     }
     server.send( 400, textplainHEADER , "Invalid input." );
+  });
+
+  server.on( "/api/setpercentage", []()
+  {
+    float percentage = server.arg( "percentage" ).toFloat();
+    programOverride = true;
+    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    {
+      channel[thisChannel].currentPercentage = percentage;
+      ledcWrite( thisChannel, mapFloat( channel[thisChannel].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH ) );      
+    }
+    String okString = "Ok";
+    server.setContentLength( okString.length() );
+    server.send( 200, textplainHEADER, okString );
   });
 
   server.on( "/api/status", []()

@@ -1,4 +1,4 @@
-float mapFloat( double x, const double in_min, const double in_max, const double out_min, const double out_max)
+float mapFloat( float x, const float in_min, const float in_max, const float out_min, const float out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }

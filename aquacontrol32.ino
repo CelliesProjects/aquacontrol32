@@ -8,11 +8,7 @@
 //#include "time.h"
 #include <Preferences.h>
 #include "SSD1306.h"              //https://github.com/squix78/esp8266-oled-ssd1306
-#include <ESP32WebServer.h>       //http://www.fisch.lu/junk/ESP32-WebServer.zip
-                                  // or
-                                  //https://github.com/fesch/arduino-esp32/tree/master/libraries/WebServer
-                                  // or
-                                  //http://wasietsmet.nl/ESP32-WebServer.zip
+#include <ESP32WebServer.h>       //https://github.com/CelliesProjects/ESP32-WebServer
 
 #define COUNTRY_CODE_ISO_3166 "nl"  //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 

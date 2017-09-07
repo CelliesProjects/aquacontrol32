@@ -32,6 +32,6 @@ void  setPercentageFromProgram( const byte thisChannel, const time_t secondsToda
     if ( channel[thisChannel].currentPercentage < channel[thisChannel].minimumLevel ) {
       channel[thisChannel].currentPercentage = channel[thisChannel].minimumLevel;
     }
-    ledcWrite( thisChannel, mapFloat( channel[thisChannel].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH ) );
+    ledcWrite( thisChannel, mapFloat( channel[thisChannel].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH_NOMATH ) );
   }
 }

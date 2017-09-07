@@ -31,11 +31,11 @@ void setupWebServer()
     server.send_P( 200, texthtmlHEADER, editor_htm, editor_htm_len );
   });
 
-  server.on( "/default.aqu", []()
+  server.on( defaultTimerFile, []()
   {
-    if ( SD.exists( "/default.aqu" ) )
+    if ( SD.exists( defaultTimerFile ) )
     {
-      File file = SD.open( "/default.aqu", FILE_READ );
+      File file = SD.open( defaultTimerFile, FILE_READ );
       if ( file )
       {
         server.streamFile( file, "application/octet-stream" );
@@ -95,16 +95,17 @@ void setupWebServer()
 
   server.on( "/api/setpercentage", []()
   {
+    server.arg( "percentage" ).trim();
     float percentage = server.arg( "percentage" ).toFloat();
     programOverride = true;
     for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
     {
       channel[thisChannel].currentPercentage = percentage;
-      ledcWrite( thisChannel, mapFloat( channel[thisChannel].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH ) );
+      ledcWrite( thisChannel, mapFloat( channel[thisChannel].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH_NOMATH ) );
     }
-    String okString = "Ok";
-    server.setContentLength( okString.length() );
-    server.send( 200, textplainHEADER, okString );
+    lightStatus = "All lights at " + String( percentage ) + "%";
+    server.setContentLength( lightStatus.length() );
+    server.send( 200, textplainHEADER, lightStatus );
   });
 
   server.on( "/api/status", []()
@@ -118,7 +119,7 @@ void setupWebServer()
     struct tm timeinfo;
     time(&now);
     localtime_r(&now, &timeinfo);
-    HTML +=  String( timeinfo.tm_hour) + ":" + String( timeinfo.tm_min ) + ":" + String( timeinfo.tm_sec ) + ",debug unit";
+    HTML +=  String( timeinfo.tm_hour) + ":" + String( timeinfo.tm_min ) + ":" + String( timeinfo.tm_sec ) + "," + lightStatus;
     server.setContentLength( HTML.length() );
     server.send( 200, textplainHEADER, HTML );
   });

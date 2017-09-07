@@ -46,9 +46,9 @@ void readFile(fs::FS &fs, const char * path) {
 }
 
 bool loadDefaultTimers() {                                                      //this function loads the timers or returns FALSE
-  //find 'default.aqu' on SPIFFS disk and if present load the timerdata from this file
+  //find 'default.aqu' on SD card and if present load the timerdata from this file
   //return false on error
-  File f = SD.open( "/default.aqu", "r" );
+  File f = SD.open( defaultTimerFile, "r" );
   if (!f) {
     Serial.println( F("No default timer file found.") );
     return false;

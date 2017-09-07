@@ -12,56 +12,54 @@
 
 #define COUNTRY_CODE_ISO_3166 "nl"  //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 
-// use first channel of 16 channels (started from zero)
-#define LEDC_CHANNEL_0     0
-
 // number of bit precission for LEDC timer
-#define LEDC_NUMBER_OF_BIT  16
+#define LEDC_NUMBER_OF_BIT    16
 
 // use 10kHz as a LEDC base request frequency
-#define LEDC_BASE_FREQ    10000
+#define LEDC_BASE_FREQ        10000
 
 // PWM depth is the number of discrete steps between fully on and off
-#define LEDC_PWM_DEPTH     pow( 2, LEDC_NUMBER_OF_BIT ) - 1
+#define LEDC_PWM_DEPTH        pow( 2, LEDC_NUMBER_OF_BIT ) - 1
 
 // the number of LED channels
-#define NUMBER_OF_CHANNELS 5
-#define MAX_TIMERS         50
+#define NUMBER_OF_CHANNELS    5
+#define MAX_TIMERS            50
+
+// the pins for the LED channels
+#define LED0_PIN              22
+#define LED1_PIN              21
+#define LED2_PIN              17
+#define LED3_PIN              16
+#define LED4_PIN              26
 
 // OneWire Dallas sensors are connected to this pin
-#define ONEWIRE_PIN        5
+#define ONEWIRE_PIN           5
 
 // maximum number of Dallas sensors
 #define MAX_NUMBER_OF_SENSORS 3
 
-//HWSPI pin definitions
-#define _cs   0   // Goes to TFT CS
-#define _dc   25  // Goes to TFT DC
-#define _mosi 32  // Goes to TFT MOSI
-#define _sclk 12  // Goes to TFT SCK/CLK
-#define _rst  0   // ESP RST goes to TFT RESET
-#define _miso 4   // Goes to TFT MISO
-//       3.3V     // Goes to TFT LED
-//       5v       // Goes to TFT Vcc-
-//       Gnd      // Goes to TFT Gnd
-#define  SD_CS 27 // Goes to SD CS
+// HW SPI pin definitions
+#define _cs                   0   // Goes to TFT CS
+#define _dc                   25  // Goes to TFT DC
+#define _mosi                 32  // Goes to TFT MOSI
+#define _sclk                 12  // Goes to TFT SCK/CLK
+#define _rst                  0   // ESP RST goes to TFT RESET
+#define _miso                 4   // Goes to TFT MISO
+//       3.3V                     // Goes to TFT LED
+//       5v                       // Goes to TFT Vcc-
+//       Gnd                      // Goes to TFT Gnd
+#define  SD_CS                 27 // Goes to SD CS
 
-//i2c pin definitions for oled
-#define I2C_SCL_PIN 19
-#define I2C_SDA_PIN 23
-
-// if programOverride is set to true, the duty cycle of the leds is not updated
-bool programOverride = false;
-
-//Boot time is saved
-struct tm systemStart;
+// i2c pin definitions for oled
+#define I2C_SCL_PIN            19
+#define I2C_SDA_PIN            23
 
 //the beef of the program is constructed here
 //first define a list of timers
 struct lightTimer
 {
-  time_t        time;                                                 //time in seconds since midnight so range is 0-86400
-  byte          percentage;                                           // in percentage so range is 0-100
+  time_t      time;                                                 //time in seconds since midnight so range is 0-86400
+  byte        percentage;                                           // in percentage so range is 0-100
 };
 
 //then a struct for general housekeeping of a ledstrip
@@ -82,7 +80,7 @@ struct lightTable channel[NUMBER_OF_CHANNELS];                           //all c
 String mDNSname = "aquacontrol32";
 
 //LED pins
-const byte ledPin[NUMBER_OF_CHANNELS] =  { 22, 21, 17, 16, 26 } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries. D1 through D8 are the exposed pins on 'Wemos D1 mini'
+const byte ledPin[NUMBER_OF_CHANNELS] =  { LED0_PIN, LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries. D1 through D8 are the exposed pins on 'Wemos D1 mini'
 
 // Use hardware SPI
 Adafruit_ILI9341 tft = Adafruit_ILI9341( _cs, _dc, _rst );
@@ -103,15 +101,26 @@ struct sensorStruct
   String name;
 } sensor[MAX_NUMBER_OF_SENSORS];
 
-byte numberOfFoundSensors;
 
 SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
 
 // TCP server at port 80 will respond to HTTP requests
 WebServer server(80);
 
-double brightness = 200;    // how bright the LED is
-int fadeAmount = 1;         // how many points to fade the LED by
+//global variables
+uint16_t LEDC_PWM_DEPTH_NOMATH = LEDC_PWM_DEPTH; // Calculate once
+
+byte numberOfFoundSensors;
+
+String defaultTimerFile = "/default.aqu";
+
+// if programOverride is set to true, the duty cycle of the leds is not updated
+bool programOverride = false;
+
+//Boot time is saved
+struct tm systemStart;
+
+String lightStatus;
 
 void setup()
 {
@@ -256,7 +265,6 @@ void setup()
     bool mDNS = false;
   }
 
-
   WiFi.setHostname( mDNSname.c_str() );
   tft.println( "Starting webserver. " );
 
@@ -264,6 +272,8 @@ void setup()
 
   //WiFi.printDiag( Serial );
 
+
+  //setup pwm
   for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
   {
     // Setup timers and attach timer to a led pin
@@ -271,7 +281,7 @@ void setup()
     Serial.print( "\nChannel: " ); Serial.println( thisChannel + 1 );
     Serial.print( "PWM frequency requested: " ); Serial.print( LEDC_BASE_FREQ / 1000.0 ); Serial.println( "kHz." );
     Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );
-    Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH ); Serial.println( " steps." );
+    Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH_NOMATH ); Serial.println( " steps." );
 
     ledcAttachPin( ledPin[thisChannel], thisChannel );
 
@@ -306,6 +316,8 @@ void setup()
     3,                              /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
+
+  lightStatus = "Program running.";
 
   xTaskCreatePinnedToCore(
     tftTask,                        /* Function to implement the task */

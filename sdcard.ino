@@ -80,6 +80,7 @@ bool loadDefaultTimers() {                                                      
     channel[thisChannel].timer[channel[thisChannel].numberOfTimers].time = 86400;
     channel[thisChannel].timer[channel[thisChannel].numberOfTimers].percentage = channel[thisChannel].timer[0].percentage;
   }
+/*
   for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
   {
     Serial.print( "Channel " ); Serial.print( thisChannel ); Serial.println( " " );
@@ -88,5 +89,6 @@ bool loadDefaultTimers() {                                                      
       Serial.print( thisTimer ); Serial.print( " " ); Serial.print( String( channel[thisChannel].timer[thisTimer].time ) ); Serial.print( "'" ); Serial.println( String( channel[thisChannel].timer[thisTimer].percentage ) );
     }
   }
+*/
   return true;
 }

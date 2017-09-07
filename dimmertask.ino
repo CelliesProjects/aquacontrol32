@@ -4,11 +4,11 @@ void dimmerTask ( void * pvParameters )
   {
     if ( !programOverride )
     {
+      struct tm timeinfo;
+      getLocalTime(&timeinfo);
+      time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
       for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
       {
-        struct tm timeinfo;
-        getLocalTime(&timeinfo);
-        time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
         setPercentageFromProgram( thisChannel, secondsToday );
       }
     }

@@ -7,8 +7,8 @@
 #include <ESPmDNS.h>
 //#include "time.h"
 #include <Preferences.h>
-#include "SSD1306.h"              //https://github.com/squix78/esp8266-oled-ssd1306
-#include <ESP32WebServer.h>       //https://github.com/CelliesProjects/ESP32-WebServer
+#include "SSD1306.h"                //https://github.com/squix78/esp8266-oled-ssd1306
+#include <WebServer.h>              //https://github.com/CelliesProjects/WebServer_tng
 
 #define COUNTRY_CODE_ISO_3166 "nl"  //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 
@@ -108,7 +108,7 @@ byte numberOfFoundSensors;
 SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
 
 // TCP server at port 80 will respond to HTTP requests
-ESP32WebServer server(80);
+WebServer server(80);
 
 double brightness = 200;    // how bright the LED is
 int fadeAmount = 1;         // how many points to fade the LED by
@@ -283,7 +283,7 @@ void setup()
   xTaskCreatePinnedToCore(
     webServerTask,                  /* Function to implement the task */
     "webServerTask ",               /* Name of the task */
-    2000,                          /* Stack size in words */
+    3000,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
     4,                              /* Priority of the task */
     NULL,                           /* Task handle. */

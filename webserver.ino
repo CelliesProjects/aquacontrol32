@@ -1,6 +1,7 @@
 //include all web interface htm files
 //https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
 #include "index_htm.h"
+#include "editor_htm.h"
 
 void webServerTask ( void * pvParameters )
 {
@@ -23,6 +24,33 @@ void setupWebServer()
   {
     server.send_P( 200, texthtmlHEADER, index_html, index_html_len );
   });
+
+  //editor or 'editor.htm'
+  server.on( "/editor", []()
+  {
+    server.send_P( 200, texthtmlHEADER, editor_htm, editor_htm_len );
+  });
+
+  server.on( "/default.aqu", []()
+  {
+    if ( SD.exists( "/default.aqu" ) )
+    {
+      File file = SD.open( "/default.aqu", FILE_READ );
+      if ( file )
+      {
+        server.streamFile( file, "application/octet-stream" );
+        file.close();
+      }
+    }
+    else
+    {
+      server.send( 401 );
+    }
+  });
+
+  /***************************************************************************
+      API calls
+   **************************************************************************/
 
   server.on( "/api/hostname", []()
   {
@@ -60,7 +88,7 @@ void setupWebServer()
     for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
     {
       channel[thisChannel].currentPercentage = percentage;
-      ledcWrite( thisChannel, mapFloat( channel[thisChannel].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH ) );      
+      ledcWrite( thisChannel, mapFloat( channel[thisChannel].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH ) );
     }
     String okString = "Ok";
     server.setContentLength( okString.length() );

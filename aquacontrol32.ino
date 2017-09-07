@@ -301,7 +301,7 @@ void setup()
   xTaskCreatePinnedToCore(
     dimmerTask,                     /* Function to implement the task */
     "dimmerTask ",                  /* Name of the task */
-    800,                          /* Stack size in words */
+    1000,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
     3,                              /* Priority of the task */
     NULL,                           /* Task handle. */

@@ -60,6 +60,18 @@ void setupWebServer()
     server.send( 200, texthtmlHEADER, response );
   });
 
+
+  server.on( "/api/loadtimers", []() {
+    server.send( 200, FPSTR( textplainHEADER ), loadDefaultTimers() ? F( "Succes" ) : F( "Failed" ) );
+    struct tm timeinfo;
+    getLocalTime(&timeinfo);
+    time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
+    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    {
+      setPercentageFromProgram( thisChannel, secondsToday );
+    }
+  });
+
   server.on( "/api/setchannelcolor", []() {
     int thisChannel;
     if ( server.hasArg( "channel" ) ) {
@@ -109,6 +121,31 @@ void setupWebServer()
     HTML +=  String( timeinfo.tm_hour) + ":" + String( timeinfo.tm_min ) + ":" + String( timeinfo.tm_sec ) + ",debug unit";
     server.setContentLength( HTML.length() );
     server.send( 200, textplainHEADER, HTML );
+  });
+
+  server.on( "/api/upload", HTTP_POST, []() {
+    server.send( 200, FPSTR( textplainHEADER ), "" );
+  }, []() {
+    static File fsUploadFile;
+    HTTPUpload& upload = server.upload();
+    String filename = upload.filename;
+    if ( !filename.startsWith("/") ) filename = "/" + filename;
+    if ( filename.length() > 30 ) {
+      Serial.println( "Upload filename too long!" );
+      return;
+    }
+    if ( upload.status == UPLOAD_FILE_START ) {
+      fsUploadFile = SD.open( filename, "w");
+    } else if ( upload.status == UPLOAD_FILE_WRITE ) {
+      if ( fsUploadFile ) {
+        fsUploadFile.write( upload.buf, upload.currentSize );
+        //showUploadProgressOLED( String( (float) fsUploadFile.position() / server.header( "Content-Length" ).toInt() * 100 ), upload.filename );
+      }
+    } else if ( upload.status == UPLOAD_FILE_END) {
+      if ( fsUploadFile ) {
+        fsUploadFile.close();
+      }
+    }
   });
 
   server.on( "/channelcolors.txt", []()

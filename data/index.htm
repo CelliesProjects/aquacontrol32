@@ -154,7 +154,7 @@ var channelColor;
 var repeatTimer;
 
 function getChannelNames(){
-  $.get( "/channelnames.txt" )
+  $.get( "/api/getchannelnames" )
     .done(function( data ){
       var channelNames = data.split("\n");
       channelNames.forEach( function( item, index ){
@@ -171,7 +171,7 @@ function getChannelNames(){
 }
 
 function getChannelColors(){
-  $.get( "/channelcolors.txt" )
+  $.get( "/api/getchannelcolors" )
     .done(function( data ){
       channelColor = data.split("\n");
       channelColor.forEach( function( item, index ){

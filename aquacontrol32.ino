@@ -111,6 +111,7 @@ WebServer server(80);
 uint16_t LEDC_PWM_DEPTH_NOMATH = LEDC_PWM_DEPTH; // Calculate once
 
 double ledcActualFrequency;
+byte ledcActualBitDepth;
 
 byte numberOfFoundSensors;
 
@@ -149,7 +150,7 @@ void setup()
   //setup channel names
   for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
   {
-    channel[thisChannel].name = "Channel " + String( thisChannel + 1 );
+    channel[thisChannel].name = "Channel" + String( thisChannel + 1 );
     channel[ thisChannel ].color = "undefined" ;
     channel[ thisChannel ].pin = ledPin[ thisChannel ];
     channel[ thisChannel ].minimumLevel = 0;
@@ -279,6 +280,7 @@ void setup()
   for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
   {
     // Setup timers and attach timer to a led pin
+    ledcActualBitDepth = LEDC_NUMBER_OF_BIT;
     ledcActualFrequency = ledcSetup(thisChannel, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT);
     Serial.print( "\nChannel: " ); Serial.println( thisChannel + 1 );
     Serial.print( "PWM frequency requested: " ); Serial.print( LEDC_BASE_FREQ / 1000.0 ); Serial.println( "kHz." );

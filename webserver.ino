@@ -25,7 +25,7 @@ void setupWebServer()
   //home page or 'index.html'
   server.on( "/", []()
   {
-    server.send_P( 200, texthtmlHEADER, index_html, index_html_len );
+    server.send_P( 200, texthtmlHEADER, index_htm, index_htm_len );
   });
 
   //channel setup or 'channels.htm'
@@ -140,6 +140,28 @@ void setupWebServer()
     }
   });
 
+  server.on( "/api/pwmdepth", []() {
+    byte newPWMDepth;
+    if ( server.arg( "newpwmdepth" ) != "" ) {
+      newPWMDepth = server.arg( "newpwmdepth" ).toInt();
+      if ( newPWMDepth < 10 || newPWMDepth > 16 ) {
+        server.send( 200, FPSTR( textplainHEADER ), F( "ERROR - Invalid PWM depth" ) );
+        return;
+      }
+      if ( ledcActualBitDepth != newPWMDepth )
+      {
+        for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+        {
+          ledcSetup( thisChannel, ledcActualFrequency, newPWMDepth );
+        }
+      }
+      ledcActualBitDepth = newPWMDepth;
+      //TODO: Save in preferences
+    }
+    server.send( 200, FPSTR( textplainHEADER ), String( ledcActualBitDepth ) );
+  });
+
+
   server.on( "/api/pwmfrequency", []() {
     double actualFreq = ledcActualFrequency;
     if ( server.arg( "newpwmfrequency" ) != "" ) {
@@ -152,9 +174,7 @@ void setupWebServer()
       {
         actualFreq = ledcSetup( thisChannel, tempPWMfrequency, LEDC_NUMBER_OF_BIT );
       }
-      //      analogWriteFreq( PWMfrequency );
-      //      updateChannels();
-      //writeConfigFile();
+      //TODO: Save in preferences
     }
     server.send( 200, FPSTR( textplainHEADER ), String( actualFreq ) );
   });

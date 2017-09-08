@@ -343,6 +343,8 @@ void setup()
   }
 }
 
+//http://www.iotsharing.com/2017/06/how-to-apply-freertos-in-arduino-esp32.html
+//http://www.iotsharing.com/2017/05/how-to-apply-finite-state-machine-to-arduino-esp32-avoid-blocking.html
 void loop()
 {
 }

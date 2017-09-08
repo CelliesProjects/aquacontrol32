@@ -1,12 +1,12 @@
-#include "SPI.h"
-#include <SD.h>
-#include "Adafruit_GFX.h"
-#include "Adafruit_ILI9341.h"
-#include "MHDS18B20.h"
-#include <WiFi.h>
-#include <ESPmDNS.h>
+#include "SPI.h"                   //should be installed together with ESP32 Arduino install
+#include <SD.h>                    //should be installed together with ESP32 Arduino install
+#include <ESPmDNS.h>               //should be installed together with ESP32 Arduino install
+#include <Preferences.h>           //should be installed together with ESP32 Arduino install
+#include "Adafruit_GFX.h"          //Install via 'Manage Libraries' in Arduino IDE
+#include "Adafruit_ILI9341.h"      //Install via 'Manage Libraries' in Arduino IDE
+#include "OneWire.h"               //https://github.com/CelliesProjects/OneWire
+#include "MHDS18B20.h"             //https://github.com/CelliesProjects/ESP32-MINI-KIT
 //#include "time.h"
-#include <Preferences.h>
 #include "SSD1306.h"                //https://github.com/squix78/esp8266-oled-ssd1306
 #include <WebServer.h>              //https://github.com/CelliesProjects/WebServer_tng
 
@@ -109,6 +109,8 @@ WebServer server(80);
 
 //global variables
 uint16_t LEDC_PWM_DEPTH_NOMATH = LEDC_PWM_DEPTH; // Calculate once
+
+double ledcActualFrequency;
 
 byte numberOfFoundSensors;
 
@@ -277,7 +279,7 @@ void setup()
   for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
   {
     // Setup timers and attach timer to a led pin
-    int ledcActualFrequency = ledcSetup(thisChannel, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT);
+    ledcActualFrequency = ledcSetup(thisChannel, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT);
     Serial.print( "\nChannel: " ); Serial.println( thisChannel + 1 );
     Serial.print( "PWM frequency requested: " ); Serial.print( LEDC_BASE_FREQ / 1000.0 ); Serial.println( "kHz." );
     Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );

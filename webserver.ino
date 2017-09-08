@@ -2,6 +2,7 @@
 //https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
 #include "index_htm.h"
 #include "editor_htm.h"
+#include "setup_htm.h"
 
 void webServerTask ( void * pvParameters )
 {
@@ -31,6 +32,12 @@ void setupWebServer()
     server.send_P( 200, texthtmlHEADER, editor_htm, editor_htm_len );
   });
 
+  //editor or 'setup.htm'
+  server.on( "/setup", []()
+  {
+    server.send_P( 200, texthtmlHEADER, setup_htm, setup_htm_len );
+  });
+
   server.on( defaultTimerFile, []()
   {
     if ( SD.exists( defaultTimerFile ) )
@@ -52,6 +59,14 @@ void setupWebServer()
       API calls
    **************************************************************************/
 
+  server.on( "/api/boottime", []()
+  {
+    String response = "0";
+    size_t response_length = response.length();
+    server.setContentLength( response_length );
+    server.send( 200, texthtmlHEADER, response );
+  });
+
   server.on( "/api/hostname", []()
   {
     String response = WiFi.getHostname();
@@ -70,6 +85,25 @@ void setupWebServer()
     {
       setPercentageFromProgram( thisChannel, secondsToday );
     }
+  });
+
+  server.on( "/api/pwmfrequency", []() {
+    double actualFreq = ledcActualFrequency;
+    if ( server.arg( "newpwmfrequency" ) != "" ) {
+      double tempPWMfrequency = server.arg( "newpwmfrequency" ).toFloat();
+      if ( tempPWMfrequency < 100 || tempPWMfrequency > 10000 ) {
+        server.send( 200, FPSTR( textplainHEADER ), F( "Invalid PWM frequency" ) );
+        return;
+      }
+      for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+      {
+        actualFreq = ledcSetup( thisChannel, tempPWMfrequency, LEDC_NUMBER_OF_BIT );
+      }
+      //      analogWriteFreq( PWMfrequency );
+      //      updateChannels();
+      //writeConfigFile();
+    }
+    server.send( 200, FPSTR( textplainHEADER ), String( actualFreq ) );
   });
 
   server.on( "/api/setchannelcolor", []() {

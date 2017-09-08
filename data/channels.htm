@@ -124,7 +124,7 @@ input[type="color"] {
 <script>
 
 function getChannelColors(){
-  $.get( "/channelcolors.txt" )
+  $.get( "api/getchannelcolors" )
     .done( function( data ) {
       var values = data.split("\n");
       values.forEach(function(element, index){
@@ -140,7 +140,7 @@ function getChannelColors(){
 }
 
 function getChannelNames(){
-  $.get( "/channelnames.txt" )
+  $.get( "/api/getchannelnames" )
     .done( function( data ) {
       var values = data.split("\n");
       values.forEach(function(element, index){
@@ -157,7 +157,7 @@ function getChannelNames(){
 
 $(document).ready( function() {
 
-  $.get( "/minimumlevels.txt" )
+  $.get( "api/getminimumlevels" )
   .done( function( data ) {
     var values = data.split("\n");
     values.forEach(function(element, index){

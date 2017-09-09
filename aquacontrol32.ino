@@ -151,7 +151,7 @@ void setup()
   for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
   {
     channel[thisChannel].name = "Channel" + String( thisChannel + 1 );
-    channel[ thisChannel ].color = "undefined" ;
+    channel[ thisChannel ].color = "#f1ff00" ;
     channel[ thisChannel ].pin = ledPin[ thisChannel ];
     channel[ thisChannel ].minimumLevel = 0;
   }

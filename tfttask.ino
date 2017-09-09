@@ -30,11 +30,19 @@ void tftTask( void * pvParameters )
                     barWidth - 10,
                     100 - channel[thisChannel].currentPercentage,
                     ILI9341_WHITE );
+
+      //https://stackoverflow.com/questions/2342114/extracting-rgb-color-components-from-integer-value/2342149#2342149
+      int r, g, b;
+      int color = strtol( &channel[thisChannel].color[1], NULL, 16);
+      r = (color & 0xFF0000) >> 16;
+      g = (color & 0x00FF00) >> 8;
+      b = (color & 0x0000FF);
+
       tft.fillRect( thisChannel * barWidth + 5,
                     BARS_BOTTOM - channel[thisChannel].currentPercentage,
                     barWidth - 10,
                     channel[thisChannel].currentPercentage,
-                    ILI9341_BLUE );
+                    tft.color565( r, g, b ) );
       tft.setTextSize(1);
       tft.setCursor( thisChannel * barWidth + 10, BARS_BOTTOM + 1 );
       char buffer [9];

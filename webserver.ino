@@ -83,7 +83,6 @@ void setupWebServer()
         return;
       }
 
-      String fileName;
 
       File file = root.openNextFile();
 
@@ -91,9 +90,8 @@ void setupWebServer()
       {
         if (!file.isDirectory())
         {
-          fileName = file.name();
           size_t fileSize = file.size();
-          HTTPresponse += fileName + "," + humanReadableSize( fileSize ) + "|";
+          HTTPresponse += String( file.name() ) + "," + humanReadableSize( fileSize ) + "|";
         }
         file = root.openNextFile();
       }

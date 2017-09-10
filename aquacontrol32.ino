@@ -153,7 +153,7 @@ void setup()
   for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
     channel[ channelNumber ].name = readChannelName( channelNumber );
-    channel[ channelNumber ].color = "#f1ff00" ;
+    channel[ channelNumber ].color = readChannelColor( channelNumber ) ;
     channel[ channelNumber ].pin = ledPin[ channelNumber ];
     channel[ channelNumber ].minimumLevel = 0;
   }

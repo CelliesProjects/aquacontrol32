@@ -105,6 +105,28 @@ void setupWebServer()
     server.send( 200, texthtmlHEADER, response );
   });
 
+  server.on( "/api/getchannelcolors", []()
+  {
+    String response;
+    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    {
+      response += channel[thisChannel].color + "\n";
+    }
+    server.setContentLength( response.length() );
+    server.send( 200, textplainHEADER, response );
+  });
+
+  server.on( "/api/getchannelnames", []()
+  {
+    String response;
+    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    {
+      response += channel[thisChannel].name + "\n";
+    }
+    server.setContentLength( response.length()  );
+    server.send( 200, textplainHEADER, response );
+  });
+
   server.on( "/api/getminimumlevels", []()
   {
     String html;
@@ -213,7 +235,7 @@ void setupWebServer()
       String newColor = "#" + server.arg( "newcolor" );
       newColor.trim();
       channel[thisChannel].color = newColor;
-      saveChannelColor();
+      saveChannelColor( thisChannel );
       server.send( 200, textplainHEADER , "Success" );
       return;
     }
@@ -295,28 +317,6 @@ void setupWebServer()
         fsUploadFile.close();
       }
     }
-  });
-
-  server.on( "/api/getchannelcolors", []()
-  {
-    String response;
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
-    {
-      response += channel[thisChannel].color + "\n";
-    }
-    server.setContentLength( response.length() );
-    server.send( 200, textplainHEADER, response );
-  });
-
-  server.on( "/api/getchannelnames", []()
-  {
-    String response;
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
-    {
-      response += channel[thisChannel].name + "\n";
-    }
-    server.setContentLength( response.length()  );
-    server.send( 200, textplainHEADER, response );
   });
 
   server.onNotFound( handleNotFound );

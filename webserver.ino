@@ -1,9 +1,9 @@
-//include all web interface htm files
+//include all web interface header files
 //https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
 #include "index_htm.h"
 #include "editor_htm.h"
 #include "setup_htm.h"
-#include "filemanager_htm.h"
+#include "fileman_htm.h"
 #include "channels_htm.h"
 
 void webServerTask ( void * pvParameters )
@@ -25,31 +25,31 @@ void setupWebServer()
   //home page or 'index.html'
   server.on( "/", []()
   {
-    server.send_P( 200, texthtmlHEADER, index_htm, index_htm_len );
+    server.send_P( 200, texthtmlHEADER, index_htm, index_htm_len );                // 'index_htm' & 'index_htm_len' are included with 'index_htm.h'
   });
 
   //channel setup or 'channels.htm'
   server.on( "/channels", []()
   {
-    server.send_P( 200, texthtmlHEADER, channels_htm, channels_htm_len );
+    server.send_P( 200, texthtmlHEADER, channels_htm, channels_htm_len );          // 'channels_htm' & 'channels_htm_len' are included with 'channels_htm.h'
   });
 
   //editor or 'editor.htm'
   server.on( "/editor", []()
   {
-    server.send_P( 200, texthtmlHEADER, editor_htm, editor_htm_len );
+    server.send_P( 200, texthtmlHEADER, editor_htm, editor_htm_len );              // 'editor_htm' & 'editor_htm_len' are included with 'editor_htm.h'
   });
 
   //editor or 'setup.htm'
   server.on( "/setup", []()
   {
-    server.send_P( 200, texthtmlHEADER, setup_htm, setup_htm_len );
+    server.send_P( 200, texthtmlHEADER, setup_htm, setup_htm_len );                // 'setup_htm' & 'setup_htm_len' are included with 'setup_htm.h'
   });
 
   //filemanager or 'fileman.htm'
   server.on( "/filemanager", []()
   {
-    server.send_P( 200, texthtmlHEADER, filemanager_htm, filemanager_htm_len );
+    server.send_P( 200, texthtmlHEADER, fileman_htm, fileman_htm_len );            // 'filemanager_htm' & 'filemanager_htm_len' are included with 'fileman_htm.h'
   });
 
   /***************************************************************************
@@ -63,7 +63,7 @@ void setupWebServer()
     char buff[21];
     // copy to buffer
     sprintf( buff, "%" PRIu64, SD.cardSize() );
-    server.send( 200, FPSTR( textplainHEADER ), buff );
+    server.send( 200,  textplainHEADER, buff );
   });
 
   server.on( "/api/files", []() {
@@ -73,19 +73,17 @@ void setupWebServer()
       if (!root)
       {
         Serial.println("Failed to open directory");
-        server.send( 404, FPSTR( textplainHEADER ), "Folder not found." );
+        server.send( 404, textplainHEADER, "Folder not found." );
         return;
       }
       if (!root.isDirectory())
       {
         Serial.println("Not a directory");
-        server.send( 401, FPSTR( textplainHEADER ), "Not a directory");
+        server.send( 401, textplainHEADER, "Not a directory");
         return;
       }
 
-
       File file = root.openNextFile();
-
       while (file)
       {
         if (!file.isDirectory())
@@ -96,7 +94,7 @@ void setupWebServer()
         file = root.openNextFile();
       }
     }
-    server.send( 200, FPSTR( textplainHEADER ), HTTPresponse );
+    server.send( 200, textplainHEADER, HTTPresponse );
   });
 
   server.on( "/api/boottime", []()
@@ -128,7 +126,7 @@ void setupWebServer()
 
 
   server.on( "/api/loadtimers", []() {
-    server.send( 200, FPSTR( textplainHEADER ), loadDefaultTimers() ? F( "Succes" ) : F( "Failed" ) );
+    server.send( 200, textplainHEADER, loadDefaultTimers() ? "Succes" : "Failed" );
     struct tm timeinfo;
     getLocalTime(&timeinfo);
     time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
@@ -143,7 +141,7 @@ void setupWebServer()
     if ( server.arg( "newpwmdepth" ) != "" ) {
       newPWMDepth = server.arg( "newpwmdepth" ).toInt();
       if ( newPWMDepth < 10 || newPWMDepth > 16 ) {
-        server.send( 200, FPSTR( textplainHEADER ), F( "ERROR - Invalid PWM depth" ) );
+        server.send( 200, textplainHEADER, "ERROR - Invalid PWM depth" );
         return;
       }
       if ( ledcActualBitDepth != newPWMDepth )
@@ -156,7 +154,7 @@ void setupWebServer()
       ledcActualBitDepth = newPWMDepth;
       //TODO: Save in preferences
     }
-    server.send( 200, FPSTR( textplainHEADER ), String( ledcActualBitDepth ) );
+    server.send( 200, textplainHEADER, String( ledcActualBitDepth ) );
   });
 
 
@@ -165,7 +163,7 @@ void setupWebServer()
     if ( server.arg( "newpwmfrequency" ) != "" ) {
       double tempPWMfrequency = server.arg( "newpwmfrequency" ).toFloat();
       if ( tempPWMfrequency < 100 || tempPWMfrequency > 10000 ) {
-        server.send( 200, FPSTR( textplainHEADER ), F( "Invalid PWM frequency" ) );
+        server.send( 200, textplainHEADER, "Invalid PWM frequency" );
         return;
       }
       for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
@@ -174,7 +172,7 @@ void setupWebServer()
       }
       //TODO: Save in preferences
     }
-    server.send( 200, FPSTR( textplainHEADER ), String( actualFreq ) );
+    server.send( 200, textplainHEADER, String( actualFreq ) );
   });
 
   server.on( "/api/minimumlevel", []()
@@ -184,21 +182,21 @@ void setupWebServer()
       int thisChannel = server.arg( "channel" ).toInt();
       if ( thisChannel < 0 || thisChannel > NUMBER_OF_CHANNELS )
       {
-        server.send( 400, FPSTR( textplainHEADER ), F( "Invalid channel." ) );
+        server.send( 400,  textplainHEADER, "Invalid channel." );
         return;
       }
       float thisPercentage = server.arg( "percentage" ).toFloat();
       if ( thisPercentage < 0 || thisPercentage > 0.99 )
       {
-        server.send( 400, FPSTR( textplainHEADER ), F( "Invalid percentage." ) );
+        server.send( 400,  textplainHEADER, "Invalid percentage." );
         return;
       }
       channel[thisChannel].minimumLevel = thisPercentage;
       //writeMinimumLevelFile();
-      server.send( 200, FPSTR( textplainHEADER ), F( "Minimum level set." ) );
+      server.send( 200,  textplainHEADER, "Minimum level set." );
       return;
     }
-    server.send( 400, FPSTR( textplainHEADER ), F( "Invalid input." ) );
+    server.send( 400,  textplainHEADER, "Invalid input." );
   });
 
   server.on( "/api/setchannelcolor", []() {
@@ -227,7 +225,7 @@ void setupWebServer()
     if ( server.hasArg( "channel" ) ) {
       thisChannel = server.arg( "channel" ).toInt();
       if ( thisChannel < 0 || thisChannel > NUMBER_OF_CHANNELS ) {
-        server.send( 400, FPSTR( textplainHEADER ), F( "Invalid channel." ) );
+        server.send( 400, textplainHEADER, "Invalid channel." );
         return;
       }
     }
@@ -237,10 +235,10 @@ void setupWebServer()
       //TODO: check if illegal cahrs present and get out if so
       channel[thisChannel].name = newName;
       saveChannelName( thisChannel );
-      server.send( 200, FPSTR( textplainHEADER ), F( "Success" ) );
+      server.send( 200, textplainHEADER, "Success" );
       return;
     }
-    server.send( 400, FPSTR( textplainHEADER ), F( "Invalid input." ) );
+    server.send( 400, textplainHEADER, "Invalid input." );
   });
 
   server.on( "/api/setpercentage", []()
@@ -275,7 +273,7 @@ void setupWebServer()
   });
 
   server.on( "/api/upload", HTTP_POST, []() {
-    server.send( 200, FPSTR( textplainHEADER ), "" );
+    server.send( 200, textplainHEADER, "" );
   }, []() {
     static File fsUploadFile;
     HTTPUpload& upload = server.upload();
@@ -334,22 +332,21 @@ void handleNotFound() {
   // try to use the argument as filename and serve from SD
   // if no matching file is found, throw an error.
   if ( !handleSDfile( server.uri() ) ) {
-    Serial.println( F( "404 File not found." ) );
-    server.send( 404, FPSTR( textplainHEADER ), F( "404 - File not found." ) );
+    Serial.println( "404 File not found." );
+    server.send( 404, textplainHEADER, "404 - File not found." );
   }
 }
 
 bool handleSDfile( String path ) {
   path = server.urlDecode( path );
-  if ( path.endsWith( "/" ) ) path += F( "index.htm" );
+  if ( path.endsWith( "/" ) ) path += "index.htm";
 
   if ( SD.exists( path ) ) {
     if ( server.arg( "action" ) == "delete" ) {
-      Serial.println( F( "Delete request. Deleting..." ) );
-      //showDeleteOLED( path.substring(1) );
+      Serial.println( "Delete request. Deleting..." );
       SD.remove( path );
-      Serial.println( path + F( " deleted" ) );
-      server.send( 200, FPSTR( textplainHEADER ), path.substring(1) + F( " deleted" ) );
+      Serial.println( path + " deleted" );
+      server.send( 200,  textplainHEADER, path.substring(1) + " deleted" );
       return true;
     };
     File file = SD.open( path, "r" );
@@ -362,26 +359,26 @@ bool handleSDfile( String path ) {
 
 String getContentType( const String& path) {
   if (path.endsWith(".html")) return "text/html";
-  else if (path.endsWith(".htm")) return F( "text/html" );
-  else if (path.endsWith(".css")) return F( "text/css" );
-  else if (path.endsWith(".txt")) return F( "text/plain" );
-  else if (path.endsWith(".js")) return F( "application/javascript" );
-  else if (path.endsWith(".png")) return F( "image/png" );
-  else if (path.endsWith(".gif")) return F( "image/gif" );
-  else if (path.endsWith(".jpg")) return F( "image/jpeg" );
-  else if (path.endsWith(".ico")) return F( "image/x-icon" );
-  else if (path.endsWith(".svg")) return F( "image/svg+xml" );
-  else if (path.endsWith(".ttf")) return F( "application/x-font-ttf" );
-  else if (path.endsWith(".otf")) return F( "application/x-font-opentype" );
-  else if (path.endsWith(".woff")) return F( "application/font-woff" );
-  else if (path.endsWith(".woff2")) return F( "application/font-woff2" );
-  else if (path.endsWith(".eot")) return F( "application/vnd.ms-fontobject" );
-  else if (path.endsWith(".sfnt")) return F( "application/font-sfnt" );
-  else if (path.endsWith(".xml")) return F( "text/xml" );
-  else if (path.endsWith(".pdf")) return F( "application/pdf" );
-  else if (path.endsWith(".zip")) return F( "application/zip" );
-  else if (path.endsWith(".gz")) return F( "application/x-gzip" );
-  else if (path.endsWith(".appcache")) return F( "text/cache-manifest" );
-  return F( "application/octet-stream" );
+  else if (path.endsWith(".htm")) return "text/html";
+  else if (path.endsWith(".css")) return "text/css";
+  else if (path.endsWith(".txt")) return "text/plain";
+  else if (path.endsWith(".js")) return "application/javascript";
+  else if (path.endsWith(".png")) return "image/png";
+  else if (path.endsWith(".gif")) return "image/gif";
+  else if (path.endsWith(".jpg")) return "image/jpeg";
+  else if (path.endsWith(".ico")) return "image/x-icon";
+  else if (path.endsWith(".svg")) return "image/svg+xml";
+  else if (path.endsWith(".ttf")) return "application/x-font-ttf";
+  else if (path.endsWith(".otf")) return "application/x-font-opentype";
+  else if (path.endsWith(".woff")) return "application/font-woff";
+  else if (path.endsWith(".woff2")) return "application/font-woff2";
+  else if (path.endsWith(".eot")) return "application/vnd.ms-fontobject";
+  else if (path.endsWith(".sfnt")) return "application/font-sfnt";
+  else if (path.endsWith(".xml")) return "text/xml";
+  else if (path.endsWith(".pdf")) return "application/pdf";
+  else if (path.endsWith(".zip")) return "application/zip";
+  else if (path.endsWith(".gz")) return "application/x-gzip";
+  else if (path.endsWith(".appcache")) return "text/cache-manifest";
+  return "application/octet-stream";
 }
 

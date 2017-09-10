@@ -217,7 +217,7 @@ void setupWebServer()
       String newColor = "#" + server.arg( "newcolor" );
       newColor.trim();
       channel[thisChannel].color = newColor;
-      saveChannelColors();
+      saveChannelColor();
       server.send( 200, textplainHEADER , "Success" );
       return;
     }
@@ -228,7 +228,6 @@ void setupWebServer()
     int thisChannel;
     if ( server.hasArg( "channel" ) ) {
       thisChannel = server.arg( "channel" ).toInt();
-      Serial.println(thisChannel);
       if ( thisChannel < 0 || thisChannel > NUMBER_OF_CHANNELS ) {
         server.send( 400, FPSTR( textplainHEADER ), F( "Invalid channel." ) );
         return;
@@ -239,7 +238,7 @@ void setupWebServer()
       newName.trim();
       //TODO: check if illegal cahrs present and get out if so
       channel[thisChannel].name = newName;
-      //writeChannelNameFile();
+      saveChannelName( thisChannel );
       server.send( 200, FPSTR( textplainHEADER ), F( "Success" ) );
       return;
     }

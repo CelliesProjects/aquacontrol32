@@ -29,8 +29,4 @@ void printLocalTime()
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
-void saveChannelColors()
-{
-  //save the channelcolors in preferences
-}
 

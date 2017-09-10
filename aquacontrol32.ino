@@ -138,6 +138,8 @@ void setup()
 
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 500000 );
 
+  Serial.begin(115200);
+
   btStop();
   OLED.init();
   OLED.clear();
@@ -147,16 +149,14 @@ void setup()
   OLED.drawString( 64, 30, F( "Booting..." ) );
   OLED.display();
 
-  //setup channel names
-  for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+  //setup channels
+  for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    channel[thisChannel].name = "Channel" + String( thisChannel + 1 );
-    channel[ thisChannel ].color = "#f1ff00" ;
-    channel[ thisChannel ].pin = ledPin[ thisChannel ];
-    channel[ thisChannel ].minimumLevel = 0;
+    channel[ channelNumber ].name = readChannelName( channelNumber );
+    channel[ channelNumber ].color = "#f1ff00" ;
+    channel[ channelNumber ].pin = ledPin[ channelNumber ];
+    channel[ channelNumber ].minimumLevel = 0;
   }
-
-  Serial.begin(115200);
 
   Serial.println( F( "aquacontrol32" ) );
 
@@ -277,17 +277,16 @@ void setup()
 
 
   //setup pwm
-  for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+  for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
     // Setup timers and attach timer to a led pin
     ledcActualBitDepth = LEDC_NUMBER_OF_BIT;
-    ledcActualFrequency = ledcSetup(thisChannel, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT);
-    Serial.print( "\nChannel: " ); Serial.println( thisChannel + 1 );
+    ledcActualFrequency = ledcSetup( channelNumber, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT );
+    Serial.print( "\nChannel: " ); Serial.println( channelNumber + 1 );
     Serial.print( "PWM frequency requested: " ); Serial.print( LEDC_BASE_FREQ / 1000.0 ); Serial.println( "kHz." );
     Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );
     Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH_NOMATH ); Serial.println( " steps." );
-
-    ledcAttachPin( ledPin[thisChannel], thisChannel );
+    ledcAttachPin( ledPin[channelNumber], channelNumber );
 
   }
   tft.fillScreen(ILI9341_BLACK);

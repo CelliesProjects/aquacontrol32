@@ -108,9 +108,9 @@ void setupWebServer()
   server.on( "/api/getchannelcolors", []()
   {
     String response;
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      response += channel[thisChannel].color + "\n";
+      response += channel[channelNumber].color + "\n";
     }
     server.setContentLength( response.length() );
     server.send( 200, textplainHEADER, response );
@@ -119,9 +119,9 @@ void setupWebServer()
   server.on( "/api/getchannelnames", []()
   {
     String response;
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      response += channel[thisChannel].name + "\n";
+      response += channel[channelNumber].name + "\n";
     }
     server.setContentLength( response.length()  );
     server.send( 200, textplainHEADER, response );
@@ -130,9 +130,9 @@ void setupWebServer()
   server.on( "/api/getminimumlevels", []()
   {
     String html;
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      html += String( channel[thisChannel].minimumLevel ) + "\n";
+      html += String( channel[channelNumber].minimumLevel ) + "\n";
     }
     server.setContentLength( html.length() );
     server.send( 200, texthtmlHEADER, html );
@@ -146,15 +146,53 @@ void setupWebServer()
     server.send( 200, texthtmlHEADER, response );
   });
 
+  server.on( "/api/lightsoff", []()
+  {
+    programOverride = true;
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    {
+      channel[channelNumber].currentPercentage = 0;
+      ledcWrite( channelNumber, 0 );
+    }
+    lightStatus = "Lights are off";
+    server.send( 200, texthtmlHEADER, lightStatus );
+  });
 
-  server.on( "/api/loadtimers", []() {
+  server.on( "/api/lightson", []()
+  {
+    programOverride = true;
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    {
+      channel[channelNumber].currentPercentage = 100;
+      ledcWrite( channelNumber, LEDC_PWM_DEPTH_NOMATH );
+    }
+    lightStatus = "Lights are on";
+    server.send( 200, texthtmlHEADER, lightStatus );
+  });
+
+  server.on( "/api/lightsprogram", []()
+  {
+    programOverride = false;
+    struct tm timeinfo;
+    getLocalTime(&timeinfo);
+    time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    {
+      setPercentageFromProgram( channelNumber, secondsToday );
+    }
+    lightStatus = "Program running.";
+    server.send( 200, texthtmlHEADER, lightStatus );
+  });
+
+  server.on( "/api/loadtimers", []()
+  {
     server.send( 200, textplainHEADER, loadDefaultTimers() ? "Succes" : "Failed" );
     struct tm timeinfo;
     getLocalTime(&timeinfo);
     time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      setPercentageFromProgram( thisChannel, secondsToday );
+      setPercentageFromProgram( channelNumber, secondsToday );
     }
   });
 
@@ -168,9 +206,9 @@ void setupWebServer()
       }
       if ( ledcActualBitDepth != newPWMDepth )
       {
-        for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+        for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
         {
-          ledcSetup( thisChannel, ledcActualFrequency, newPWMDepth );
+          ledcSetup( channelNumber, ledcActualFrequency, newPWMDepth );
         }
       }
       ledcActualBitDepth = newPWMDepth;
@@ -188,9 +226,9 @@ void setupWebServer()
         server.send( 200, textplainHEADER, "Invalid PWM frequency" );
         return;
       }
-      for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+      for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        actualFreq = ledcSetup( thisChannel, tempPWMfrequency, LEDC_NUMBER_OF_BIT );
+        actualFreq = ledcSetup( channelNumber, tempPWMfrequency, LEDC_NUMBER_OF_BIT );
       }
       //TODO: Save in preferences
     }
@@ -201,8 +239,8 @@ void setupWebServer()
   {
     if ( server.arg( "channel" ) != "" && server.arg( "percentage" != "" ) )
     {
-      int thisChannel = server.arg( "channel" ).toInt();
-      if ( thisChannel < 0 || thisChannel > NUMBER_OF_CHANNELS )
+      int channelNumber = server.arg( "channel" ).toInt();
+      if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS )
       {
         server.send( 400,  textplainHEADER, "Invalid channel." );
         return;
@@ -213,7 +251,7 @@ void setupWebServer()
         server.send( 400,  textplainHEADER, "Invalid percentage." );
         return;
       }
-      channel[thisChannel].minimumLevel = thisPercentage;
+      channel[channelNumber].minimumLevel = thisPercentage;
       //writeMinimumLevelFile();
       server.send( 200,  textplainHEADER, "Minimum level set." );
       return;
@@ -222,11 +260,11 @@ void setupWebServer()
   });
 
   server.on( "/api/setchannelcolor", []() {
-    int thisChannel;
+    int channelNumber;
     if ( server.hasArg( "channel" ) ) {
-      thisChannel = server.arg( "channel" ).toInt();
-      Serial.println(thisChannel);
-      if ( thisChannel < 0 || thisChannel > NUMBER_OF_CHANNELS ) {
+      channelNumber = server.arg( "channel" ).toInt();
+      Serial.println(channelNumber);
+      if ( channelNumber < 0 || channelNumber > NUMBER_OF_CHANNELS ) {
         server.send( 400,  textplainHEADER, "Invalid channel." );
         return;
       }
@@ -234,8 +272,8 @@ void setupWebServer()
     if ( server.hasArg( "newcolor" ) ) {
       String newColor = "#" + server.arg( "newcolor" );
       newColor.trim();
-      channel[thisChannel].color = newColor;
-      saveChannelColor( thisChannel );
+      channel[channelNumber].color = newColor;
+      saveChannelColor( channelNumber );
       server.send( 200, textplainHEADER , "Success" );
       return;
     }
@@ -243,10 +281,10 @@ void setupWebServer()
   });
 
   server.on( "/api/setchannelname", []() {
-    int thisChannel;
+    int channelNumber;
     if ( server.hasArg( "channel" ) ) {
-      thisChannel = server.arg( "channel" ).toInt();
-      if ( thisChannel < 0 || thisChannel > NUMBER_OF_CHANNELS ) {
+      channelNumber = server.arg( "channel" ).toInt();
+      if ( channelNumber < 0 || channelNumber > NUMBER_OF_CHANNELS ) {
         server.send( 400, textplainHEADER, "Invalid channel." );
         return;
       }
@@ -255,8 +293,8 @@ void setupWebServer()
       String newName = server.arg( "newname" );
       newName.trim();
       //TODO: check if illegal cahrs present and get out if so
-      channel[thisChannel].name = newName;
-      saveChannelName( thisChannel );
+      channel[channelNumber].name = newName;
+      saveChannelName( channelNumber );
       server.send( 200, textplainHEADER, "Success" );
       return;
     }
@@ -268,10 +306,10 @@ void setupWebServer()
     server.arg( "percentage" ).trim();
     float percentage = server.arg( "percentage" ).toFloat();
     programOverride = true;
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      channel[thisChannel].currentPercentage = percentage;
-      ledcWrite( thisChannel, mapFloat( channel[thisChannel].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH_NOMATH ) );
+      channel[channelNumber].currentPercentage = percentage;
+      ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH_NOMATH ) );
     }
     lightStatus = "All lights at " + String( percentage ) + "%";
     server.setContentLength( lightStatus.length() );
@@ -281,9 +319,9 @@ void setupWebServer()
   server.on( "/api/status", []()
   {
     String HTML;
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      HTML += String( channel[thisChannel].currentPercentage ) + ",";
+      HTML += String( channel[channelNumber].currentPercentage ) + ",";
     }
     time_t now;
     struct tm timeinfo;

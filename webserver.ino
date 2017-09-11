@@ -11,7 +11,7 @@ void webServerTask ( void * pvParameters )
   while (1)
   {
     server.handleClient();
-    vTaskDelay( 1 / portTICK_PERIOD_MS);
+    vTaskDelay( 5 / portTICK_PERIOD_MS );
   }
 }
 
@@ -264,7 +264,7 @@ void setupWebServer()
     if ( server.hasArg( "channel" ) ) {
       channelNumber = server.arg( "channel" ).toInt();
       Serial.println(channelNumber);
-      if ( channelNumber < 0 || channelNumber > NUMBER_OF_CHANNELS ) {
+      if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS ) {
         server.send( 400,  textplainHEADER, "Invalid channel." );
         return;
       }
@@ -284,7 +284,7 @@ void setupWebServer()
     int channelNumber;
     if ( server.hasArg( "channel" ) ) {
       channelNumber = server.arg( "channel" ).toInt();
-      if ( channelNumber < 0 || channelNumber > NUMBER_OF_CHANNELS ) {
+      if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS ) {
         server.send( 400, textplainHEADER, "Invalid channel." );
         return;
       }

@@ -152,26 +152,13 @@ void setup()
 
   setupNTP();
 
-  if ( cardReaderPresent() )
-  {
-    tft.println("SD card found.");
-    Serial.println("SD card found.");
-  }
+  Serial.println( getLocalTime(&systemStart) ? "System start: " "%A, %B %d %Y %H:%M:%S" : "Failed to obtain time" );
 
-  if ( defaultTimersLoaded() )
-  {
-    Serial.println("Default timers loaded");
-    tft.println("Default timers loaded");
-  }
+  Serial.println( cardReaderPresent() ? "SD card found." : "No SD card found." );
+
+  Serial.println( defaultTimersLoaded() ? "Default timers loaded" : "No timers loaded" );
 
   numberOfFoundSensors = searchDallasSensors();
-
-  if (!getLocalTime(&systemStart))
-  {
-    Serial.println("Failed to obtain time");
-    return;
-  }
-  Serial.println( &systemStart, "System start: " "%A, %B %d %Y %H:%M:%S" );
 
   setupMDNS();
 

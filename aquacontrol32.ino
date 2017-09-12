@@ -177,36 +177,19 @@ void setup()
   tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
   tft.println( "TFT started.");
 
-  Serial.print("Initializing SD card...");
-  if (!SD.begin( SD_CS, SPI, 2000000 ) ) {
-    Serial.println("failed!");
-  }
-  uint8_t cardType = SD.cardType();
-  if ( cardType == CARD_NONE ) {
-    Serial.println("No SD card attached");
-    tft.println("No SD card attached");
+  if ( cardReaderPresent() )
+  {
+    tft.println("SD card found.");
+    Serial.println("SD card found.");
   }
 
-  Serial.print("SD Card Type: ");
-  if (cardType == CARD_MMC) {
-    Serial.println("MMC");
-  } else if (cardType == CARD_SD) {
-    Serial.println("SDSC");
-  } else if (cardType == CARD_SDHC) {
-    Serial.println("SDHC");
-  } else {
-    Serial.println("UNKNOWN");
-  }
-
-  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-  Serial.printf("SD Card Size: %lluMB\n", cardSize);
-  tft.printf("SD Card Size: %lluMB\n", cardSize);
-
-  if ( loadDefaultTimers() )
+  if ( defaultTimersLoaded() )
   {
     Serial.println("Default timers loaded");
     tft.println("Default timers loaded");
   }
+
+  tft.println("Searching Dallas temperature sensors...");
 
   //sensor setup
   byte currentAddr[8];

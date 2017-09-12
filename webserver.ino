@@ -186,7 +186,7 @@ void setupWebServer()
 
   server.on( "/api/loadtimers", []()
   {
-    server.send( 200, textplainHEADER, loadDefaultTimers() ? "Succes" : "Failed" );
+    server.send( 200, textplainHEADER, defaultTimersLoaded() ? "Succes" : "Failed" );
     struct tm timeinfo;
     getLocalTime(&timeinfo);
     time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;

@@ -45,7 +45,7 @@ void readFile(fs::FS &fs, const char * path) {
   file.close();
 }
 
-bool loadDefaultTimers() {                                                      //this function loads the timers or returns FALSE
+bool defaultTimersLoaded() {                                                      //this function loads the timers or returns FALSE
   //find 'default.aqu' on SD card and if present load the timerdata from this file
   //return false on error
   File f = SD.open( defaultTimerFile, "r" );
@@ -90,5 +90,37 @@ bool loadDefaultTimers() {                                                      
     }
   }
 */
+  return true;
+}
+
+bool cardReaderPresent()
+{
+  Serial.print("Initializing SD card...");
+  if (!SD.begin( SD_CS, SPI, 2000000 ) ) {
+    Serial.println("failed!");
+    return false;
+  }
+  uint8_t cardType = SD.cardType();
+  if ( cardType == CARD_NONE ) {
+    Serial.println("No SD card attached");
+    tft.println("No SD card attached");
+    return false;
+  }
+
+  Serial.print("SD Card Type: ");
+  if (cardType == CARD_MMC) {
+    Serial.println("MMC");
+  } else if (cardType == CARD_SD) {
+    Serial.println("SDSC");
+  } else if (cardType == CARD_SDHC) {
+    Serial.println("SDHC");
+  } else {
+    Serial.println("UNKNOWN");
+    return false;
+  }
+
+  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+  Serial.printf("SD Card Size: %lluMB\n", cardSize);
+  tft.printf("SD Card Size: %lluMB\n", cardSize);
   return true;
 }

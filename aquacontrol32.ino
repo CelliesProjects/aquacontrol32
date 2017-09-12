@@ -182,21 +182,9 @@ void setup()
 
   tft.println("Searching Dallas temperature sensors...");
 
-  //sensor setup
-  byte currentAddr[8];
-  while ( ds.search(currentAddr) && numberOfFoundSensors <= MAX_NUMBER_OF_SENSORS )
-  {
-    numberOfFoundSensors++;
-    Serial.write( "Sensor "); Serial.print( numberOfFoundSensors ); Serial.print( ":" );
-    for ( byte i = 0; i < 8; i++) {
-      Serial.write(' ');
-      Serial.print(currentAddr[i], HEX);
-      sensor[numberOfFoundSensors].addr[i] = currentAddr[i];
-    }
-    Serial.println();
-  }
+  numberOfFoundSensors = searchDallasSensors();
 
-  Serial.print(numberOfFoundSensors); Serial.println( " sensors found." );
+  Serial.print( numberOfFoundSensors ); Serial.println( " sensors found." );
 
   tft.print( numberOfFoundSensors );  tft.println( " Dallas temperature sensors found." );
 

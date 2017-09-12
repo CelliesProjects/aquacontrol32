@@ -1,3 +1,5 @@
+//#define SHOW_DALLAS_ERROR  // uncomment to show Dallas ( CRC ) errors on Serial.
+
 void tempTask( void * pvParameters )
 {
   while (1)
@@ -16,10 +18,10 @@ void tempTask( void * pvParameters )
       byte data[12];
       ds.reset();
       ds.select( sensor[thisSensor].addr );
-      ds.write(0xBE);         // Read Scratchpad
+      ds.write( 0xBE );         // Read Scratchpad
 
-      //Serial.print( thisSensor ); Serial.print("  Data = ");
-      //Serial.print(present, HEX);
+      //Serial.print( "Sensor " );Serial.print( thisSensor ); Serial.print("  Data = ");
+      //Serial.println( present, HEX );
       //Serial.print(" ");
       for ( byte i = 0; i < 9; i++)
       { // we need 9 bytes
@@ -46,14 +48,19 @@ void tempTask( void * pvParameters )
           type_s = 0;
           break;
         default:
+#ifdef SHOW_DALLAS_ERROR
           Serial.println("Device is not a DS18x20 family device.");
+#endif
           return;
       }
+
       int16_t raw;
       if ( OneWire::crc8(data, 8) != data[8])
       {
+#ifdef SHOW_DALLAS_ERROR
         // CRC of temperature reading indicates an error, so we print a error message and discard this reading
         Serial.print( millis() / 1000.0 ); Serial.print( " - CRC error from device " ); Serial.println( thisSensor );
+#endif
       }
       else
       {
@@ -76,10 +83,24 @@ void tempTask( void * pvParameters )
           else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
           //// default is 12 bit resolution, 750 ms conversion time
         }
+        sensor[thisSensor].temp = raw;
       }
-      sensor[thisSensor].temp = raw;
-      //Serial.print( thisSensor ); Serial.print( " " );Serial.println( sensor[thisSensor].temp / 16.0 );
     }
   }
 }
 
+byte searchDallasSensors()
+{
+  byte counter = 0, currentAddr[8];
+  while ( ds.search( currentAddr ) && counter < MAX_NUMBER_OF_SENSORS )
+  {
+    counter++;
+    //Serial.write( "Sensor "); Serial.print( counter ); Serial.print( ":" );
+    for ( byte i = 0; i < 8; i++) {
+      //Serial.write(' ');
+      //Serial.print( currentAddr[i], HEX );
+      sensor[counter].addr[i] = currentAddr[i];
+    }
+  }
+  return counter;
+}

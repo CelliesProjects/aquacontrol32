@@ -102,5 +102,7 @@ byte searchDallasSensors()
       sensor[counter].addr[i] = currentAddr[i];
     }
   }
+  Serial.print( counter ); Serial.println( " sensors found." );
+  tft.print( counter );  tft.println( " Dallas temperature sensors found." );
   return counter;
 }

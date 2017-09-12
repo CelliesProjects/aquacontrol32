@@ -177,9 +177,7 @@ void setup()
 
   numberOfFoundSensors = searchDallasSensors();
 
-  Serial.print( numberOfFoundSensors ); Serial.println( " sensors found." );
 
-  tft.print( numberOfFoundSensors );  tft.println( " Dallas temperature sensors found." );
 
   tft.println( "Starting WiFi..." );
 

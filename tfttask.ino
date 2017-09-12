@@ -1,5 +1,6 @@
 void tftTask( void * pvParameters )
 {
+  tft.fillScreen( ILI9341_BLACK );
   while (1)
   {
     const uint16_t TFT_TEXT_COLOR   = ILI9341_YELLOW;
@@ -77,4 +78,17 @@ void tftTask( void * pvParameters )
     }
     vTaskDelay( 500 / portTICK_PERIOD_MS );
   }
+}
+
+void setupTFT()
+{
+  tft.begin( 38000000 );
+  uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
+  Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
+
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setRotation(3);
+  tft.setCursor(0, 0);
+  tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
+  tft.println( "TFT started.");
 }

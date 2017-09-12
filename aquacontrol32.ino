@@ -166,16 +166,7 @@ void setup()
   SPI.begin( _sclk, _miso, _mosi );
   SPI.setFrequency(4000000);
 
-  tft.begin( 38000000 );
-
-  uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
-  Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
-
-  tft.fillScreen(ILI9341_BLACK);
-  tft.setRotation(3);
-  tft.setCursor(0, 0);
-  tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
-  tft.println( "TFT started.");
+  setupTFT();
 
   if ( cardReaderPresent() )
   {
@@ -277,9 +268,7 @@ void setup()
     Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );
     Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH_NOMATH ); Serial.println( " steps." );
     ledcAttachPin( ledPin[channelNumber], channelNumber );
-
   }
-  tft.fillScreen(ILI9341_BLACK);
 
   //http://exploreembedded.com/wiki/Task_Switching
 

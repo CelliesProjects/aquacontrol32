@@ -148,7 +148,7 @@ void setupWebServer()
 
   server.on( "/api/lightsoff", []()
   {
-    programOverride = true;
+    vTaskSuspend( x_dimmerTaskHandle );
     for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = 0;
@@ -160,7 +160,7 @@ void setupWebServer()
 
   server.on( "/api/lightson", []()
   {
-    programOverride = true;
+    vTaskSuspend( x_dimmerTaskHandle );
     for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = 100;
@@ -172,7 +172,7 @@ void setupWebServer()
 
   server.on( "/api/lightsprogram", []()
   {
-    programOverride = false;
+    vTaskResume( x_dimmerTaskHandle );
     struct tm timeinfo;
     getLocalTime(&timeinfo);
     time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
@@ -303,9 +303,9 @@ void setupWebServer()
 
   server.on( "/api/setpercentage", []()
   {
+    vTaskSuspend( x_dimmerTaskHandle );
     server.arg( "percentage" ).trim();
     float percentage = server.arg( "percentage" ).toFloat();
-    programOverride = true;
     for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = percentage;

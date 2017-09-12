@@ -110,15 +110,14 @@ WebServer server(80);
 //global variables
 uint16_t LEDC_PWM_DEPTH_NOMATH = LEDC_PWM_DEPTH; // Calculate once
 
+TaskHandle_t x_dimmerTaskHandle;
+
 double ledcActualFrequency;
 byte ledcActualBitDepth;
 
 byte numberOfFoundSensors;
 
 String defaultTimerFile = "/default.aqu";
-
-// if programOverride is set to true, the duty cycle of the leds is not updated
-bool programOverride = false;
 
 //Boot time is saved
 struct tm systemStart;
@@ -325,7 +324,7 @@ void setup()
     1000,                          /* Stack size in words */
     NULL,                           /* Task input parameter */
     3,                              /* Priority of the task */
-    NULL,                           /* Task handle. */
+    &x_dimmerTaskHandle,                           /* Task handle. */
     1);                             /* Core where the task should run */
 
   lightStatus = "Program running.";

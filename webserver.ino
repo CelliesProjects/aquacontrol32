@@ -21,6 +21,7 @@ static const char texthtmlHEADER[]  = "text/html";
 void setupWebServer()
 {
   // Set up the web server
+  tft.println( "Starting webserver. " );
 
   //home page or 'index.html'
   server.on( "/", []()

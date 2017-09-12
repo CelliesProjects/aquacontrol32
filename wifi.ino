@@ -3,6 +3,8 @@ void setupWiFi()
 {
   WiFi.onEvent( WiFiEvent );
 
+  tft.println( "Starting WiFi..." );
+
   //if no NVS data is found start an AP
   preferences.begin( "aquacontrol32", false );
   if ( preferences.getString( "ssid" ) != "" )
@@ -74,7 +76,7 @@ void WiFiEvent(WiFiEvent_t event)
       break;
     case SYSTEM_EVENT_STA_START:
       Serial.println("STA Started");
-      //WiFi.setHostname(AP_SSID);
+      WiFi.setHostname( mDNSname.c_str() );
       break;
     case SYSTEM_EVENT_STA_CONNECTED:
       Serial.println("STA Connected");

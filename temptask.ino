@@ -91,6 +91,7 @@ void tempTask( void * pvParameters )
 
 byte searchDallasSensors()
 {
+  tft.println("Searching Dallas temperature sensors...");
   byte counter = 0, currentAddr[8];
   while ( ds.search( currentAddr ) && counter < MAX_NUMBER_OF_SENSORS )
   {

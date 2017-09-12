@@ -126,40 +126,31 @@ String lightStatus;
 
 void setup()
 {
-  //TODO:
-  //make pins low/high or whatever they should be
-
   pinMode(ledPin[0], OUTPUT);
   pinMode(ledPin[1], OUTPUT);
   pinMode(ledPin[2], OUTPUT);
   pinMode(ledPin[3], OUTPUT);
   pinMode(ledPin[4], OUTPUT);
 
-  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 500000 );
-
   Serial.begin(115200);
-
-  setupOLED();
-
-  //setup channels
-  for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-  {
-    channel[ channelNumber ].name = readChannelName( channelNumber );
-    channel[ channelNumber ].color = readChannelColor( channelNumber ) ;
-    channel[ channelNumber ].pin = ledPin[ channelNumber ];
-    channel[ channelNumber ].minimumLevel = 0;
-  }
-
+  Serial.println();
   Serial.println( F( "aquacontrol32" ) );
-
   Serial.print( "ESP32 SDK: " );
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
 
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 500000 );
+
   SPI.begin( _sclk, _miso, _mosi );
-  SPI.setFrequency(4000000);
+  SPI.setFrequency( 4000000 );
+
+  setupOLED();
 
   setupTFT();
+
+  setupWiFi();
+
+  setupNTP();
 
   if ( cardReaderPresent() )
   {
@@ -173,17 +164,7 @@ void setup()
     tft.println("Default timers loaded");
   }
 
-  tft.println("Searching Dallas temperature sensors...");
-
   numberOfFoundSensors = searchDallasSensors();
-
-
-
-  tft.println( "Starting WiFi..." );
-
-  setupWiFi();
-
-  setupNTP();
 
   if (!getLocalTime(&systemStart))
   {
@@ -192,44 +173,21 @@ void setup()
   }
   Serial.println( &systemStart, "System start: " "%A, %B %d %Y %H:%M:%S" );
 
-  // Set up mDNS responder:
-  // - first argument is the domain name, in this example
-  //   the fully-qualified domain name is "esp8266.local"
-  // - second argument is the IP address to advertise
-  //   we send our IP address on the WiFi network
-  bool mDNS = false;
-  if (MDNS.begin( mDNSname.c_str() ))
-  {
-    // Add service to MDNS-SD
-    MDNS.addService("http", "tcp", 80);
-    Serial.println("mDNS responder started");
-    Serial.print( "mDNS name: ");  Serial.print( mDNSname );  Serial.println( ".local" );
-  }
-  else
-  {
-    Serial.println("Error setting up MDNS responder!");
-    bool mDNS = false;
-  }
-
-  WiFi.setHostname( mDNSname.c_str() );
-  tft.println( "Starting webserver. " );
+  setupMDNS();
 
   setupWebServer();
 
   //WiFi.printDiag( Serial );
 
+  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_BASE_FREQ );
 
-  //setup pwm
+  //setup channels
   for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    // Setup timers and attach timer to a led pin
-    ledcActualBitDepth = LEDC_NUMBER_OF_BIT;
-    ledcActualFrequency = ledcSetup( channelNumber, LEDC_BASE_FREQ, LEDC_NUMBER_OF_BIT );
-    Serial.print( "\nChannel: " ); Serial.println( channelNumber + 1 );
-    Serial.print( "PWM frequency requested: " ); Serial.print( LEDC_BASE_FREQ / 1000.0 ); Serial.println( "kHz." );
-    Serial.print( "PWM frequency actual:    " ); Serial.print( ledcActualFrequency / 1000.0 ); Serial.println( "kHz." );
-    Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH_NOMATH ); Serial.println( " steps." );
-    ledcAttachPin( ledPin[channelNumber], channelNumber );
+    channel[ channelNumber ].name          = readChannelName( channelNumber );
+    channel[ channelNumber ].color         = readChannelColor( channelNumber ) ;
+    channel[ channelNumber ].pin           = ledPin[ channelNumber ];
+    channel[ channelNumber ].minimumLevel  = 0;
   }
 
   //http://exploreembedded.com/wiki/Task_Switching

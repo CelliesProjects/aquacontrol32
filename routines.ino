@@ -29,4 +29,24 @@ void printLocalTime()
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
-
+bool setupMDNS()
+{
+  // Set up mDNS responder:
+  // - first argument is the domain name, in this example
+  //   the fully-qualified domain name is "esp8266.local"
+  // - second argument is the IP address to advertise
+  //   we send our IP address on the WiFi network
+  if (MDNS.begin( mDNSname.c_str() ))
+  {
+    // Add service to MDNS-SD
+    MDNS.addService("http", "tcp", 80);
+    Serial.println("mDNS responder started");
+    Serial.print( "mDNS name: ");  Serial.print( mDNSname );  Serial.println( ".local" );
+    return true;
+  }
+  else
+  {
+    Serial.println("Error setting up MDNS responder!");
+    return false;
+  }
+}

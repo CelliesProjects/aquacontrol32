@@ -11,14 +11,14 @@ void webServerTask ( void * pvParameters )
   while (1)
   {
     server.handleClient();
-    vTaskDelay( 5 / portTICK_PERIOD_MS );
+    vTaskDelay( 1 / portTICK_PERIOD_MS );
   }
 }
 
 static const char textplainHEADER[]  = "text/plain";
 static const char texthtmlHEADER[]  = "text/html";
 
-void setupWebServer()
+void setupWebServer()                                            //https://github.com/espressif/esp-idf/blob/master/components/spi_flash/README.rst
 {
   // Set up the web server
   tft.println( "Starting webserver. " );

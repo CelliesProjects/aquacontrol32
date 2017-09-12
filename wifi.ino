@@ -45,20 +45,10 @@ void setupWiFi()
   if ( WiFi.status() == WL_CONNECTED )
   {
     //We have succesfully connected...
-    //Save current in use SSID and PSK if they differ from what is currently saved in NVS
+    tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP() );
 
-    //Serial.println( "WiFi connected.");
+    saveWifiData();
 
-    if ( preferences.getString( "ssid" ) != WiFi.SSID() )
-    {
-      preferences.putString( "ssid", WiFi.SSID() );
-      Serial.println( F( "WiFi SSID saved in NVS." ) );
-    }
-    if ( preferences.getString( "psk" ) != WiFi.psk() )
-    {
-      preferences.putString( "psk", WiFi.psk() );
-      Serial.println( F( "WiFi PSK saved in NVS." ) );
-    }
   }
   else
   {

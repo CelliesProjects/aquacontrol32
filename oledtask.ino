@@ -27,3 +27,14 @@ void oledTask( void * pvParameters )
   }
 }
 
+void setupOLED()
+{
+  btStop();
+  OLED.init();
+  OLED.clear();
+  OLED.setTextAlignment( TEXT_ALIGN_CENTER );
+  OLED.setFont( ArialMT_Plain_16 );
+  OLED.drawString( 64, 10, F( "AquaControl32" ) );
+  OLED.drawString( 64, 30, F( "Booting..." ) );
+  OLED.display();
+}

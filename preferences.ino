@@ -52,4 +52,18 @@ void saveChannelColor( const int channelNumber )
   preferences.end();  
 }
 
+void saveWifiData()
+{
+    //Save current in use SSID and PSK if they differ from what is currently saved in NVS
+    if ( preferences.getString( "ssid" ) != WiFi.SSID() )
+    {
+      preferences.putString( "ssid", WiFi.SSID() );
+      Serial.println( F( "WiFi SSID saved in NVS." ) );
+    }
+    if ( preferences.getString( "psk" ) != WiFi.psk() )
+    {
+      preferences.putString( "psk", WiFi.psk() );
+      Serial.println( F( "WiFi PSK saved in NVS." ) );
+    }
+}
 

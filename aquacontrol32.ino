@@ -139,14 +139,7 @@ void setup()
 
   Serial.begin(115200);
 
-  btStop();
-  OLED.init();
-  OLED.clear();
-  OLED.setTextAlignment( TEXT_ALIGN_CENTER );
-  OLED.setFont( ArialMT_Plain_16 );
-  OLED.drawString( 64, 10, F( "AquaControl32" ) );
-  OLED.drawString( 64, 30, F( "Booting..." ) );
-  OLED.display();
+  setupOLED();
 
   //setup channels
   for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
@@ -192,24 +185,7 @@ void setup()
 
   setupWiFi();
 
-  tft.println( WiFi.localIP() );
-
-  // Set up RTC with NTP
-  String NTPpoolAdress = COUNTRY_CODE_ISO_3166;
-  NTPpoolAdress += ".pool.ntp.org";
-
-  tft.print( "Getting time from " );  tft.println( NTPpoolAdress );
-
-
-  configTime( -3600, 3600, NTPpoolAdress.c_str() );
-  //https://www.ibm.com/developerworks/aix/library/au-aix-posix/index.html#artdownload
-  //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md
-  //https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
-  //https://www.di-mgt.com.au/wclock/tz.html
-  //http://www.catb.org/esr/time-programming/
-
-  setenv( "TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1 );
-  tzset();
+  setupNTP();
 
   if (!getLocalTime(&systemStart))
   {

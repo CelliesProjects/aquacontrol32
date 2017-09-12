@@ -67,7 +67,7 @@ struct lightTable
 {
   lightTimer timer[MAX_TIMERS];
   String     name;                                                    //initially set to 'channel 1' 'channel 2' etc.
-  String     color;                                                   //!!interface color, not light color! Can be 'red' or '#ff0000' or 'rgba(255,0,0,1)', basically anything a browser understands
+  String     color;                                                   //!!interface color, not light color! Example: '#ff0000' for bright red
   float      currentPercentage;                                       //what percentage is this channel set to
   byte       pin;                                                     //which pin is this channel on
   byte       numberOfTimers;                                          //actual number of timers for this channel
@@ -80,7 +80,7 @@ struct lightTable channel[NUMBER_OF_CHANNELS];                           //all c
 String mDNSname = "aquacontrol32";
 
 //LED pins
-const byte ledPin[NUMBER_OF_CHANNELS] =  { LED0_PIN, LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries. D1 through D8 are the exposed pins on 'Wemos D1 mini'
+const byte ledPin[NUMBER_OF_CHANNELS] =  { LED0_PIN, LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries.
 
 // Use hardware SPI
 Adafruit_ILI9341 tft = Adafruit_ILI9341( _cs, _dc, _rst );
@@ -182,7 +182,7 @@ void setup()
   xTaskCreatePinnedToCore(
     webServerTask,                  /* Function to implement the task */
     "webServerTask ",               /* Name of the task */
-    3000,                          /* Stack size in words */
+    3000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     4,                              /* Priority of the task */
     NULL,                           /* Task handle. */
@@ -191,7 +191,7 @@ void setup()
   xTaskCreatePinnedToCore(
     oledTask,                       /* Function to implement the task */
     "oledTask ",                    /* Name of the task */
-    2000,                          /* Stack size in words */
+    2000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     2,                              /* Priority of the task */
     NULL,                           /* Task handle. */
@@ -200,10 +200,10 @@ void setup()
   xTaskCreatePinnedToCore(
     dimmerTask,                     /* Function to implement the task */
     "dimmerTask ",                  /* Name of the task */
-    1000,                          /* Stack size in words */
+    1000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     3,                              /* Priority of the task */
-    &x_dimmerTaskHandle,                           /* Task handle. */
+    &x_dimmerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 
   lightStatus = "Program running.";
@@ -211,7 +211,7 @@ void setup()
   xTaskCreatePinnedToCore(
     tftTask,                        /* Function to implement the task */
     "tftTask ",                     /* Name of the task */
-    2000,                          /* Stack size in words */
+    2000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     1,                              /* Priority of the task */
     NULL,                           /* Task handle. */
@@ -220,9 +220,9 @@ void setup()
   if ( numberOfFoundSensors )
   {
     xTaskCreatePinnedToCore(
-      tempTask,                        /* Function to implement the task */
-      "tempTask ",                     /* Name of the task */
-      4000,                          /* Stack size in words */
+      tempTask,                       /* Function to implement the task */
+      "tempTask ",                    /* Name of the task */
+      4000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
       5,                              /* Priority of the task */
       NULL,                           /* Task handle. */

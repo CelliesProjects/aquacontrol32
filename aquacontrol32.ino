@@ -12,6 +12,9 @@
 
 #define COUNTRY_CODE_ISO_3166 "nl"  //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 
+//update frequency for LEDS in Hz
+#define UPDATE_FREQ_HZ        10
+
 // number of bit precission for LEDC timer
 #define LEDC_NUMBER_OF_BIT    16
 

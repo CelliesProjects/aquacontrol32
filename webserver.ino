@@ -155,8 +155,9 @@ void setupWebServer()                                            //https://githu
       channel[channelNumber].currentPercentage = 0;
       ledcWrite( channelNumber, 0 );
     }
-    lightStatus = "Lights are off";
+    lightStatus = "LIGHTS OFF ";
     server.send( 200, texthtmlHEADER, lightStatus );
+    //updateLightStatusTFT( lightStatus );
   });
 
   server.on( "/api/lightson", []()
@@ -167,8 +168,9 @@ void setupWebServer()                                            //https://githu
       channel[channelNumber].currentPercentage = 100;
       ledcWrite( channelNumber, LEDC_PWM_DEPTH_NOMATH );
     }
-    lightStatus = "Lights are on";
+    lightStatus = " LIGHTS ON ";
     server.send( 200, texthtmlHEADER, lightStatus );
+    //updateLightStatusTFT( lightStatus );
   });
 
   server.on( "/api/lightsprogram", []()
@@ -181,8 +183,9 @@ void setupWebServer()                                            //https://githu
     {
       setPercentageFromProgram( channelNumber, secondsToday );
     }
-    lightStatus = "Program running.";
+    lightStatus = "LIGHTS AUTO";
     server.send( 200, texthtmlHEADER, lightStatus );
+    //updateLightStatusTFT( lightStatus );
   });
 
   server.on( "/api/loadtimers", []()

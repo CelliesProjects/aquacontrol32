@@ -209,7 +209,7 @@ void setup()
     &x_dimmerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 
-  lightStatus = "Program running.";
+  lightStatus = "LIGHTS AUTO";
 
   xTaskCreatePinnedToCore(
     tftTask,                        /* Function to implement the task */

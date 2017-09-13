@@ -64,20 +64,21 @@ void tftTask( void * pvParameters )
       }
     }
 
-    tft.setCursor( 15, BARS_BOTTOM + 40 );
-    tft.setTextColor( TFT_DATE_COLOR , TFT_BACK_COLOR );
+    tft.setCursor( 60, BARS_BOTTOM + 40 );
+    tft.setTextColor( TFT_TEMP_COLOR , TFT_BACK_COLOR );
 
-    struct tm timeinfo;
-    if ( !getLocalTime( &timeinfo ) )
-    {
-      tft.println( "Failed to obtain time" );
-    }
-    else
-    {
-      tft.println( asctime( &timeinfo ) );
-    }
+    tft.print( lightStatus );
+
     vTaskDelay( 500 / portTICK_PERIOD_MS );
   }
+}
+
+void updateLightStatusTFT( const String& str )
+{
+  tft.setCursor( 55, 220 );
+  tft.setTextSize(2);
+  tft.setTextColor( ILI9341_WHITE , ILI9341_BLACK );
+  tft.print( str );
 }
 
 void setupTFT()

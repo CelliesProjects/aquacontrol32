@@ -1,6 +1,7 @@
 void dimmerTask ( void * pvParameters )
 {
-  int delayTime = 1000 / UPDATE_FREQ_HZ;
+  int dimmerTaskdelayTime = 1000 / UPDATE_FREQ_HZ;
+
   while (1)
   {
     struct tm timeinfo;
@@ -15,24 +16,28 @@ void dimmerTask ( void * pvParameters )
     {
       setPercentageFromProgram( channelNumber, milliSecondsToday );
     }
-    vTaskDelay( delayTime / portTICK_PERIOD_MS );
+    vTaskDelay( dimmerTaskdelayTime / portTICK_PERIOD_MS );
   }
 }
 
-void  setPercentageFromProgram( const byte channelNumber, const time_t milliSecondsToday ) {
-  if ( milliSecondsToday != 0 ) {     ///to solve flashing at midnight due to milliSecondsToday which cant be smaller than 0 -- so at midnight there is no adjusting
+void setPercentageFromProgram( const byte channelNumber, const time_t milliSecondsToday )
+{
+  if ( milliSecondsToday )
+  { ///to solve flashing at midnight due to milliSecondsToday which cant be smaller than 0 -- so at midnight there is no adjusting
     byte thisTimer = 0;
-    while ( channel[channelNumber].timer[thisTimer].time * 1000 < milliSecondsToday ) {
+    while ( channel[channelNumber].timer[thisTimer].time * 1000 < milliSecondsToday )
+    {
       thisTimer++;
     }
     float dimPercentage = channel[channelNumber].timer[thisTimer].percentage - channel[channelNumber].timer[thisTimer - 1].percentage;
-    time_t numberOfMilliSecondsBetween = channel[channelNumber].timer[thisTimer].time * 1000 - channel[channelNumber].timer[thisTimer - 1].time * 1000;
+    time_t numberOfMilliSecondsBetween = ( channel[channelNumber].timer[thisTimer].time - channel[channelNumber].timer[thisTimer - 1].time ) * 1000;
     time_t milliSecondsSinceLastTimer = milliSecondsToday - channel[channelNumber].timer[thisTimer - 1].time * 1000;
-    float changeMilliPerSecond  = dimPercentage / numberOfMilliSecondsBetween;
-    channel[channelNumber].currentPercentage = channel[channelNumber].timer[thisTimer - 1].percentage + ( milliSecondsSinceLastTimer * changeMilliPerSecond );
+    float changePerMilliSecond  = dimPercentage / numberOfMilliSecondsBetween;
+    channel[channelNumber].currentPercentage = channel[channelNumber].timer[thisTimer - 1].percentage + ( milliSecondsSinceLastTimer * changePerMilliSecond );
 
     //check if channel has a minimum set
-    if ( channel[channelNumber].currentPercentage < channel[channelNumber].minimumLevel ) {
+    if ( channel[channelNumber].currentPercentage < channel[channelNumber].minimumLevel )
+    {
       channel[channelNumber].currentPercentage = channel[channelNumber].minimumLevel;
     }
     ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH_NOMATH ) );

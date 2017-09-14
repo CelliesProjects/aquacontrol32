@@ -19,7 +19,9 @@ void setupWiFi()
     WiFi.beginSmartConfig();
 
     //Wait for SmartConfig packet from mobile
-    Serial.println("Waiting for SmartConfig. Use the app. RTM.");
+    Serial.println("\n\nNo WiFi preferences found.\nWaiting for SmartConfig. Use the app. RTM.");
+    tft.println("\n\nNo WiFi preferences found.\nWaiting for SmartConfig. Use the app. RTM.");
+    tft.invertDisplay( true );
     while ( !WiFi.smartConfigDone() )
     {
       delay(500);
@@ -27,9 +29,11 @@ void setupWiFi()
     }
     Serial.println("");
     Serial.println("SmartConfig received.");
+    tft.println("SmartConfig received.");
   }
 
   Serial.print( F( "Connecting to SSID:" ) ); Serial.println( wifiSSID );
+  tft.print( F( "Connecting to SSID:" ) ); tft.println( wifiSSID );
   //Serial.print( F( "With password:" ) ); Serial.println( F( "*********" ) /* wifiPSK */ );
 
   //Wait for WiFi to connect to AP
@@ -46,6 +50,7 @@ void setupWiFi()
   if ( WiFi.status() == WL_CONNECTED )
   {
     //We have succesfully connected...
+    tft.invertDisplay( false );
     tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP() );
 
     saveWifiData();
@@ -54,7 +59,9 @@ void setupWiFi()
   else
   {
     Serial.println( F ("WiFi Connection failed. Check supplied password." ) );
+    tft.println( F ("WiFi Connection failed. Check supplied password." ) );
     Serial.println( WiFi.status() );
+    tft.println( WiFi.status() );
     // restart the AP to try again
     delay(5000);
     ESP.restart();

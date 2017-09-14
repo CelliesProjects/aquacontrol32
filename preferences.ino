@@ -49,21 +49,44 @@ void saveChannelColor( const int channelNumber )
     preferences.putString( "channelcolor" + channelNumber, channel[channelNumber].color );
     Serial.print( "Channel "); Serial.print( channelNumber ); Serial.println( " color stored in NVS" );
   }
-  preferences.end();  
+  preferences.end();
+}
+
+float readMinimumLevel( const int channelNumber )
+{
+  preferences.begin( "aquacontrol32", WRITE_DISABLED );
+  float NVSvalue = preferences.getFloat( "minimumlevel" + channelNumber, 0 );
+  preferences.end();
+  return NVSvalue;
+}
+
+void saveMinimumLevel( const int channelNumber )
+{
+  preferences.begin( "aquacontrol32", WRITE_ENABLED );
+  if ( channel[channelNumber].minimumLevel == 0 )
+  {
+    preferences.remove( "minimumlevel" + channelNumber );
+  }
+  else if ( preferences.getFloat( "minimumlevel" + channelNumber ) != channel[channelNumber].minimumLevel )
+  {
+    preferences.putFloat( "minimumlevel" + channelNumber, channel[channelNumber].minimumLevel );
+    Serial.print( "Channel "); Serial.print( channelNumber ); Serial.println( " minimum level stored in NVS" );
+  }
+  preferences.end();
 }
 
 void saveWifiData()
 {
-    //Save current in use SSID and PSK if they differ from what is currently saved in NVS
-    if ( preferences.getString( "ssid" ) != WiFi.SSID() )
-    {
-      preferences.putString( "ssid", WiFi.SSID() );
-      Serial.println( F( "WiFi SSID saved in NVS." ) );
-    }
-    if ( preferences.getString( "psk" ) != WiFi.psk() )
-    {
-      preferences.putString( "psk", WiFi.psk() );
-      Serial.println( F( "WiFi PSK saved in NVS." ) );
-    }
+  //Save current in use SSID and PSK if they differ from what is currently saved in NVS
+  if ( preferences.getString( "ssid" ) != WiFi.SSID() )
+  {
+    preferences.putString( "ssid", WiFi.SSID() );
+    Serial.println( F( "WiFi SSID saved in NVS." ) );
+  }
+  if ( preferences.getString( "psk" ) != WiFi.psk() )
+  {
+    preferences.putString( "psk", WiFi.psk() );
+    Serial.println( F( "WiFi PSK saved in NVS." ) );
+  }
 }
 

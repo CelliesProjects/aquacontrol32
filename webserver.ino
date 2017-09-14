@@ -241,7 +241,7 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/minimumlevel", []()
   {
-    if ( server.arg( "channel" ) != "" && server.arg( "percentage" != "" ) )
+    if ( server.hasArg( "channel" ) && server.hasArg( "percentage" ) )
     {
       int channelNumber = server.arg( "channel" ).toInt();
       if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS )
@@ -250,13 +250,13 @@ void setupWebServer()                                            //https://githu
         return;
       }
       float thisPercentage = server.arg( "percentage" ).toFloat();
-      if ( thisPercentage < 0 || thisPercentage > 0.99 )
+      if ( thisPercentage < 0 || thisPercentage > 1 )
       {
         server.send( 400,  textplainHEADER, "Invalid percentage." );
         return;
       }
       channel[channelNumber].minimumLevel = thisPercentage;
-      //writeMinimumLevelFile();
+      saveMinimumLevel( channelNumber );
       server.send( 200,  textplainHEADER, "Minimum level set." );
       return;
     }

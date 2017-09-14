@@ -175,9 +175,9 @@ void setup()
   for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
     channel[ channelNumber ].name          = readChannelName( channelNumber );
-    channel[ channelNumber ].color         = readChannelColor( channelNumber ) ;
+    channel[ channelNumber ].color         = readChannelColor( channelNumber );
     channel[ channelNumber ].pin           = ledPin[ channelNumber ];
-    channel[ channelNumber ].minimumLevel  = 0;
+    channel[ channelNumber ].minimumLevel  = readMinimumLevel( channelNumber );;
   }
 
   //http://exploreembedded.com/wiki/Task_Switching

@@ -4,7 +4,7 @@ void tempTask( void * pvParameters )
 {
   while (1)
   {
-    for ( byte thisSensor = 1; thisSensor <= numberOfFoundSensors; thisSensor++)
+    for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
     {
       ds.reset();
       ds.select( sensor[thisSensor].addr );
@@ -13,7 +13,7 @@ void tempTask( void * pvParameters )
 
     vTaskDelay( 750 / portTICK_PERIOD_MS); //wait for conversion ready
 
-    for ( byte thisSensor = 1; thisSensor <= numberOfFoundSensors; thisSensor++)
+    for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
     {
       byte data[12];
       ds.reset();
@@ -95,13 +95,13 @@ byte searchDallasSensors()
   byte counter = 0, currentAddr[8];
   while ( ds.search( currentAddr ) && counter < MAX_NUMBER_OF_SENSORS )
   {
-    counter++;
     //Serial.write( "Sensor "); Serial.print( counter ); Serial.print( ":" );
     for ( byte i = 0; i < 8; i++) {
       //Serial.write(' ');
       //Serial.print( currentAddr[i], HEX );
       sensor[counter].addr[i] = currentAddr[i];
     }
+    counter++;
   }
   Serial.print( counter ); Serial.println( " sensors found." );
   tft.print( counter );  tft.println( " Dallas temperature sensors found." );

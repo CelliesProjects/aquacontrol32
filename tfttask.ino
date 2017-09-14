@@ -58,7 +58,7 @@ void tftTask( void * pvParameters )
 
     if ( numberOfFoundSensors )
     {
-      for ( byte thisSensor = 1; thisSensor <= numberOfFoundSensors; thisSensor++ )
+      for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
       {
         tft.print( " " + String( sensor[thisSensor].temp / 16.0 ) + (char)247 + "C " );
       }

@@ -4,17 +4,16 @@ void setupWiFi()
   WiFi.onEvent( WiFiEvent );
 
   tft.println( "Starting WiFi..." );
+  String wifiSSID = readWifiSSID();
+  String wifiPSK = readWifiPSK();
 
   //if no NVS data is found start an AP
-  preferences.begin( "aquacontrol32", false );
-  if ( preferences.getString( "ssid" ) != "" )
+  if ( wifiSSID != "" && wifiPSK != "" )
   {
-    Serial.println( F( "Preferences found." ) );
+    Serial.println( F( "WiFi preferences found." ) );
   }
   else
   {
-    Serial.println( "No WiFi preferences found. Starting SmartConfig." );
-
     //Init WiFi as Station, start SmartConfig
     WiFi.mode( WIFI_STA );
     WiFi.beginSmartConfig();
@@ -30,13 +29,13 @@ void setupWiFi()
     Serial.println("SmartConfig received.");
   }
 
-  Serial.print( F( "Connecting to SSID:" ) ); Serial.println( preferences.getString( "ssid" ) );
-  //Serial.print( F( "With password:" ) ); Serial.println( F( "*********" ) /* preferences.getString( "psk" ) */ );
+  Serial.print( F( "Connecting to SSID:" ) ); Serial.println( wifiSSID );
+  //Serial.print( F( "With password:" ) ); Serial.println( F( "*********" ) /* wifiPSK */ );
 
   //Wait for WiFi to connect to AP
   Serial.println("Waiting for connection...");
   WiFi.mode( WIFI_STA );
-  WiFi.begin( preferences.getString( "ssid" ).c_str(), preferences.getString( "psk" ).c_str() );
+  WiFi.begin( wifiSSID.c_str(), wifiPSK.c_str() );
 
   unsigned long WiFiStartTime = millis();
   while ( WiFi.status() != WL_CONNECTED && millis() - WiFiStartTime <= 10000 )
@@ -60,7 +59,6 @@ void setupWiFi()
     delay(5000);
     ESP.restart();
   }
-  preferences.end();
 }
 
 void WiFiEvent(WiFiEvent_t event)

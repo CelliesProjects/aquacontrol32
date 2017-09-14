@@ -55,7 +55,11 @@ void saveChannelColor( const int channelNumber )
 float readMinimumLevel( const int channelNumber )
 {
   preferences.begin( "aquacontrol32", WRITE_DISABLED );
-  float NVSvalue = preferences.getFloat( "minimumlevel" + channelNumber, 0 );
+
+  char keyName[20];
+  sprintf( keyName, "minimumlevel%d", channelNumber );
+
+  float NVSvalue = preferences.getFloat( keyName, 0 );
   preferences.end();
   return NVSvalue;
 }
@@ -63,21 +67,41 @@ float readMinimumLevel( const int channelNumber )
 void saveMinimumLevel( const int channelNumber )
 {
   preferences.begin( "aquacontrol32", WRITE_ENABLED );
+
+  char keyName[20];
+  sprintf( keyName, "minimumlevel%d", channelNumber );
+
   if ( channel[channelNumber].minimumLevel == 0 )
   {
-    preferences.remove( "minimumlevel" + channelNumber );
+    preferences.remove( keyName );
   }
-  else if ( preferences.getFloat( "minimumlevel" + channelNumber ) != channel[channelNumber].minimumLevel )
+  else if ( preferences.getFloat( keyName ) != channel[channelNumber].minimumLevel )
   {
-    preferences.putFloat( "minimumlevel" + channelNumber, channel[channelNumber].minimumLevel );
+    preferences.putFloat( keyName, channel[channelNumber].minimumLevel );
     Serial.print( "Channel "); Serial.print( channelNumber ); Serial.println( " minimum level stored in NVS" );
   }
   preferences.end();
 }
 
+String readWifiSSID()
+{
+  preferences.begin( "aquacontrol32", WRITE_DISABLED );
+  String NVSvalue = preferences.getString( "ssid" );
+  preferences.end();
+  return NVSvalue;
+}
+
+String readWifiPSK()
+{
+  preferences.begin( "aquacontrol32", WRITE_DISABLED );
+  String NVSvalue = preferences.getString( "psk" );
+  preferences.end();
+  return NVSvalue;
+}
+
 void saveWifiData()
 {
-  //Save current in use SSID and PSK if they differ from what is currently saved in NVS
+  preferences.begin( "aquacontrol32", WRITE_ENABLED );
   if ( preferences.getString( "ssid" ) != WiFi.SSID() )
   {
     preferences.putString( "ssid", WiFi.SSID() );
@@ -88,5 +112,14 @@ void saveWifiData()
     preferences.putString( "psk", WiFi.psk() );
     Serial.println( F( "WiFi PSK saved in NVS." ) );
   }
+  preferences.end();
+}
+
+void clearNVS()
+{
+  preferences.begin( "aquacontrol32", WRITE_ENABLED );
+  preferences.clear();
+  preferences.end();
+  Serial.println( "NVS cleared from data" );
 }
 

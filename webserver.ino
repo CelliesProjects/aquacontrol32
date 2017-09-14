@@ -57,6 +57,11 @@ void setupWebServer()                                            //https://githu
       API calls
    **************************************************************************/
 
+  server.on( "/api/clearnvs", []() {
+    clearNVS();
+    server.send( 200,  textplainHEADER, "NVS cleared" );
+  });
+
   server.on( "/api/diskspace", []() {
     // https://stackoverflow.com/questions/8323159/how-to-convert-uint64-t-value-in-const-char-string
     // cardsize = uint64_t

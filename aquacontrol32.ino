@@ -17,8 +17,13 @@
 
 #define COUNTRY_CODE_ISO_3166 "nl"  //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 
-//update frequency for LEDS in Hz
-#define UPDATE_FREQ_HZ        20
+#define UPDATE_FREQ_LEDS      40      //update frequency for LEDS in Hz
+
+
+#define UPDATE_FREQ_TFT       100     //in Hz
+
+
+#define UPDATE_FREQ_OLED      25      //in Hz
 
 // number of bit precission for LEDC timer
 #define LEDC_NUMBER_OF_BIT    16
@@ -149,10 +154,10 @@ void setup()
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
 
-  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 500000 );
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 10000000 );
 
   SPI.begin( _sclk, _miso, _mosi );
-  SPI.setFrequency( 4000000 );
+  SPI.setFrequency( 2000000000 );
 
   setupOLED();
 

@@ -1,5 +1,7 @@
 void oledTask( void * pvParameters )
 {
+  int oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
+
   while (1)
   {
     //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
@@ -23,7 +25,7 @@ void oledTask( void * pvParameters )
 
     OLED.drawString( 64, 50, strftime_buf  );
     OLED.display();
-    vTaskDelay( 500 / portTICK_PERIOD_MS);
+    vTaskDelay( oledTaskdelayTime / portTICK_PERIOD_MS);
   }
 }
 

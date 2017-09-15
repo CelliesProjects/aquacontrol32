@@ -1,5 +1,7 @@
 void tftTask( void * pvParameters )
 {
+  int tftTaskdelayTime = 1000 / UPDATE_FREQ_LEDS;
+
   tft.fillScreen( ILI9341_BLACK );
   while (1)
   {
@@ -48,7 +50,7 @@ void tftTask( void * pvParameters )
       tft.setTextColor( TFT_TEXT_COLOR , TFT_BACK_COLOR );
 
       char buffer [9];
-      snprintf( buffer, sizeof( buffer ), "%*" ".2f%%", 6, channel[thisChannel].currentPercentage );
+      snprintf( buffer, sizeof( buffer ), "%*" ".3f%%", 7, channel[thisChannel].currentPercentage );
       tft.print( buffer );
     }
 
@@ -69,7 +71,7 @@ void tftTask( void * pvParameters )
 
     tft.print( lightStatus );
 
-    vTaskDelay( 500 / portTICK_PERIOD_MS );
+    vTaskDelay( tftTaskdelayTime / portTICK_PERIOD_MS );
   }
 }
 
@@ -83,7 +85,7 @@ void updateLightStatusTFT( const String& str )
 
 void setupTFT()
 {
-  tft.begin( 38000000 );
+  tft.begin( 200000000, SPI );
   uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
   Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
 

@@ -1,6 +1,6 @@
 void dimmerTask ( void * pvParameters )
 {
-  int dimmerTaskdelayTime = 1000 / UPDATE_FREQ_HZ;
+  int dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS;
 
   while (1)
   {

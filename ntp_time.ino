@@ -12,6 +12,7 @@ void setupNTP()
   //https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
   //https://www.di-mgt.com.au/wclock/tz.html
   //http://www.catb.org/esr/time-programming/
+  //http://www.lucadentella.it/en/2017/05/11/esp32-17-sntp/
 
   setenv( "TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1 );
   tzset();

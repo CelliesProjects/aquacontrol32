@@ -338,6 +338,20 @@ void setupWebServer()                                            //https://githu
     server.send( 200, textplainHEADER, HTML );
   });
 
+  server.on( "/api/timezone", []()
+  {
+    char const* tmp = getenv( "TZ" );
+    if ( tmp == NULL )
+    {
+      //  No TZ data set
+      server.send( 200, textplainHEADER, "No timezone set." );
+    }
+    else
+    {
+      server.send( 200, textplainHEADER, tmp );
+    }
+  });
+
   server.on( "/api/upload", HTTP_POST, []() {
     server.send( 200, textplainHEADER, "" );
   }, []() {

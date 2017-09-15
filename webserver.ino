@@ -105,10 +105,7 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/boottime", []()
   {
-    String response = "0";
-    size_t response_length = response.length();
-    server.setContentLength( response_length );
-    server.send( 200, texthtmlHEADER, response );
+    server.send( 200, texthtmlHEADER, asctime( &systemStart ) );
   });
 
   server.on( "/api/getchannelcolors", []()

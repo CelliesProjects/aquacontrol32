@@ -176,8 +176,7 @@ $(document).ready( function() {
   $('input').prop('disabled', true);
   //load the items one by one
   $.get( "/api/boottime", function( data ) {
-    var bootDate = new Date( data * 1000 );
-    $('#bootTime').html( bootDate.toLocaleString() );
+    $('#bootTime').html( data );
 
     $.get( "/api/pwmfrequency", function( data ) {
       $('#pwmFreqSlider').val( data );

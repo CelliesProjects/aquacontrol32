@@ -88,8 +88,13 @@ void setupTFT()
   Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
 
   tft.fillScreen(ILI9341_BLACK);
-  tft.setRotation(3);
+  tft.setRotation( TFTupsidedown );
   tft.setCursor(0, 0);
   tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
   tft.println( "TFT started.");
+}
+
+void rotateTFT( const int tftmode )
+{
+  tft.setRotation( tftmode );
 }

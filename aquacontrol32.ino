@@ -10,6 +10,11 @@
 #include "SSD1306.h"                //https://github.com/squix78/esp8266-oled-ssd1306
 #include <WebServer.h>              //https://github.com/CelliesProjects/WebServer_tng
 
+#include "apps/sntp/sntp.h"
+
+#define TFTnormal     1
+#define TFTupsidedown 3
+
 #define COUNTRY_CODE_ISO_3166 "nl"  //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 
 //update frequency for LEDS in Hz
@@ -126,6 +131,8 @@ String defaultTimerFile = "/default.aqu";
 struct tm systemStart;
 
 String lightStatus;
+
+int TFTorientation = TFTnormal;
 
 void setup()
 {

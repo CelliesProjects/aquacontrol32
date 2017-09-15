@@ -265,6 +265,14 @@ void setupWebServer()                                            //https://githu
     server.send( 400,  textplainHEADER, "Invalid input." );
   });
 
+  server.on( "/api/ntpinterval", []()
+  {
+    //time_t sntpInterval = 0;// SNTP_UPDATE_DELAY;
+    //char buff[40];
+    //snprintf( buff, sizeof(buff), "%s", sntpInterval );
+    server.send( 200,  textplainHEADER, String( SNTP_UPDATE_DELAY / 1000 ) );
+  });
+
   server.on( "/api/setchannelcolor", []() {
     int channelNumber;
     if ( server.hasArg( "channel" ) ) {
@@ -336,6 +344,18 @@ void setupWebServer()                                            //https://githu
     HTML +=  String( timeinfo.tm_hour) + ":" + String( timeinfo.tm_min ) + ":" + String( timeinfo.tm_sec ) + "," + lightStatus;
     server.setContentLength( HTML.length() );
     server.send( 200, textplainHEADER, HTML );
+  });
+
+  server.on( "/api/tftorientation", []()
+  { //mode 1 and 3 are landscape modes
+    if ( TFTorientation == TFTnormal )
+    {
+      server.send( 200, textplainHEADER, "normal" );
+    }
+    if ( TFTorientation == TFTupsidedown )
+    {
+      server.send( 200, textplainHEADER, "flipped" );
+    }
   });
 
   server.on( "/api/timezone", []()

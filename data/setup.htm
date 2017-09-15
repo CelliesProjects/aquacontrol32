@@ -36,6 +36,10 @@ a {
   margin: 0 10px;
 }
 
+.webLink {
+  color: #da1717;
+}
+
 .systemLink{
   padding: 3px 10px;
 }
@@ -104,13 +108,14 @@ input{
 }
 
 input[type="text"]{
-  background:beige;
-  width:auto;
-  margin:0;
-  vertical-align: middle;
-  text-align: center;
-  font-size: 20px;
-  padding: 0;
+    background: beige;
+    width: 275px;
+    height: 25px;
+    margin: 0;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 16px;
+    padding: 0;
 }
 
 input[type="button"]{
@@ -146,16 +151,14 @@ input[type="range"]{
     <p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
     <p class="item"><span class="itemName">PWM FREQUENCY</span><span id="pwmFreqValue" class="itemValue">&nbsp;</span><input type="range" id="pwmFreqSlider" value="400" min="2" max="1000"></p>
     <p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="1024" min="1024" max="10240" step="1024"></p>
-    <p class="item"><span class="itemName">TIME ZONE</span><input type="text" id="timeZoneSlider"></span></p>
+    <p class="item"><span class="itemName"><a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">TIME ZONE (EXAMPLES)</a></span><input type="text" id="timeZoneSlider"></span></p>
     <p class="item"><span class="itemName">NTP UPDATE FREQUENCY</span><span id="ntpUpdateValue" class="itemValue">0</span><input type="range" id="ntpUpdateSlider" value="21600" min="21600" max="86400" step="21600"></p>
-    <p class="item"><span class="itemName">APPLY<a style="color:beige;" href="https://en.wikipedia.org/wiki/Daylight_saving_time" target="_blank">DAYLIGHT SAVING TIME</a></span><span id="dstValue" class="itemValue">&nbsp;</span><input type="range" id="dstSlider" value="0" min="0" max="1"></p>
     <p class="item"><span class="itemName">DISPLAY ORIENTATION</span><span id="oledValue" class="itemValue">&nbsp;</span><input type="range" id="oledSlider" value="0" min="0" max="1"></p>
   </div>
 </div>
 <div class="shadowedBox">
   <div class="settingsBox">
     <p class="item">SYSTEM START:&nbsp;&nbsp;<span id="bootTime"></span></p>
-    <p class="item">LAST NTP SYNC:&nbsp;&nbsp;<span id="lastSyncTime"></span></p>
     <p class="item">FREE DISK SPACE:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
   </div>
 </div>
@@ -203,33 +206,17 @@ $(document).ready( function() {
                 $.get("/api/hostname",function( data ) {
                   $('#hostNameInput').val(  data  );
 
-                  $.get("/api/ntplastsynctime",function( data ) {
-                    var lastSync = new Date( data * 1000 );
-                    $('#lastSyncTime').html( lastSync.toLocaleString() );
-                    $.get("/api/dststatus",function( data ) {
-                      $('#dstValue').html( data );
-                      if ( data == 'enabled' ) {
-                        $('#dstSlider').val(1);
-                      }
-                      if ( data == 'disabled' ) {
-                        $('#dstSlider').val(0);
-                      }
+                  $.get("/api/tftorientation", function( data ) {
+                    $('#oledValue').html( data );
+                    if ( data == 'normal' ) {
+                      $('#oledSlider').val(0);
+                    }
+                    if ( data == 'upsidedown' ) {
+                      $('#oledSlider').val(1);
+                    }
 
-                      $.get("/api/oledstatus", function( data ) {
-                        $('#oledValue').html( data );
-                        if ( data == 'normal' ) {
-                          $('#oledSlider').val(0);
-                        }
-                        if ( data == 'flipped' ) {
-                          $('#oledSlider').val(1);
-                        }
-
-                        $('input').prop('disabled', false); //and finally enable the inputs again
-                        $('body').css('opacity','1'); // and show the page
-                      });
-
-                    });
-
+                    $('input').prop('disabled', false); //and finally enable the inputs again
+                    $('body').css('opacity','1'); // and show the page
                   });
 
                 });

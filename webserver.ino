@@ -337,10 +337,8 @@ void setupWebServer()                                            //https://githu
     {
       HTML += String( channel[channelNumber].currentPercentage ) + ",";
     }
-    time_t now;
     struct tm timeinfo;
-    time(&now);
-    localtime_r(&now, &timeinfo);
+    getLocalTime( &timeinfo );
     HTML +=  String( timeinfo.tm_hour) + ":" + String( timeinfo.tm_min ) + ":" + String( timeinfo.tm_sec ) + "," + lightStatus;
     server.setContentLength( HTML.length() );
     server.send( 200, textplainHEADER, HTML );
@@ -358,7 +356,7 @@ void setupWebServer()                                            //https://githu
     }
   });
 
-  server.on( "/api/timezone", []()
+  server.on( "/api/timezone", HTTP_GET, []()
   {
     char const* tmp = getenv( "TZ" );
     if ( tmp == NULL )
@@ -371,6 +369,25 @@ void setupWebServer()                                            //https://githu
       server.send( 200, textplainHEADER, tmp );
     }
   });
+
+  server.on( "/api/timezone", HTTP_POST, []()
+  {
+    if ( !server.hasArg( "timezone" ) )
+    {
+      server.send( 400, textplainHEADER, "No parameters passed" );
+      return;
+    }
+    if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
+    {
+      server.send( 200, textplainHEADER, server.arg( "timezone" ) );
+      return;
+    }
+    else
+    {
+      server.send( 400, textplainHEADER, "ERROR setting timezone" );
+    }
+  });
+
 
   server.on( "/api/upload", HTTP_POST, []() {
     server.send( 200, textplainHEADER, "" );

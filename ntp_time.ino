@@ -4,10 +4,8 @@ void setupNTP()
 
   NTPpoolAdress += ".pool.ntp.org";
 
-  char timeZone[40] = "CET-1CEST,M3.5.0/2,M10.5.0/3";
-  tft.print( "Getting time from " );  tft.println( NTPpoolAdress );
-
-  sntp_setoperatingmode(SNTP_OPMODE_POLL);
+  char timeZone[80] = "CET-1CEST,M3.5.0/2,M10.5.0/3";
+  tft.print( "Getting time from " + NTPpoolAdress );
 
   configTzTime( timeZone, NTPpoolAdress.c_str() );
 

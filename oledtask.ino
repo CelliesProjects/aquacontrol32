@@ -6,9 +6,7 @@ void oledTask( void * pvParameters )
   {
     //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
     struct tm timeinfo;
-    time_t now;
-    time(&now);
-    localtime_r(&now, &timeinfo);
+    getLocalTime( &timeinfo );
     char strftime_buf[64];
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
 

@@ -153,7 +153,7 @@ input[type="range"]{
     <p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="1024" min="1024" max="10240" step="1024"></p>
     <p class="item"><span class="itemName"><a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">TIME ZONE (EXAMPLES)</a></span><input type="text" id="timeZoneSlider"></span></p>
     <p class="item"><span class="itemName">NTP UPDATE FREQUENCY</span><span id="ntpUpdateValue" class="itemValue">0</span><input type="range" id="ntpUpdateSlider" value="21600" min="21600" max="86400" step="21600"></p>
-    <p class="item"><span class="itemName">DISPLAY ORIENTATION</span><span id="oledValue" class="itemValue">&nbsp;</span><input type="range" id="oledSlider" value="0" min="0" max="1"></p>
+    <p class="item"><span class="itemName">DISPLAY ORIENTATION</span><span id="oledValue" class="itemValue">&nbsp;</span><input type="range" id="oledSlider" min="0" max="1"></p>
   </div>
 </div>
 <div class="shadowedBox">
@@ -239,9 +239,10 @@ $(document).ready( function() {
 
   $('#oledSlider').on('change', function( event ) {
     if ( $(this).val() == 0 ) $('#oledValue').html('normal');
-    if ( $(this).val() == 1 ) $('#oledValue').html('flipped');
-    $.get( "/api/oledstatus?newoledstatus=" + $('#oledValue').html(), function( data ) {
+    if ( $(this).val() == 1 ) $('#oledValue').html('upsidedown');
+    $.get( "/api/tftorientation?tftorientation=" + $('#oledValue').html(), function( data ) {
       console.log( data );
+      $('#lightStatus').html( "TFT ORIENTATION: " + data );
     });
   });
 

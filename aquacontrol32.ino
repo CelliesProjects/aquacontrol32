@@ -124,6 +124,7 @@ WebServer server(80);
 uint16_t LEDC_PWM_DEPTH_NOMATH = LEDC_PWM_DEPTH; // Calculate once
 
 TaskHandle_t x_dimmerTaskHandle;
+TaskHandle_t x_tftTaskHandle;
 
 double ledcActualFrequency;
 byte ledcActualBitDepth;
@@ -157,7 +158,7 @@ void setup()
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 10000000 );
 
   SPI.begin( _sclk, _miso, _mosi );
-  SPI.setFrequency( 2000000000 );
+  SPI.setFrequency( 200000000 );
 
   setupOLED();
 
@@ -229,7 +230,7 @@ void setup()
     2000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     1,                              /* Priority of the task */
-    NULL,                           /* Task handle. */
+    &x_tftTaskHandle,               /* Task handle. */
     1);                             /* Core where the task should run */
 
   if ( numberOfFoundSensors )

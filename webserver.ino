@@ -344,18 +344,46 @@ void setupWebServer()                                            //https://githu
     server.send( 200, textplainHEADER, HTML );
   });
 
-  server.on( "/api/tftorientation", []()
-  { //mode 1 and 3 are landscape modes
-    if ( TFTorientation == TFTnormal )
+  server.on( "/api/tftorientation", HTTP_GET, []()
+  {
+    if ( server.hasArg( "tftorientation" ) )
     {
-      server.send( 200, textplainHEADER, "normal" );
+      if (  server.arg( "tftorientation" ) == "normal" )
+      {
+        TFTorientation = TFTnormal;
+        //vTaskSuspend( x_tftTaskHandle );  //not needed since this task has a higher priority
+        tft.setRotation( TFTorientation );
+        tft.fillScreen( ILI9341_BLACK );
+        //vTaskResume( x_tftTaskHandle );
+      }
+      else if ( server.arg( "tftorientation" ) == "upsidedown" )
+      {
+        TFTorientation = TFTupsidedown;
+        //vTaskSuspend( x_tftTaskHandle );
+        tft.setRotation( TFTorientation );
+        tft.fillScreen( ILI9341_BLACK );
+        //vTaskResume( x_tftTaskHandle );
+      } else
+      {
+        server.send( 400, textplainHEADER, "ERROR No valid input." );
+        return;
+      }
     }
-    if ( TFTorientation == TFTupsidedown )
-    {
-      server.send( 200, textplainHEADER, "flipped" );
-    }
+    server.send( 200, textplainHEADER, TFTorientation == TFTnormal ? "normal" : "upsidedown" );
   });
-
+  /*
+    server.on( "/api/tftorientation", HTTP_GET, []()
+    { //mode 1 and 3 are landscape modes
+      if ( TFTorientation == TFTnormal )
+      {
+        server.send( 200, textplainHEADER, "normal" );
+      }
+      if ( TFTorientation == TFTupsidedown )
+      {
+        server.send( 200, textplainHEADER, "flipped" );
+      }
+    });
+  */
   server.on( "/api/timezone", HTTP_GET, []()
   {
     char const* tmp = getenv( "TZ" );
@@ -387,7 +415,6 @@ void setupWebServer()                                            //https://githu
       server.send( 400, textplainHEADER, "ERROR setting timezone" );
     }
   });
-
 
   server.on( "/api/upload", HTTP_POST, []() {
     server.send( 200, textplainHEADER, "" );

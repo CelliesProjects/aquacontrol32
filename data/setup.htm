@@ -85,7 +85,7 @@ a {
 }
 
 .itemName{
-  width:60%
+  width:37%
 }
 
 .itemValue{
@@ -109,7 +109,7 @@ input{
 
 input[type="text"]{
     background: beige;
-    width: 275px;
+    width: 401px;
     height: 25px;
     margin: 0;
     vertical-align: middle;
@@ -149,9 +149,9 @@ input[type="range"]{
   <h3>DEVICE CONTROL</h3>
   <div class="settingsBox">
     <p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
+    <p class="item"><span class="itemName">TIME ZONE <a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneSlider"></span></p>
     <p class="item"><span class="itemName">PWM FREQUENCY</span><span id="pwmFreqValue" class="itemValue">&nbsp;</span><input type="range" id="pwmFreqSlider" value="400" min="2" max="1000"></p>
     <p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="1024" min="1024" max="10240" step="1024"></p>
-    <p class="item"><span class="itemName"><a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">TIME ZONE (EXAMPLES)</a></span><input type="text" id="timeZoneSlider"></span></p>
     <p class="item"><span class="itemName">NTP UPDATE FREQUENCY</span><span id="ntpUpdateValue" class="itemValue">0</span><input type="range" id="ntpUpdateSlider" value="21600" min="21600" max="86400" step="21600"></p>
     <p class="item"><span class="itemName">DISPLAY ORIENTATION</span><span id="oledValue" class="itemValue">&nbsp;</span><input type="range" id="oledSlider" min="0" max="1"></p>
   </div>
@@ -320,6 +320,7 @@ $(document).ready( function() {
     });
   });
 
+/*
   $('#timeZoneSlider').on('input', function( ) {
     if ( parseInt( $(this).val() ) > -1 ) {
       $('#timeZoneValue').html( "UTC+" + $(this).val() );
@@ -327,13 +328,12 @@ $(document).ready( function() {
       $('#timeZoneValue').html( "UTC" + $(this).val() );
     }
   });
-
+*/
   $('#timeZoneSlider').on('change', function( ) {
-    $.get( '/api/timezone?newtimezone=' + $(this).val(), function( data ) {
-      if ( data  == 'ERROR - Invalid timezone' ) {
-        //TODO: show a popup
-        $('#lightStatus').html( data );
-      }
+    $.get( '/api/timezone?timezone=' + $(this).val(), function( data ) {
+      $('#lightStatus').html( data );
+      $('#timeZoneSlider').css( {'background':'lightgreen'} );
+      //$($this).css( {'background':'lightgreen'} );
     });
   });
 

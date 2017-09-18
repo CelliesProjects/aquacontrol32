@@ -384,35 +384,48 @@ void setupWebServer()                                            //https://githu
       }
     });
   */
+
+  /*
+    server.on( "/api/timezone", HTTP_GET, []()
+    {
+      char const* tmp = getenv( "TZ" );
+      if ( tmp == NULL )
+      {
+        //  No TZ data set
+        server.send( 200, textplainHEADER, "No timezone set." );
+      }
+      else
+      {
+        server.send( 200, textplainHEADER, tmp );
+      }
+    });
+  */
   server.on( "/api/timezone", HTTP_GET, []()
   {
-    char const* tmp = getenv( "TZ" );
-    if ( tmp == NULL )
+    if ( server.hasArg( "timezone" ) )
     {
-      //  No TZ data set
-      server.send( 200, textplainHEADER, "No timezone set." );
+      if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
+      {
+        server.send( 200, textplainHEADER, server.arg( "timezone" ) );
+        return;
+      }
+      else
+      {
+        server.send( 400, textplainHEADER, "ERROR setting timezone" );
+        return;
+      }
     }
     else
     {
-      server.send( 200, textplainHEADER, tmp );
-    }
-  });
-
-  server.on( "/api/timezone", HTTP_POST, []()
-  {
-    if ( !server.hasArg( "timezone" ) )
-    {
-      server.send( 400, textplainHEADER, "No parameters passed" );
+      char const* timeZone = getenv( "TZ" );
+      if ( timeZone == NULL )
+      {
+        //  No TZ data set
+        server.send( 200, textplainHEADER, "No timezone set." );
+        return;
+      }
+      server.send( 200, textplainHEADER, timeZone );
       return;
-    }
-    if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
-    {
-      server.send( 200, textplainHEADER, server.arg( "timezone" ) );
-      return;
-    }
-    else
-    {
-      server.send( 400, textplainHEADER, "ERROR setting timezone" );
     }
   });
 

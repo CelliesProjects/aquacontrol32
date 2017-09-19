@@ -141,12 +141,23 @@ void setupWebServer()                                            //https://githu
     server.send( 200, texthtmlHEADER, html );
   });
 
-  server.on( "/api/hostname", []()
+  server.on( "/api/hostname", HTTP_GET, []()
   {
-    String response = WiFi.getHostname();
-    size_t response_length = response.length();
-    server.setContentLength( response_length );
-    server.send( 200, texthtmlHEADER, response );
+    if ( server.hasArg( "hostname" ) )
+    {
+      server.arg( "hostname" ).trim();
+      mDNSname = server.arg( "hostname" );
+      if ( WiFi.setHostname( mDNSname.c_str() ) )
+      {
+        saveStringNVS( "hostname", mDNSname );
+      }
+      else
+      {
+        server.send( 200, texthtmlHEADER, "ERROR setting hostname" );
+        return;
+      }
+    }
+    server.send( 200, texthtmlHEADER, WiFi.getHostname() );
   });
 
   server.on( "/api/lightsoff", []()
@@ -159,7 +170,6 @@ void setupWebServer()                                            //https://githu
     }
     lightStatus = "LIGHTS OFF ";
     server.send( 200, texthtmlHEADER, lightStatus );
-    //updateLightStatusTFT( lightStatus );
   });
 
   server.on( "/api/lightson", []()
@@ -172,7 +182,6 @@ void setupWebServer()                                            //https://githu
     }
     lightStatus = " LIGHTS ON ";
     server.send( 200, texthtmlHEADER, lightStatus );
-    //updateLightStatusTFT( lightStatus );
   });
 
   server.on( "/api/lightsprogram", []()
@@ -258,7 +267,7 @@ void setupWebServer()                                            //https://githu
         return;
       }
       channel[channelNumber].minimumLevel = thisPercentage;
-      saveMinimumLevel( channelNumber );
+      saveFloatNVS( "channelminimum" + channelNumber, channel[channelNumber].minimumLevel );
       server.send( 200,  textplainHEADER, "Minimum level set." );
       return;
     }
@@ -287,7 +296,7 @@ void setupWebServer()                                            //https://githu
       String newColor = "#" + server.arg( "newcolor" );
       newColor.trim();
       channel[channelNumber].color = newColor;
-      saveChannelColor( channelNumber );
+      saveStringNVS( "channelcolor" + char( channelNumber ), channel[channelNumber].color );
       server.send( 200, textplainHEADER , "Success" );
       return;
     }
@@ -308,7 +317,7 @@ void setupWebServer()                                            //https://githu
       newName.trim();
       //TODO: check if illegal cahrs present and get out if so
       channel[channelNumber].name = newName;
-      saveChannelName( channelNumber );
+      saveStringNVS( "channelname" + char( channelNumber ), channel[channelNumber].name );
       server.send( 200, textplainHEADER, "Success" );
       return;
     }
@@ -339,7 +348,16 @@ void setupWebServer()                                            //https://githu
     }
     struct tm timeinfo;
     getLocalTime( &timeinfo );
-    HTML +=  String( timeinfo.tm_hour) + ":" + String( timeinfo.tm_min ) + ":" + String( timeinfo.tm_sec ) + "," + lightStatus;
+
+    ( timeinfo.tm_hour ) < 10 ? HTML += "0" : "";
+    HTML +=  String( timeinfo.tm_hour ) + ":";
+
+    ( timeinfo.tm_min ) < 10 ? HTML += "0" : "";
+    HTML += String( timeinfo.tm_min ) + ":";
+
+    ( timeinfo.tm_sec < 10 ) ? HTML += "0" : "";
+    HTML += String( timeinfo.tm_sec ) + "," + lightStatus;
+
     server.setContentLength( HTML.length() );
     server.send( 200, textplainHEADER, HTML );
   });
@@ -369,43 +387,17 @@ void setupWebServer()                                            //https://githu
         return;
       }
     }
-    server.send( 200, textplainHEADER, TFTorientation == TFTnormal ? "normal" : "upsidedown" );
+    saveStringNVS( "tftorientation", ( TFTorientation == TFTnormal ) ? "normal" : "upsidedown" );
+    server.send( 200, textplainHEADER, ( TFTorientation == TFTnormal ) ? "normal" : "upsidedown" );
   });
-  /*
-    server.on( "/api/tftorientation", HTTP_GET, []()
-    { //mode 1 and 3 are landscape modes
-      if ( TFTorientation == TFTnormal )
-      {
-        server.send( 200, textplainHEADER, "normal" );
-      }
-      if ( TFTorientation == TFTupsidedown )
-      {
-        server.send( 200, textplainHEADER, "flipped" );
-      }
-    });
-  */
 
-  /*
-    server.on( "/api/timezone", HTTP_GET, []()
-    {
-      char const* tmp = getenv( "TZ" );
-      if ( tmp == NULL )
-      {
-        //  No TZ data set
-        server.send( 200, textplainHEADER, "No timezone set." );
-      }
-      else
-      {
-        server.send( 200, textplainHEADER, tmp );
-      }
-    });
-  */
   server.on( "/api/timezone", HTTP_GET, []()
   {
     if ( server.hasArg( "timezone" ) )
     {
       if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
       {
+        saveStringNVS( "timezone", server.arg( "timezone" ) );
         server.send( 200, textplainHEADER, server.arg( "timezone" ) );
         return;
       }
@@ -420,7 +412,6 @@ void setupWebServer()                                            //https://githu
       char const* timeZone = getenv( "TZ" );
       if ( timeZone == NULL )
       {
-        //  No TZ data set
         server.send( 200, textplainHEADER, "No timezone set." );
         return;
       }
@@ -429,26 +420,38 @@ void setupWebServer()                                            //https://githu
     }
   });
 
-  server.on( "/api/upload", HTTP_POST, []() {
+  server.on( "/api/upload", HTTP_POST, []()
+  {
     server.send( 200, textplainHEADER, "" );
   }, []() {
     static File fsUploadFile;
     HTTPUpload& upload = server.upload();
     String filename = upload.filename;
-    if ( !filename.startsWith("/") ) filename = "/" + filename;
-    if ( filename.length() > 30 ) {
+    if ( !filename.startsWith("/") )
+    {
+      filename = "/" + filename;
+    }
+    if ( filename.length() > 30 )
+    {
       Serial.println( "Upload filename too long!" );
       return;
     }
-    if ( upload.status == UPLOAD_FILE_START ) {
+    if ( upload.status == UPLOAD_FILE_START )
+    {
       fsUploadFile = SD.open( filename, "w");
-    } else if ( upload.status == UPLOAD_FILE_WRITE ) {
-      if ( fsUploadFile ) {
+    }
+    else if ( upload.status == UPLOAD_FILE_WRITE )
+    {
+      if ( fsUploadFile )
+      {
         fsUploadFile.write( upload.buf, upload.currentSize );
         //showUploadProgressOLED( String( (float) fsUploadFile.position() / server.header( "Content-Length" ).toInt() * 100 ), upload.filename );
       }
-    } else if ( upload.status == UPLOAD_FILE_END) {
-      if ( fsUploadFile ) {
+    }
+    else if ( upload.status == UPLOAD_FILE_END)
+    {
+      if ( fsUploadFile )
+      {
         fsUploadFile.close();
       }
     }
@@ -458,26 +461,34 @@ void setupWebServer()                                            //https://githu
 
   //start the web server
   server.begin();
-  Serial.println("TCP server started");
+  Serial.println("HTTP server setup done.");
 }
 
-void handleNotFound() {
+void handleNotFound()
+{
   /////////////////////////////////////////////////////////////////////////////////////
   // if the request is not handled by any of the defined handlers
   // try to use the argument as filename and serve from SD
   // if no matching file is found, throw an error.
-  if ( !handleSDfile( server.uri() ) ) {
+  if ( !handleSDfile( server.uri() ) )
+  {
     Serial.println( "404 File not found." );
     server.send( 404, textplainHEADER, "404 - File not found." );
   }
 }
 
-bool handleSDfile( String path ) {
+bool handleSDfile( String path )
+{
   path = server.urlDecode( path );
-  if ( path.endsWith( "/" ) ) path += "index.htm";
+  if ( path.endsWith( "/" ) )
+  {
+    path += "index.htm";
+  }
 
-  if ( SD.exists( path ) ) {
-    if ( server.arg( "action" ) == "delete" ) {
+  if ( SD.exists( path ) )
+  {
+    if ( server.arg( "action" ) == "delete" )
+    {
       Serial.println( "Delete request. Deleting..." );
       SD.remove( path );
       Serial.println( path + " deleted" );
@@ -492,7 +503,8 @@ bool handleSDfile( String path ) {
   return false;
 }
 
-String getContentType( const String& path) {
+String getContentType( const String& path )
+{
   if (path.endsWith(".html")) return "text/html";
   else if (path.endsWith(".htm")) return "text/html";
   else if (path.endsWith(".css")) return "text/css";

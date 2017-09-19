@@ -7,11 +7,11 @@ void dimmerTask ( void * pvParameters )
     struct tm timeinfo;
     getLocalTime(&timeinfo);
 
-    struct timeval milliSecondTime;
+    struct timeval microSecondTime;
 
-    gettimeofday( &milliSecondTime, NULL );
+    gettimeofday( &microSecondTime, NULL );
 
-    time_t milliSecondsToday = ( timeinfo.tm_hour * 3600000 ) + ( timeinfo.tm_min * 60000 ) + ( timeinfo.tm_sec * 1000 ) + ( milliSecondTime.tv_usec / 1000 );
+    time_t milliSecondsToday = ( timeinfo.tm_hour * 3600000 ) + ( timeinfo.tm_min * 60000 ) + ( timeinfo.tm_sec * 1000 ) + ( microSecondTime.tv_usec / 1000 );
     for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       setPercentageFromProgram( channelNumber, milliSecondsToday );
@@ -44,7 +44,7 @@ void setPercentageFromProgram( const byte channelNumber, const time_t milliSecon
   }
 }
 
-double setupDimmerPWMfrequency( double frequency )
+double setupDimmerPWMfrequency( const double frequency )
 {
   // Setup timers and attach timer to a led pin
   double newFrequency;
@@ -52,10 +52,10 @@ double setupDimmerPWMfrequency( double frequency )
   {
     ledcActualBitDepth = LEDC_NUMBER_OF_BIT;
     newFrequency = ledcSetup( channelNumber, frequency, LEDC_NUMBER_OF_BIT );
-    Serial.print( "\nChannel: " ); Serial.println( channelNumber + 1 );
-    Serial.print( "PWM frequency requested: " ); Serial.print( frequency / 1000.0 ); Serial.println( "kHz." );
-    Serial.print( "PWM frequency actual:    " ); Serial.print( newFrequency / 1000.0 ); Serial.println( "kHz." );
-    Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH_NOMATH ); Serial.println( " steps." );
+    //Serial.print( "\nChannel: " ); Serial.println( channelNumber + 1 );
+    //Serial.print( "PWM frequency requested: " ); Serial.print( frequency / 1000.0 ); Serial.println( "kHz." );
+    //Serial.print( "PWM frequency actual:    " ); Serial.print( newFrequency / 1000.0 ); Serial.println( "kHz." );
+    //Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH_NOMATH ); Serial.println( " steps." );
     ledcAttachPin( ledPin[channelNumber], channelNumber );
   }
   return newFrequency;

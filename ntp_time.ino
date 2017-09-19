@@ -4,10 +4,11 @@ void setupNTP()
 
   NTPpoolAdress += ".pool.ntp.org";
 
-  char timeZone[80] = "CET-1CEST,M3.5.0/2,M10.5.0/3";
+  String timeZone = readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" );
+
   tft.print( "Getting time from " + NTPpoolAdress );
 
-  configTzTime( timeZone, NTPpoolAdress.c_str() );
+  configTzTime( timeZone.c_str(), NTPpoolAdress.c_str() );
 
   //https://www.ibm.com/developerworks/aix/library/au-aix-posix/index.html#artdownload
   //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md

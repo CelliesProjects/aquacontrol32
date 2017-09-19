@@ -75,28 +75,17 @@ void tftTask( void * pvParameters )
   }
 }
 
-void updateLightStatusTFT( const String& str )
-{
-  tft.setCursor( 55, 220 );
-  tft.setTextSize(2);
-  tft.setTextColor( ILI9341_WHITE , ILI9341_BLACK );
-  tft.print( str );
-}
-
 void setupTFT()
 {
-  tft.begin( 200000000, SPI );
+  tft.begin( 40000000, SPI );
   uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
   Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
 
   tft.fillScreen(ILI9341_BLACK);
+  ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? TFTorientation = TFTnormal : TFTorientation = TFTupsidedown;
   tft.setRotation( TFTorientation );
-  tft.setCursor(0, 0);
-  tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
+  tft.setCursor( 0, 0 );
+  tft.setTextColor( ILI9341_WHITE );
+  tft.setTextSize(1);
   tft.println( "TFT started.");
-}
-
-void rotateTFT( const int tftmode )
-{
-  tft.setRotation( tftmode );
 }

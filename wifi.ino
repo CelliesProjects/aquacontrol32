@@ -1,11 +1,13 @@
 
 void setupWiFi()
 {
-  WiFi.onEvent( WiFiEvent );
+  //WiFi.onEvent( WiFiEvent );
 
   tft.println( "Starting WiFi..." );
-  String wifiSSID = readWifiSSID();
-  String wifiPSK = readWifiPSK();
+  String wifiSSID = readStringNVS( "wifissid", "" );
+  String wifiPSK = readStringNVS( "wifipsk" , "" );
+
+  Serial.println( "wifidata: " + wifiSSID + " " + wifiPSK );
 
   //if no NVS data is found start an AP
   if ( wifiSSID != "" && wifiPSK != "" )
@@ -30,31 +32,33 @@ void setupWiFi()
     Serial.println("");
     Serial.println("SmartConfig received.");
     tft.println("SmartConfig received.");
+    wifiSSID = WiFi.SSID();
+    wifiPSK = WiFi.psk();
   }
 
   Serial.print( F( "Connecting to SSID:" ) ); Serial.println( wifiSSID );
   tft.print( F( "Connecting to SSID:" ) ); tft.println( wifiSSID );
-  //Serial.print( F( "With password:" ) ); Serial.println( F( "*********" ) /* wifiPSK */ );
 
   //Wait for WiFi to connect to AP
   Serial.println("Waiting for connection...");
   WiFi.mode( WIFI_STA );
+  WiFi.setHostname( readStringNVS( "hostname", "aquacontrol32" ).c_str() );
   WiFi.begin( wifiSSID.c_str(), wifiPSK.c_str() );
 
   unsigned long WiFiStartTime = millis();
   while ( WiFi.status() != WL_CONNECTED && millis() - WiFiStartTime <= 10000 )
   {
-    //pick nose while WiFi connects...
+    Serial.print( "." );
+    delay( 500 );
   }
-
+  Serial.println();
   if ( WiFi.status() == WL_CONNECTED )
   {
     //We have succesfully connected...
     tft.invertDisplay( false );
     tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP() );
-
-    saveWifiData();
-
+    saveStringNVS( "wifissid", wifiSSID.c_str() );
+    saveStringNVS( "wifipsk", wifiPSK.c_str() );
   }
   else
   {
@@ -67,10 +71,10 @@ void setupWiFi()
     ESP.restart();
   }
 }
-
-void WiFiEvent(WiFiEvent_t event)
-{
-  switch (event)
+/*
+  void WiFiEvent( WiFiEvent_t event )
+  {
+  switch ( event )
   {
     case SYSTEM_EVENT_AP_START:
       Serial.println("AP Started");
@@ -104,5 +108,5 @@ void WiFiEvent(WiFiEvent_t event)
     default:
       break;
   }
-}
-
+  }
+*/

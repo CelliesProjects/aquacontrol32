@@ -2,11 +2,11 @@ These are the pin connections between the `MH-ET ESP32 D1 minikit` and the board
 
 | PIN NO | TFT NAME        | ESP32 PIN          |
 |:------:|:--------------- | -----------------: | 
-| 1      | DC              | 25                 |
-| 2      | SCLK            | 12 (TDI)           |
+| 1      | DC              | 27                 |
+| 2      | SCLK            | 25                 |
 | 3      | MOSI            | 32                 |
-| 4      | MISO            | 4                  |
-| 5      | CS TFT          | 0                  |
-| 6      | CS SD           | 27                 |
-| 7      | RST TFT         | 18                 |
+| 4      | MISO            | 14                 |
+| 5      | CS TFT          |  4                 |
+| 6      | CS SD           |  0                 |
+| 7      | RST TFT         |  (RST) -1          |
 | 8      | IRQ_TOUCH       | ??                 |

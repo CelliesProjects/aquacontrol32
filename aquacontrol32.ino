@@ -15,12 +15,12 @@
 #define TFTnormal     1
 #define TFTupsidedown 3
 
-#define COUNTRY_CODE_ISO_3166 "nl"  //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+#define COUNTRY_CODE_ISO_3166 "nl"   //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 
-#define UPDATE_FREQ_LEDS      40      //update frequency for LEDS in Hz
+#define UPDATE_FREQ_LEDS      100    //update frequency for LEDS in Hz
 
 
-#define UPDATE_FREQ_TFT       100     //in Hz
+#define UPDATE_FREQ_TFT       50     //in Hz
 
 
 #define UPDATE_FREQ_OLED      25      //in Hz
@@ -52,16 +52,16 @@
 #define MAX_NUMBER_OF_SENSORS 3
 
 // HW SPI pin definitions
-#define _cs                   0   // Goes to TFT CS
-#define _dc                   25  // Goes to TFT DC
+#define _dc                   27  // Goes to TFT DC
+#define _sclk                 25  // Goes to TFT SCK/CLK
 #define _mosi                 32  // Goes to TFT MOSI
-#define _sclk                 12  // Goes to TFT SCK/CLK
-#define _rst                  0   // ESP RST goes to TFT RESET
-#define _miso                 4   // Goes to TFT MISO
+#define _miso                 14  // Goes to TFT MISO
+#define _cs                    4  // Goes to TFT CS
+#define  SD_CS                 0  // Goes to SD CS
+#define _rst                  -1  // ESP RST goes to TFT RESET
 //       3.3V                     // Goes to TFT LED
 //       5v                       // Goes to TFT Vcc-
 //       Gnd                      // Goes to TFT Gnd
-#define  SD_CS                 27 // Goes to SD CS
 
 // i2c pin definitions for oled
 #define I2C_SCL_PIN            19
@@ -155,20 +155,20 @@ void setup()
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
 
-  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 10000000 );
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
 
   SPI.begin( _sclk, _miso, _mosi );
-  SPI.setFrequency( 200000000 );
-
-  setupOLED();
+  SPI.setFrequency( 40000000 );
 
   setupTFT();
+
+  setupOLED();
 
   setupWiFi();
 
   setupNTP();
 
-  Serial.println( getLocalTime(&systemStart) ? "System start: " "%A, %B %d %Y %H:%M:%S" : "Failed to obtain time" );
+  Serial.print( "Local time:" ); Serial.println( getLocalTime( &systemStart ) ? asctime( &systemStart ) : "Failed to obtain time" );
 
   Serial.println( cardReaderPresent() ? "SD card found." : "No SD card found." );
 
@@ -187,10 +187,10 @@ void setup()
   //setup channels
   for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    channel[ channelNumber ].name          = readChannelName( channelNumber );
-    channel[ channelNumber ].color         = readChannelColor( channelNumber );
+    channel[ channelNumber ].name          = readStringNVS( "channelname" +  channelNumber , "Channel" + String( channelNumber + 1 ) );
+    channel[ channelNumber ].color         = readStringNVS( "channelcolor" + channelNumber , "#fffe7a" );
     channel[ channelNumber ].pin           = ledPin[ channelNumber ];
-    channel[ channelNumber ].minimumLevel  = readMinimumLevel( channelNumber );;
+    channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + channelNumber, 0 );
   }
 
   //http://exploreembedded.com/wiki/Task_Switching
@@ -250,4 +250,5 @@ void setup()
 //http://www.iotsharing.com/2017/05/how-to-apply-finite-state-machine-to-arduino-esp32-avoid-blocking.html
 void loop()
 {
+  vTaskDelete( NULL );
 }

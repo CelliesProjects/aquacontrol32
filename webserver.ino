@@ -497,19 +497,23 @@ void setupWebServer()                                            //https://githu
   {
     if ( !server.authenticate( www_username, www_password ) )
     {
-      return server.requestAuthentication();
+      server.requestAuthentication();
+      return;
     }
-    server.send( 200, textplainHEADER, "" );
+    else
+    {
+      server.send( 200, textplainHEADER, "" );
+    }
   }, [] ()
   {
-    static File fsUploadFile;
-    HTTPUpload& upload = server.upload();
-
     if ( !server.authenticate( www_username, www_password ) )
     {
-      return server.requestAuthentication();
+      server.requestAuthentication();
+      return;
     }
 
+    static File fsUploadFile;
+    HTTPUpload& upload = server.upload();
 
     String filename = upload.filename;
     if ( !filename.startsWith("/") )

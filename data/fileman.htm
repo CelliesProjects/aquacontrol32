@@ -267,6 +267,7 @@ $(document).ready( function() {
       // Custom XMLHttpRequest
       xhr: function() {
         var myXhr = $.ajaxSettings.xhr();
+        addEventListener('abort',  function(){ abort(); }, false);
         $('input').prop('disabled', true ); //no inputs possible from now on
         $('#fileList').html('<div><br>Uploading ' + $('input#fileInput')[0].files[0].name + '...</div>');
         $( '#uploadButton' ).css( "display", "none" );
@@ -279,13 +280,22 @@ $(document).ready( function() {
                 value: e.loaded,
                 max: e.total
               });
-              $( '#uploadTitle' ).html( "Uploaded " + e.loaded + " from "  +e.total + " bytes." );
+              //$( '#uploadTitle' ).html( "Uploaded " + e.loaded + " from "  +e.total + " bytes." );
             }
           } , false );
         }
         return myXhr;
       },
     }).done(function( data ){
+        readFiles();
+        $( '#fileInput' ).val( "" );
+        $( 'progress' ).css( "display", "none" );
+        $( '#uploadButton' ).css( "display", "inline-block" );
+        $( '#uploadTitle' ).html( "Click or drop a file in the box to upload." );
+        $('input').prop('disabled', false); //and finally enable the inputs again
+        console.log( data )
+      })
+      .fail(function( data ){
         readFiles();
         $( '#fileInput' ).val( "" );
         $( 'progress' ).css( "display", "none" );

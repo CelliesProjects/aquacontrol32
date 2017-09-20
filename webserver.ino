@@ -15,6 +15,9 @@ void webServerTask ( void * pvParameters )
   }
 }
 
+const char* www_username = "admin";
+const char* www_password = "esp32";
+
 static const char textplainHEADER[]  = "text/plain";
 static const char texthtmlHEADER[]  = "text/html";
 
@@ -57,12 +60,19 @@ void setupWebServer()                                            //https://githu
       API calls
    **************************************************************************/
 
-  server.on( "/api/clearnvs", []() {
+  server.on( "/api/clearnvs", []()
+  {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
     clearNVS();
     server.send( 200,  textplainHEADER, "NVS cleared" );
   });
 
-  server.on( "/api/diskspace", []() {
+  server.on( "/api/diskspace", []()
+  {
     // https://stackoverflow.com/questions/8323159/how-to-convert-uint64-t-value-in-const-char-string
     // cardsize = uint64_t
     // length of 2**64 - 1, +1 for nul.
@@ -72,7 +82,8 @@ void setupWebServer()                                            //https://githu
     server.send( 200,  textplainHEADER, buff );
   });
 
-  server.on( "/api/files", []() {
+  server.on( "/api/files", []()
+  {
     String HTTPresponse;
     {
       File root = SD.open("/");
@@ -162,6 +173,11 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/lightsoff", []()
   {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
     vTaskSuspend( x_dimmerTaskHandle );
     for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
@@ -174,6 +190,11 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/lightson", []()
   {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
     vTaskSuspend( x_dimmerTaskHandle );
     for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
@@ -186,6 +207,11 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/lightsprogram", []()
   {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
     vTaskResume( x_dimmerTaskHandle );
     struct tm timeinfo;
     getLocalTime(&timeinfo);
@@ -201,6 +227,11 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/loadtimers", []()
   {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
     server.send( 200, textplainHEADER, defaultTimersLoaded() ? "Succes" : "Failed" );
     struct tm timeinfo;
     getLocalTime(&timeinfo);
@@ -213,7 +244,12 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/pwmdepth", []() {
     byte newPWMDepth;
-    if ( server.arg( "newpwmdepth" ) != "" ) {
+    if ( server.hasArg( "newpwmdepth" ) ) {
+      if ( !server.authenticate( www_username, www_password ) )
+      {
+        return server.requestAuthentication();
+      }
+
       newPWMDepth = server.arg( "newpwmdepth" ).toInt();
       if ( newPWMDepth < 10 || newPWMDepth > 16 ) {
         server.send( 200, textplainHEADER, "ERROR - Invalid PWM depth" );
@@ -235,7 +271,12 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/pwmfrequency", []() {
     double actualFreq = ledcActualFrequency;
-    if ( server.arg( "newpwmfrequency" ) != "" ) {
+    if ( server.hasArg( "newpwmfrequency" ) ) {
+      if ( !server.authenticate( www_username, www_password ) )
+      {
+        return server.requestAuthentication();
+      }
+
       double tempPWMfrequency = server.arg( "newpwmfrequency" ).toFloat();
       if ( tempPWMfrequency < 100 || tempPWMfrequency > 10000 ) {
         server.send( 200, textplainHEADER, "Invalid PWM frequency" );
@@ -254,6 +295,11 @@ void setupWebServer()                                            //https://githu
   {
     if ( server.hasArg( "channel" ) && server.hasArg( "percentage" ) )
     {
+      if ( !server.authenticate( www_username, www_password ) )
+      {
+        return server.requestAuthentication();
+      }
+
       int channelNumber = server.arg( "channel" ).toInt();
       if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS )
       {
@@ -282,7 +328,13 @@ void setupWebServer()                                            //https://githu
     server.send( 200,  textplainHEADER, String( SNTP_UPDATE_DELAY / 1000 ) );
   });
 
-  server.on( "/api/setchannelcolor", []() {
+  server.on( "/api/setchannelcolor", []()
+  {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
     int channelNumber;
     if ( server.hasArg( "channel" ) ) {
       channelNumber = server.arg( "channel" ).toInt();
@@ -303,7 +355,13 @@ void setupWebServer()                                            //https://githu
     server.send( 400, textplainHEADER , "Invalid input." );
   });
 
-  server.on( "/api/setchannelname", []() {
+  server.on( "/api/setchannelname", []()
+  {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
     int channelNumber;
     if ( server.hasArg( "channel" ) ) {
       channelNumber = server.arg( "channel" ).toInt();
@@ -326,6 +384,11 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/setpercentage", []()
   {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
     vTaskSuspend( x_dimmerTaskHandle );
     server.arg( "percentage" ).trim();
     float percentage = server.arg( "percentage" ).toFloat();
@@ -366,6 +429,11 @@ void setupWebServer()                                            //https://githu
   {
     if ( server.hasArg( "tftorientation" ) )
     {
+      if ( !server.authenticate( www_username, www_password ) )
+      {
+        return server.requestAuthentication();
+      }
+
       if (  server.arg( "tftorientation" ) == "normal" )
       {
         TFTorientation = TFTnormal;
@@ -395,6 +463,11 @@ void setupWebServer()                                            //https://githu
   {
     if ( server.hasArg( "timezone" ) )
     {
+      if ( !server.authenticate( www_username, www_password ) )
+      {
+        return server.requestAuthentication();
+      }
+
       if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
       {
         saveStringNVS( "timezone", server.arg( "timezone" ) );
@@ -422,10 +495,22 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/upload", HTTP_POST, []()
   {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
     server.send( 200, textplainHEADER, "" );
-  }, []() {
+  }, [] ()
+  {
     static File fsUploadFile;
     HTTPUpload& upload = server.upload();
+
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
+
     String filename = upload.filename;
     if ( !filename.startsWith("/") )
     {
@@ -470,15 +555,21 @@ void handleNotFound()
   // if the request is not handled by any of the defined handlers
   // try to use the argument as filename and serve from SD
   // if no matching file is found, throw an error.
-  if ( !handleSDfile( server.uri() ) )
+  int error;
+  if ( !handleSDfile( server.uri(), error ) )
   {
-    Serial.println( "404 File not found." );
+    if ( error == 401 )
+    {
+      server.send( 401, textplainHEADER, "Unauthorized" );
+      return;
+    }
     server.send( 404, textplainHEADER, "404 - File not found." );
   }
 }
 
-bool handleSDfile( String path )
+bool handleSDfile( String path , int fileError )
 {
+  fileError = 200;
   path = server.urlDecode( path );
   if ( path.endsWith( "/" ) )
   {
@@ -489,6 +580,13 @@ bool handleSDfile( String path )
   {
     if ( server.arg( "action" ) == "delete" )
     {
+      if ( !server.authenticate( www_username, www_password ) )
+      {
+        server.requestAuthentication();
+        fileError = 401;
+        return false;
+      }
+
       Serial.println( "Delete request. Deleting..." );
       SD.remove( path );
       Serial.println( path + " deleted" );

@@ -20,10 +20,10 @@
 #define UPDATE_FREQ_LEDS      100    //update frequency for LEDS in Hz
 
 
-#define UPDATE_FREQ_TFT       50     //in Hz
+#define UPDATE_FREQ_TFT       10     //in Hz
 
 
-#define UPDATE_FREQ_OLED      25      //in Hz
+#define UPDATE_FREQ_OLED      4      //in Hz
 
 // number of bit precission for LEDC timer
 #define LEDC_NUMBER_OF_BIT    16
@@ -218,7 +218,7 @@ void setup()
     "dimmerTask ",                  /* Name of the task */
     1000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    3,                              /* Priority of the task */
+    6,                              /* Priority of the task */
     &x_dimmerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 
@@ -240,7 +240,7 @@ void setup()
       "tempTask ",                    /* Name of the task */
       4000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
-      5,                              /* Priority of the task */
+      7,                              /* Priority of the task */
       NULL,                           /* Task handle. */
       1);                             /* Core where the task should run */
   }

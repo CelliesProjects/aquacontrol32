@@ -40,7 +40,7 @@ void setPercentageFromProgram( const byte channelNumber, const time_t milliSecon
     {
       channel[channelNumber].currentPercentage = channel[channelNumber].minimumLevel;
     }
-    ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH_NOMATH ) );
+    ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, ledcMaxValue ) );
   }
 }
 
@@ -50,13 +50,8 @@ double setupDimmerPWMfrequency( const double frequency )
   double newFrequency;
   for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    ledcActualBitDepth = LEDC_NUMBER_OF_BIT;
     newFrequency = ledcSetup( channelNumber, frequency, LEDC_NUMBER_OF_BIT );
-    //Serial.print( "\nChannel: " ); Serial.println( channelNumber + 1 );
-    //Serial.print( "PWM frequency requested: " ); Serial.print( frequency / 1000.0 ); Serial.println( "kHz." );
-    //Serial.print( "PWM frequency actual:    " ); Serial.print( newFrequency / 1000.0 ); Serial.println( "kHz." );
-    //Serial.print( "PWM depth:               " ); Serial.print( LEDC_NUMBER_OF_BIT ); Serial.print( "bit - "); Serial.print( (int)LEDC_PWM_DEPTH_NOMATH ); Serial.println( " steps." );
-    ledcAttachPin( ledPin[channelNumber], channelNumber );
+    ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
   return newFrequency;
 }

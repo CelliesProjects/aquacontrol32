@@ -1,6 +1,7 @@
 bool defaultTimersLoaded()
 {
   //find 'default.aqu' on SD card and if present load the timerdata from this file
+  //return true on success
   //return false on error
   File f = SD.open( defaultTimerFile, "r" );
   if (!f)
@@ -41,6 +42,18 @@ bool defaultTimersLoaded()
     channel[thisChannel].timer[channel[thisChannel].numberOfTimers].percentage = channel[thisChannel].timer[0].percentage;
   }
   return true;
+}
+
+void setEmptyTimers()
+{
+  for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++)
+  {
+    channel[channelNumber].timer[0].time = 0;
+    channel[channelNumber].timer[0].percentage = 0;
+    channel[channelNumber].timer[1].time = 86400;
+    channel[channelNumber].timer[1].percentage = 0;
+    channel[channelNumber].numberOfTimers = 1;
+  }
 }
 
 bool cardReaderPresent()

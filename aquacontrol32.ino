@@ -2,111 +2,165 @@
 #include <SD.h>                    //should be installed together with ESP32 Arduino install
 #include <ESPmDNS.h>               //should be installed together with ESP32 Arduino install
 #include <Preferences.h>           //should be installed together with ESP32 Arduino install
+#include "apps/sntp/sntp.h"        //should be installed together with ESP32 Arduino install
 #include "Adafruit_GFX.h"          //Install via 'Manage Libraries' in Arduino IDE
 #include "Adafruit_ILI9341.h"      //Install via 'Manage Libraries' in Arduino IDE
 #include "OneWire.h"               //https://github.com/CelliesProjects/OneWire
 #include "MHDS18B20.h"             //https://github.com/CelliesProjects/ESP32-MINI-KIT
-//#include "time.h"
-#include "SSD1306.h"                //https://github.com/squix78/esp8266-oled-ssd1306
-#include <WebServer.h>              //https://github.com/CelliesProjects/WebServer_tng
-
-#include "apps/sntp/sntp.h"
-
-#define TFTnormal     1
-#define TFTupsidedown 3
-
-#define COUNTRY_CODE_ISO_3166 "nl"   //https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-
-#define UPDATE_FREQ_LEDS      100    //update frequency for LEDS in Hz
+#include "SSD1306.h"               //https://github.com/squix78/esp8266-oled-ssd1306
+#include <WebServer.h>             //https://github.com/CelliesProjects/WebServer_tng
 
 
-#define UPDATE_FREQ_TFT       10     //in Hz
+/**************************************************************************
+       defines for TFT display orientation
+**************************************************************************/
+#define TFTnormal           1
+#define TFTupsidedown       3
 
 
-#define UPDATE_FREQ_OLED      4      //in Hz
+/**************************************************************************
+       country code for ntp server selection
+       https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+**************************************************************************/
+#define COUNTRY_CODE_ISO_3166 "nl"
 
-// number of bit precission for LEDC timer
+
+/**************************************************************************
+       update frequency for LEDS in Hz
+**************************************************************************/
+#define UPDATE_FREQ_LEDS      100
+
+
+/**************************************************************************
+       update frequency for TFT display in Hz
+**************************************************************************/
+#define UPDATE_FREQ_TFT       10
+
+
+/**************************************************************************
+       update frequency for OLED display in Hz
+**************************************************************************/
+#define UPDATE_FREQ_OLED      4
+
+
+/**************************************************************************
+       number of bit precission for LEDC timer
+**************************************************************************/
 #define LEDC_NUMBER_OF_BIT    16
 
-// use 10kHz as a LEDC base request frequency
-#define LEDC_BASE_FREQ        10000
 
-// PWM depth is the number of discrete steps between fully on and off
-#define LEDC_PWM_DEPTH        pow( 2, LEDC_NUMBER_OF_BIT ) - 1
+/**************************************************************************
+       use this frequency as a LEDC base request frequency (in Hz)
+**************************************************************************/
+#define LEDC_REQUEST_FREQ     10000
 
-// the number of LED channels
+
+/**************************************************************************
+       the number of LED channels
+**************************************************************************/
 #define NUMBER_OF_CHANNELS    5
+
+
+/**************************************************************************
+       the maximum number of timers allowed for each channel
+**************************************************************************/
 #define MAX_TIMERS            50
 
-// the pins for the LED channels
+
+/**************************************************************************
+       LED pin numbers
+**************************************************************************/
 #define LED0_PIN              22
 #define LED1_PIN              21
 #define LED2_PIN              17
 #define LED3_PIN              16
 #define LED4_PIN              26
 
-// OneWire Dallas sensors are connected to this pin
-#define ONEWIRE_PIN           5
 
-// maximum number of Dallas sensors
-#define MAX_NUMBER_OF_SENSORS 3
-
-// HW SPI pin definitions
-#define _dc                   27  // Goes to TFT DC
-#define _sclk                 25  // Goes to TFT SCK/CLK
-#define _mosi                 32  // Goes to TFT MOSI
-#define _miso                 14  // Goes to TFT MISO
-#define _cs                    4  // Goes to TFT CS
-#define  SD_CS                 0  // Goes to SD CS
-#define _rst                  -1  // ESP RST goes to TFT RESET
+/**************************************************************************
+      HW SPI pin definitions
+**************************************************************************/
+#define TFT_DC                27  // Goes to TFT DC
+#define SPI_SCK               25  // Goes to TFT SCK/CLK
+#define SPI_MOSI              32  // Goes to TFT MOSI
+#define SPI_MISO              14  // Goes to TFT MISO
+#define TFT_CS                 4  // Goes to TFT CS
+#define SD_CS                  0  // Goes to SD CS
+#define TFT_RST                  -1  // ESP RST goes to TFT RESET
 //       3.3V                     // Goes to TFT LED
 //       5v                       // Goes to TFT Vcc-
 //       Gnd                      // Goes to TFT Gnd
 
-// i2c pin definitions for oled
+
+/**************************************************************************
+      i2c pin definitions for oled
+**************************************************************************/
 #define I2C_SCL_PIN            19
 #define I2C_SDA_PIN            23
 
-//the beef of the program is constructed here
-//first define a list of timers
-struct lightTimer
-{
-  time_t      time;                                                 //time in seconds since midnight so range is 0-86400
-  byte        percentage;                                           // in percentage so range is 0-100
-};
 
-//then a struct for general housekeeping of a ledstrip
-struct lightTable
-{
-  lightTimer timer[MAX_TIMERS];
-  String     name;                                                    //initially set to 'channel 1' 'channel 2' etc.
-  String     color;                                                   //!!interface color, not light color! Example: '#ff0000' for bright red
-  float      currentPercentage;                                       //what percentage is this channel set to
-  byte       pin;                                                     //which pin is this channel on
-  byte       numberOfTimers;                                          //actual number of timers for this channel
-  float      minimumLevel;                                            //never dim this channel below this percentage
-};
+/**************************************************************************
+       OneWire Dallas sensors are connected to this pin
+**************************************************************************/
+#define ONEWIRE_PIN           5
 
-//and make 5 instances
-struct lightTable channel[NUMBER_OF_CHANNELS];                           //all channels are now memory allocated
 
-String mDNSname = "aquacontrol32";
+/**************************************************************************
+       maximum number of Dallas sensors
+**************************************************************************/
+#define MAX_NUMBER_OF_SENSORS 3
 
-//LED pins
-const byte ledPin[NUMBER_OF_CHANNELS] =  { LED0_PIN, LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN } ;        //pin numbers of the channels !!!!! should contain [numberOfChannels] entries.
 
-// Use hardware SPI
-Adafruit_ILI9341 tft = Adafruit_ILI9341( _cs, _dc, _rst );
+/**************************************************************************
+      Setup included libraries
+ *************************************************************************/
+Adafruit_ILI9341 tft = Adafruit_ILI9341( TFT_CS, TFT_DC, TFT_RST );
 
 Preferences preferences;
 
-OneWire  ds( ONEWIRE_PIN );  // on pin 5 (a 4.7K resistor is necessary)
+OneWire  ds( ONEWIRE_PIN );  /* a 4.7K pull-up resistor is necessary */
 
-/*
-       To get from temp saved as float in SensorStruct do:
-       celsius = (float)temp / 16.0;
-       fahrenheit = celsius * 1.8 + 32.0;
-*/
+SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
+
+WebServer server(80);
+
+
+/**************************************************************************
+       start of global variables
+**************************************************************************/
+
+
+/**************************************************************************
+       Username and password for web interface
+ *************************************************************************/
+const char* www_username    = "admin";  //change me!
+const char* www_password    = "esp32";  //change me!
+
+struct lightTimer
+{
+  time_t      time;               /* time in seconds since midnight so range is 0-86400 */
+  byte        percentage;         /* in percentage so range is 0-100 */
+};
+
+struct lightTable
+{
+  lightTimer timer[MAX_TIMERS];
+  String     name;                /* initially set to 'channel 1' 'channel 2' etc. */
+  String     color;               /* interface color, not light color! in hex format*/
+                                  /* Example: '#ff0000' for bright red */
+  float      currentPercentage;   /* what percentage is this channel set to */
+  byte       pin;                 /* which ESP32 pin is this channel on */
+  byte       numberOfTimers;      /* actual number of timers for this channel */
+  float      minimumLevel;        /* never dim this channel below this percentage */
+} channel[NUMBER_OF_CHANNELS];
+
+
+/******************************************************************************************
+        struct to keep track of Dallas DS18B20 sensors
+        To get from temp saved as float in SensorStruct do:
+        celsius    = temp / 16.0;
+        fahrenheit = celsius * 1.8 + 32.0;
+******************************************************************************************/
 struct sensorStruct
 {
   byte addr[8];
@@ -114,20 +168,14 @@ struct sensorStruct
   String name;
 } sensor[MAX_NUMBER_OF_SENSORS];
 
-
-SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
-
-// TCP server at port 80 will respond to HTTP requests
-WebServer server(80);
-
-//global variables
-uint16_t LEDC_PWM_DEPTH_NOMATH = LEDC_PWM_DEPTH; // Calculate once
+String mDNSname = "aquacontrol32";
 
 TaskHandle_t x_dimmerTaskHandle;
 TaskHandle_t x_tftTaskHandle;
 
-double ledcActualFrequency;
-byte ledcActualBitDepth;
+double   ledcActualFrequency;
+uint16_t ledcMaxValue = pow( 2, LEDC_NUMBER_OF_BIT ) - 1;
+int    ledcNumberOfBits = LEDC_NUMBER_OF_BIT;
 
 byte numberOfFoundSensors;
 
@@ -140,24 +188,31 @@ String lightStatus;
 
 int TFTorientation = TFTnormal;
 
+/*****************************************************************************************
+
+       end of global variables
+
+*****************************************************************************************/
+
+
 void setup()
 {
-  pinMode(ledPin[0], OUTPUT);
-  pinMode(ledPin[1], OUTPUT);
-  pinMode(ledPin[2], OUTPUT);
-  pinMode(ledPin[3], OUTPUT);
-  pinMode(ledPin[4], OUTPUT);
+  pinMode( LED0_PIN, OUTPUT );
+  pinMode( LED1_PIN, OUTPUT );
+  pinMode( LED2_PIN, OUTPUT );
+  pinMode( LED3_PIN, OUTPUT );
+  pinMode( LED4_PIN, OUTPUT );
 
-  Serial.begin(115200);
+  Serial.begin( 115200 );
   Serial.println();
-  Serial.println( F( "aquacontrol32" ) );
+  Serial.println( "aquacontrol32" );
   Serial.print( "ESP32 SDK: " );
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
 
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
 
-  SPI.begin( _sclk, _miso, _mosi );
+  SPI.begin( SPI_SCK, SPI_MISO, SPI_MOSI );
   SPI.setFrequency( 40000000 );
 
   setupTFT();
@@ -172,7 +227,15 @@ void setup()
 
   Serial.println( cardReaderPresent() ? "SD card found." : "No SD card found." );
 
-  Serial.println( defaultTimersLoaded() ? "Default timers loaded" : "No timers loaded" );
+  if ( defaultTimersLoaded() )
+  {
+    Serial.println("Default timers loaded." );
+  }
+  else
+  {
+    Serial.println( "No timers loaded." );
+    setEmptyTimers();
+  }
 
   numberOfFoundSensors = searchDallasSensors();
 
@@ -182,18 +245,29 @@ void setup()
 
   //WiFi.printDiag( Serial );
 
-  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_BASE_FREQ );
+  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_REQUEST_FREQ );
 
   //setup channels
+  channel[ 0 ].pin = LED0_PIN;
+  channel[ 1 ].pin = LED1_PIN;
+  channel[ 2 ].pin = LED2_PIN;
+  channel[ 3 ].pin = LED3_PIN;
+  channel[ 4 ].pin = LED4_PIN;
   for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
     channel[ channelNumber ].name          = readStringNVS( "channelname" +  channelNumber , "Channel" + String( channelNumber + 1 ) );
     channel[ channelNumber ].color         = readStringNVS( "channelcolor" + channelNumber , "#fffe7a" );
-    channel[ channelNumber ].pin           = ledPin[ channelNumber ];
     channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + channelNumber, 0 );
   }
 
-  //http://exploreembedded.com/wiki/Task_Switching
+
+  /*****************************************************************************************
+
+         start the different tasks
+         http://exploreembedded.com/wiki/Task_Switching
+
+  *****************************************************************************************/
+
 
   xTaskCreatePinnedToCore(
     webServerTask,                  /* Function to implement the task */
@@ -246,8 +320,15 @@ void setup()
   }
 }
 
-//http://www.iotsharing.com/2017/06/how-to-apply-freertos-in-arduino-esp32.html
-//http://www.iotsharing.com/2017/05/how-to-apply-finite-state-machine-to-arduino-esp32-avoid-blocking.html
+
+/*****************************************************************************************
+
+       loopTask start
+
+       http://www.iotsharing.com/2017/06/how-to-apply-freertos-in-arduino-esp32.html
+       http://www.iotsharing.com/2017/05/how-to-apply-finite-state-machine-to-arduino-esp32-avoid-blocking.html
+
+*****************************************************************************************/
 void loop()
 {
   vTaskDelete( NULL );

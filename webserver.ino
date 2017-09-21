@@ -6,6 +6,7 @@
 #include "fileman_htm.h"
 #include "channels_htm.h"
 
+
 void webServerTask ( void * pvParameters )
 {
   while (1)
@@ -15,11 +16,11 @@ void webServerTask ( void * pvParameters )
   }
 }
 
-const char* www_username = "admin";
-const char* www_password = "esp32";
+const char* textPlainHeader  = "text/plain";
+const char* textHtmlHeader   = "text/html";
 
-static const char textplainHEADER[]  = "text/plain";
-static const char texthtmlHEADER[]  = "text/html";
+const char* contentSecurityHeader      = "Content-Security-Policy";
+const char* contentSecurityHeaderValue = "script-src 'unsafe-inline' https: https://code.jquery.com;";
 
 void setupWebServer()                                            //https://github.com/espressif/esp-idf/blob/master/components/spi_flash/README.rst
 {
@@ -29,31 +30,36 @@ void setupWebServer()                                            //https://githu
   //home page or 'index.html'
   server.on( "/", []()
   {
-    server.send_P( 200, texthtmlHEADER, index_htm, index_htm_len );                // 'index_htm' & 'index_htm_len' are included with 'index_htm.h'
+    server.sendHeader( contentSecurityHeader, contentSecurityHeaderValue );
+    server.send_P( 200, textHtmlHeader, index_htm, index_htm_len );                // 'index_htm' & 'index_htm_len' are included with 'index_htm.h'
   });
 
   //channel setup or 'channels.htm'
   server.on( "/channels", []()
   {
-    server.send_P( 200, texthtmlHEADER, channels_htm, channels_htm_len );          // 'channels_htm' & 'channels_htm_len' are included with 'channels_htm.h'
+    server.sendHeader( contentSecurityHeader, contentSecurityHeaderValue );
+    server.send_P( 200, textHtmlHeader, channels_htm, channels_htm_len );          // 'channels_htm' & 'channels_htm_len' are included with 'channels_htm.h'
   });
 
   //editor or 'editor.htm'
   server.on( "/editor", []()
   {
-    server.send_P( 200, texthtmlHEADER, editor_htm, editor_htm_len );              // 'editor_htm' & 'editor_htm_len' are included with 'editor_htm.h'
+    server.sendHeader( contentSecurityHeader, contentSecurityHeaderValue );
+    server.send_P( 200, textHtmlHeader, editor_htm, editor_htm_len );              // 'editor_htm' & 'editor_htm_len' are included with 'editor_htm.h'
   });
 
   //editor or 'setup.htm'
   server.on( "/setup", []()
   {
-    server.send_P( 200, texthtmlHEADER, setup_htm, setup_htm_len );                // 'setup_htm' & 'setup_htm_len' are included with 'setup_htm.h'
+    server.sendHeader( contentSecurityHeader, contentSecurityHeaderValue );
+    server.send_P( 200, textHtmlHeader, setup_htm, setup_htm_len );                // 'setup_htm' & 'setup_htm_len' are included with 'setup_htm.h'
   });
 
   //filemanager or 'fileman.htm'
   server.on( "/filemanager", []()
   {
-    server.send_P( 200, texthtmlHEADER, fileman_htm, fileman_htm_len );            // 'filemanager_htm' & 'filemanager_htm_len' are included with 'fileman_htm.h'
+    server.sendHeader( contentSecurityHeader, contentSecurityHeaderValue );
+    server.send_P( 200, textHtmlHeader, fileman_htm, fileman_htm_len );            // 'filemanager_htm' & 'filemanager_htm_len' are included with 'fileman_htm.h'
   });
 
   /***************************************************************************
@@ -68,7 +74,7 @@ void setupWebServer()                                            //https://githu
     }
 
     clearNVS();
-    server.send( 200,  textplainHEADER, "NVS cleared" );
+    server.send( 200,  textPlainHeader, "NVS cleared" );
   });
 
   server.on( "/api/diskspace", []()
@@ -79,7 +85,7 @@ void setupWebServer()                                            //https://githu
     char buff[21];
     // copy to buffer
     sprintf( buff, "%" PRIu64, SD.cardSize() );
-    server.send( 200,  textplainHEADER, buff );
+    server.send( 200,  textPlainHeader, buff );
   });
 
   server.on( "/api/files", []()
@@ -89,14 +95,12 @@ void setupWebServer()                                            //https://githu
       File root = SD.open("/");
       if (!root)
       {
-        Serial.println("Failed to open directory");
-        server.send( 404, textplainHEADER, "Folder not found." );
+        server.send( 404, textPlainHeader, "Folder not found." );
         return;
       }
       if (!root.isDirectory())
       {
-        Serial.println("Not a directory");
-        server.send( 401, textplainHEADER, "Not a directory");
+        server.send( 401, textPlainHeader, "Not a directory");
         return;
       }
 
@@ -111,12 +115,12 @@ void setupWebServer()                                            //https://githu
         file = root.openNextFile();
       }
     }
-    server.send( 200, textplainHEADER, HTTPresponse );
+    server.send( 200, textPlainHeader, HTTPresponse );
   });
 
   server.on( "/api/boottime", []()
   {
-    server.send( 200, texthtmlHEADER, asctime( &systemStart ) );
+    server.send( 200, textHtmlHeader, asctime( &systemStart ) );
   });
 
   server.on( "/api/getchannelcolors", []()
@@ -127,7 +131,7 @@ void setupWebServer()                                            //https://githu
       response += channel[channelNumber].color + "\n";
     }
     server.setContentLength( response.length() );
-    server.send( 200, textplainHEADER, response );
+    server.send( 200, textPlainHeader, response );
   });
 
   server.on( "/api/getchannelnames", []()
@@ -138,7 +142,7 @@ void setupWebServer()                                            //https://githu
       response += channel[channelNumber].name + "\n";
     }
     server.setContentLength( response.length()  );
-    server.send( 200, textplainHEADER, response );
+    server.send( 200, textPlainHeader, response );
   });
 
   server.on( "/api/getminimumlevels", []()
@@ -149,7 +153,7 @@ void setupWebServer()                                            //https://githu
       html += String( channel[channelNumber].minimumLevel ) + "\n";
     }
     server.setContentLength( html.length() );
-    server.send( 200, texthtmlHEADER, html );
+    server.send( 200, textHtmlHeader, html );
   });
 
   server.on( "/api/hostname", HTTP_GET, []()
@@ -164,11 +168,11 @@ void setupWebServer()                                            //https://githu
       }
       else
       {
-        server.send( 200, texthtmlHEADER, "ERROR setting hostname" );
+        server.send( 200, textHtmlHeader, "ERROR setting hostname" );
         return;
       }
     }
-    server.send( 200, texthtmlHEADER, WiFi.getHostname() );
+    server.send( 200, textHtmlHeader, WiFi.getHostname() );
   });
 
   server.on( "/api/lightsoff", []()
@@ -185,7 +189,7 @@ void setupWebServer()                                            //https://githu
       ledcWrite( channelNumber, 0 );
     }
     lightStatus = "LIGHTS OFF ";
-    server.send( 200, texthtmlHEADER, lightStatus );
+    server.send( 200, textHtmlHeader, lightStatus );
   });
 
   server.on( "/api/lightson", []()
@@ -199,10 +203,10 @@ void setupWebServer()                                            //https://githu
     for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = 100;
-      ledcWrite( channelNumber, LEDC_PWM_DEPTH_NOMATH );
+      ledcWrite( channelNumber, ledcMaxValue );
     }
     lightStatus = " LIGHTS ON ";
-    server.send( 200, texthtmlHEADER, lightStatus );
+    server.send( 200, textHtmlHeader, lightStatus );
   });
 
   server.on( "/api/lightsprogram", []()
@@ -221,7 +225,7 @@ void setupWebServer()                                            //https://githu
       setPercentageFromProgram( channelNumber, secondsToday );
     }
     lightStatus = "LIGHTS AUTO";
-    server.send( 200, texthtmlHEADER, lightStatus );
+    server.send( 200, textHtmlHeader, lightStatus );
     //updateLightStatusTFT( lightStatus );
   });
 
@@ -232,7 +236,7 @@ void setupWebServer()                                            //https://githu
       return server.requestAuthentication();
     }
 
-    server.send( 200, textplainHEADER, defaultTimersLoaded() ? "Succes" : "Failed" );
+    server.send( 200, textPlainHeader, defaultTimersLoaded() ? "Succes" : "Failed" );
     struct tm timeinfo;
     getLocalTime(&timeinfo);
     time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
@@ -252,20 +256,20 @@ void setupWebServer()                                            //https://githu
 
       newPWMDepth = server.arg( "newpwmdepth" ).toInt();
       if ( newPWMDepth < 10 || newPWMDepth > 16 ) {
-        server.send( 200, textplainHEADER, "ERROR - Invalid PWM depth" );
+        server.send( 200, textPlainHeader, "ERROR - Invalid PWM depth" );
         return;
       }
-      if ( ledcActualBitDepth != newPWMDepth )
+      if ( ledcNumberOfBits != newPWMDepth )
       {
         for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
         {
           ledcSetup( channelNumber, ledcActualFrequency, newPWMDepth );
         }
       }
-      ledcActualBitDepth = newPWMDepth;
+      ledcNumberOfBits = newPWMDepth;
       //TODO: Save in preferences
     }
-    server.send( 200, textplainHEADER, String( ledcActualBitDepth ) );
+    server.send( 200, textPlainHeader, String( ledcNumberOfBits ) );
   });
 
 
@@ -279,7 +283,7 @@ void setupWebServer()                                            //https://githu
 
       double tempPWMfrequency = server.arg( "newpwmfrequency" ).toFloat();
       if ( tempPWMfrequency < 100 || tempPWMfrequency > 10000 ) {
-        server.send( 200, textplainHEADER, "Invalid PWM frequency" );
+        server.send( 200, textPlainHeader, "Invalid PWM frequency" );
         return;
       }
       for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
@@ -288,7 +292,7 @@ void setupWebServer()                                            //https://githu
       }
       //TODO: Save in preferences
     }
-    server.send( 200, textplainHEADER, String( actualFreq ) );
+    server.send( 200, textPlainHeader, String( actualFreq ) );
   });
 
   server.on( "/api/minimumlevel", []()
@@ -303,21 +307,21 @@ void setupWebServer()                                            //https://githu
       int channelNumber = server.arg( "channel" ).toInt();
       if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS )
       {
-        server.send( 400,  textplainHEADER, "Invalid channel." );
+        server.send( 400,  textPlainHeader, "Invalid channel." );
         return;
       }
       float thisPercentage = server.arg( "percentage" ).toFloat();
       if ( thisPercentage < 0 || thisPercentage > 1 )
       {
-        server.send( 400,  textplainHEADER, "Invalid percentage." );
+        server.send( 400,  textPlainHeader, "Invalid percentage." );
         return;
       }
       channel[channelNumber].minimumLevel = thisPercentage;
       saveFloatNVS( "channelminimum" + channelNumber, channel[channelNumber].minimumLevel );
-      server.send( 200,  textplainHEADER, "Minimum level set." );
+      server.send( 200,  textPlainHeader, "Minimum level set." );
       return;
     }
-    server.send( 400,  textplainHEADER, "Invalid input." );
+    server.send( 400,  textPlainHeader, "Invalid input." );
   });
 
   server.on( "/api/ntpinterval", []()
@@ -325,7 +329,7 @@ void setupWebServer()                                            //https://githu
     //time_t sntpInterval = 0;// SNTP_UPDATE_DELAY;
     //char buff[40];
     //snprintf( buff, sizeof(buff), "%s", sntpInterval );
-    server.send( 200,  textplainHEADER, String( SNTP_UPDATE_DELAY / 1000 ) );
+    server.send( 200,  textPlainHeader, String( SNTP_UPDATE_DELAY / 1000 ) );
   });
 
   server.on( "/api/setchannelcolor", []()
@@ -338,9 +342,8 @@ void setupWebServer()                                            //https://githu
     int channelNumber;
     if ( server.hasArg( "channel" ) ) {
       channelNumber = server.arg( "channel" ).toInt();
-      Serial.println(channelNumber);
       if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS ) {
-        server.send( 400,  textplainHEADER, "Invalid channel." );
+        server.send( 400,  textPlainHeader, "Invalid channel." );
         return;
       }
     }
@@ -349,10 +352,10 @@ void setupWebServer()                                            //https://githu
       newColor.trim();
       channel[channelNumber].color = newColor;
       saveStringNVS( "channelcolor" + char( channelNumber ), channel[channelNumber].color );
-      server.send( 200, textplainHEADER , "Success" );
+      server.send( 200, textPlainHeader , "Success" );
       return;
     }
-    server.send( 400, textplainHEADER , "Invalid input." );
+    server.send( 400, textPlainHeader , "Invalid input." );
   });
 
   server.on( "/api/setchannelname", []()
@@ -366,7 +369,7 @@ void setupWebServer()                                            //https://githu
     if ( server.hasArg( "channel" ) ) {
       channelNumber = server.arg( "channel" ).toInt();
       if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS ) {
-        server.send( 400, textplainHEADER, "Invalid channel." );
+        server.send( 400, textPlainHeader, "Invalid channel." );
         return;
       }
     }
@@ -376,10 +379,10 @@ void setupWebServer()                                            //https://githu
       //TODO: check if illegal cahrs present and get out if so
       channel[channelNumber].name = newName;
       saveStringNVS( "channelname" + char( channelNumber ), channel[channelNumber].name );
-      server.send( 200, textplainHEADER, "Success" );
+      server.send( 200, textPlainHeader, "Success" );
       return;
     }
-    server.send( 400, textplainHEADER, "Invalid input." );
+    server.send( 400, textPlainHeader, "Invalid input." );
   });
 
   server.on( "/api/setpercentage", []()
@@ -395,11 +398,11 @@ void setupWebServer()                                            //https://githu
     for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = percentage;
-      ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, LEDC_PWM_DEPTH_NOMATH ) );
+      ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, ledcMaxValue ) );
     }
     lightStatus = "All lights at " + String( percentage ) + "%";
     server.setContentLength( lightStatus.length() );
-    server.send( 200, textplainHEADER, lightStatus );
+    server.send( 200, textPlainHeader, lightStatus );
   });
 
   server.on( "/api/status", []()
@@ -411,7 +414,6 @@ void setupWebServer()                                            //https://githu
     }
     struct tm timeinfo;
     getLocalTime( &timeinfo );
-
     ( timeinfo.tm_hour ) < 10 ? HTML += "0" : "";
     HTML +=  String( timeinfo.tm_hour ) + ":";
 
@@ -420,9 +422,8 @@ void setupWebServer()                                            //https://githu
 
     ( timeinfo.tm_sec < 10 ) ? HTML += "0" : "";
     HTML += String( timeinfo.tm_sec ) + "," + lightStatus;
-
     server.setContentLength( HTML.length() );
-    server.send( 200, textplainHEADER, HTML );
+    server.send( 200, textPlainHeader, HTML );
   });
 
   server.on( "/api/tftorientation", HTTP_GET, []()
@@ -451,12 +452,12 @@ void setupWebServer()                                            //https://githu
         //vTaskResume( x_tftTaskHandle );
       } else
       {
-        server.send( 400, textplainHEADER, "ERROR No valid input." );
+        server.send( 400, textPlainHeader, "ERROR No valid input." );
         return;
       }
     }
     saveStringNVS( "tftorientation", ( TFTorientation == TFTnormal ) ? "normal" : "upsidedown" );
-    server.send( 200, textplainHEADER, ( TFTorientation == TFTnormal ) ? "normal" : "upsidedown" );
+    server.send( 200, textPlainHeader, ( TFTorientation == TFTnormal ) ? "normal" : "upsidedown" );
   });
 
   server.on( "/api/timezone", HTTP_GET, []()
@@ -471,12 +472,12 @@ void setupWebServer()                                            //https://githu
       if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
       {
         saveStringNVS( "timezone", server.arg( "timezone" ) );
-        server.send( 200, textplainHEADER, server.arg( "timezone" ) );
+        server.send( 200, textPlainHeader, server.arg( "timezone" ) );
         return;
       }
       else
       {
-        server.send( 400, textplainHEADER, "ERROR setting timezone" );
+        server.send( 400, textPlainHeader, "ERROR setting timezone" );
         return;
       }
     }
@@ -485,11 +486,24 @@ void setupWebServer()                                            //https://githu
       char const* timeZone = getenv( "TZ" );
       if ( timeZone == NULL )
       {
-        server.send( 200, textplainHEADER, "No timezone set." );
+        server.send( 200, textPlainHeader, "No timezone set." );
         return;
       }
-      server.send( 200, textplainHEADER, timeZone );
+      server.send( 200, textPlainHeader, timeZone );
       return;
+    }
+  });
+
+  server.on( "/api/upload", HTTP_OPTIONS, []()
+  {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      server.requestAuthentication();
+      return;
+    }
+    else
+    {
+      server.send( 200, textPlainHeader, "" );
     }
   });
 
@@ -502,7 +516,7 @@ void setupWebServer()                                            //https://githu
     }
     else
     {
-      server.send( 200, textplainHEADER, "" );
+      server.send( 200, textPlainHeader, "" );
     }
   }, [] ()
   {
@@ -564,10 +578,10 @@ void handleNotFound()
   {
     if ( error == 401 )
     {
-      server.send( 401, textplainHEADER, "Unauthorized" );
+      server.send( 401, textPlainHeader, "Unauthorized" );
       return;
     }
-    server.send( 404, textplainHEADER, "404 - File not found." );
+    server.send( 404, textPlainHeader, "404 - File not found." );
   }
 }
 
@@ -591,10 +605,8 @@ bool handleSDfile( String path , int fileError )
         return false;
       }
 
-      Serial.println( "Delete request. Deleting..." );
       SD.remove( path );
-      Serial.println( path + " deleted" );
-      server.send( 200,  textplainHEADER, path.substring(1) + " deleted" );
+      server.send( 200,  textPlainHeader, path.substring(1) + " deleted" );
       return true;
     };
     File file = SD.open( path, "r" );

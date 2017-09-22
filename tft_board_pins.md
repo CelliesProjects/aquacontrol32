@@ -11,3 +11,7 @@ These are the pin connections between the `MH-ET ESP32 D1 minikit` and the board
 | 7      | RST TFT         |  (RST) -1          |
 | 8      | PWM TFT         |  2                 |
 | 9      | IRQ_TOUCH       | ??                 |
+
+10k pull-up resistors are needed for high speed operation on MOSI, MISO and SCK and CS lines.
+
+See https://github.com/espressif/esp-idf/tree/master/examples/storage/sd_card

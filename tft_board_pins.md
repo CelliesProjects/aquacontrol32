@@ -9,4 +9,5 @@ These are the pin connections between the `MH-ET ESP32 D1 minikit` and the board
 | 5      | CS TFT          |  4                 |
 | 6      | CS SD           |  0                 |
 | 7      | RST TFT         |  (RST) -1          |
-| 8      | IRQ_TOUCH       | ??                 |
+| 8      | PWM TFT         |  2                 |
+| 9      | IRQ_TOUCH       | ??                 |

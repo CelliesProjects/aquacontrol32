@@ -82,10 +82,9 @@ void setupWebServer()                                            //https://githu
     // https://stackoverflow.com/questions/8323159/how-to-convert-uint64-t-value-in-const-char-string
     // cardsize = uint64_t
     // length of 2**64 - 1, +1 for nul.
-    char buff[21];
-    // copy to buffer
-    sprintf( buff, "%" PRIu64, SD.cardSize() );
-    server.send( 200,  textPlainHeader, buff );
+    char content[21];
+    snprintf( content, sizeof( content ), "%" PRIu64, SD.cardSize() );
+    server.send( 200,  textPlainHeader, content );
   });
 
   server.on( "/api/files", []()
@@ -125,35 +124,35 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/getchannelcolors", []()
   {
-    String response;
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    char content[42];
+    uint8_t charCount = 0;
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      response += channel[channelNumber].color + "\n";
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", channel[channelNumber].color.c_str() );
     }
-    server.setContentLength( response.length() );
-    server.send( 200, textPlainHeader, response );
+    server.send( 200, textPlainHeader, content );
   });
 
   server.on( "/api/getchannelnames", []()
   {
-    String response;
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    char content[100];
+    uint8_t charCount = 0;
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      response += channel[channelNumber].name + "\n";
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", channel[channelNumber].name.c_str() );
     }
-    server.setContentLength( response.length()  );
-    server.send( 200, textPlainHeader, response );
+    server.send( 200, textPlainHeader, content );
   });
 
   server.on( "/api/getminimumlevels", []()
   {
-    String html;
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    char content[30];
+    uint8_t charCount = 0;
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      html += String( channel[channelNumber].minimumLevel ) + "\n";
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f\n", channel[channelNumber].minimumLevel );
     }
-    server.setContentLength( html.length() );
-    server.send( 200, textHtmlHeader, html );
+    server.send( 200, textPlainHeader, content );
   });
 
   server.on( "/api/hostname", HTTP_GET, []()
@@ -183,7 +182,7 @@ void setupWebServer()                                            //https://githu
     }
 
     vTaskSuspend( x_dimmerTaskHandle );
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = 0;
       ledcWrite( channelNumber, 0 );
@@ -200,7 +199,7 @@ void setupWebServer()                                            //https://githu
     }
 
     vTaskSuspend( x_dimmerTaskHandle );
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = 100;
       ledcWrite( channelNumber, ledcMaxValue );
@@ -215,18 +214,9 @@ void setupWebServer()                                            //https://githu
     {
       return server.requestAuthentication();
     }
-
     vTaskResume( x_dimmerTaskHandle );
-    struct tm timeinfo;
-    getLocalTime(&timeinfo);
-    time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      setPercentageFromProgram( channelNumber, secondsToday );
-    }
     lightStatus = "LIGHTS AUTO";
     server.send( 200, textHtmlHeader, lightStatus );
-    //updateLightStatusTFT( lightStatus );
   });
 
   server.on( "/api/loadtimers", []()
@@ -237,13 +227,6 @@ void setupWebServer()                                            //https://githu
     }
 
     server.send( 200, textPlainHeader, defaultTimersLoaded() ? "Succes" : "Failed" );
-    struct tm timeinfo;
-    getLocalTime(&timeinfo);
-    time_t secondsToday = ( timeinfo.tm_hour * 3600 ) + ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec;
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      setPercentageFromProgram( channelNumber, secondsToday );
-    }
   });
 
   server.on( "/api/pwmdepth", []() {
@@ -255,13 +238,13 @@ void setupWebServer()                                            //https://githu
       }
 
       newPWMDepth = server.arg( "newpwmdepth" ).toInt();
-      if ( newPWMDepth < 10 || newPWMDepth > 16 ) {
+      if ( newPWMDepth < 11 || newPWMDepth > 16 ) {
         server.send( 200, textPlainHeader, "ERROR - Invalid PWM depth" );
         return;
       }
       if ( ledcNumberOfBits != newPWMDepth )
       {
-        for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+        for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
         {
           ledcSetup( channelNumber, ledcActualFrequency, newPWMDepth );
         }
@@ -274,7 +257,6 @@ void setupWebServer()                                            //https://githu
 
 
   server.on( "/api/pwmfrequency", []() {
-    double actualFreq = ledcActualFrequency;
     if ( server.hasArg( "newpwmfrequency" ) ) {
       if ( !server.authenticate( www_username, www_password ) )
       {
@@ -282,17 +264,19 @@ void setupWebServer()                                            //https://githu
       }
 
       double tempPWMfrequency = server.arg( "newpwmfrequency" ).toFloat();
-      if ( tempPWMfrequency < 100 || tempPWMfrequency > 10000 ) {
+      if ( tempPWMfrequency < 100 || tempPWMfrequency > 20000 ) {
         server.send( 200, textPlainHeader, "Invalid PWM frequency" );
         return;
       }
-      for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        actualFreq = ledcSetup( channelNumber, tempPWMfrequency, ledcNumberOfBits );
+        ledcActualFrequency = ledcSetup( channelNumber, tempPWMfrequency, ledcNumberOfBits );
       }
       //TODO: Save in preferences
     }
-    server.send( 200, textPlainHeader, String( actualFreq ) );
+    char content[16];
+    snprintf( content, sizeof( content ), "%i", ledcActualFrequency );
+    server.send( 200, textPlainHeader, content );
   });
 
   server.on( "/api/minimumlevel", []()
@@ -326,9 +310,6 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/ntpinterval", []()
   {
-    //time_t sntpInterval = 0;// SNTP_UPDATE_DELAY;
-    //char buff[40];
-    //snprintf( buff, sizeof(buff), "%s", sntpInterval );
     server.send( 200,  textPlainHeader, String( SNTP_UPDATE_DELAY / 1000 ) );
   });
 
@@ -395,13 +376,12 @@ void setupWebServer()                                            //https://githu
     vTaskSuspend( x_dimmerTaskHandle );
     server.arg( "percentage" ).trim();
     float percentage = server.arg( "percentage" ).toFloat();
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = percentage;
       ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, ledcMaxValue ) );
     }
     lightStatus = "All lights at " + String( percentage ) + "%";
-    server.setContentLength( lightStatus.length() );
     server.send( 200, textPlainHeader, lightStatus );
   });
 
@@ -511,7 +491,7 @@ void setupWebServer()                                            //https://githu
     }
     else
     {
-      server.send( 200, textPlainHeader, "" );
+      server.send( 200 );
     }
   }, [] ()
   {

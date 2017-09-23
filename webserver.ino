@@ -407,23 +407,18 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/status", []()
   {
-    String HTML;
-    for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    char content[40];
+    int charCount = 0;
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      HTML += String( channel[channelNumber].currentPercentage ) + ",";
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f,", channel[channelNumber].currentPercentage );
     }
-    struct tm timeinfo;
-    getLocalTime( &timeinfo );
-    ( timeinfo.tm_hour ) < 10 ? HTML += "0" : "";
-    HTML +=  String( timeinfo.tm_hour ) + ":";
-
-    ( timeinfo.tm_min ) < 10 ? HTML += "0" : "";
-    HTML += String( timeinfo.tm_min ) + ":";
-
-    ( timeinfo.tm_sec < 10 ) ? HTML += "0" : "";
-    HTML += String( timeinfo.tm_sec ) + "," + lightStatus;
-    server.setContentLength( HTML.length() );
-    server.send( 200, textPlainHeader, HTML );
+    time_t now = time(0);
+    char buff[10];
+    strftime( buff, sizeof( buff ), "%T", localtime( &now ) );
+    charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,", buff );
+    snprintf( content + charCount, sizeof( content ) - charCount, "%s", lightStatus.c_str() );
+    server.send( 200, textPlainHeader, content );
   });
 
   server.on( "/api/tftorientation", HTTP_GET, []()

@@ -252,8 +252,6 @@ void setup()
 
   //WiFi.printDiag( Serial );
 
-  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_REQUEST_FREQ );
-
   //setup channels
   channel[ 0 ].pin = LED0_PIN;
   channel[ 1 ].pin = LED1_PIN;
@@ -266,6 +264,9 @@ void setup()
     channel[ channelNumber ].color         = readStringNVS( "channelcolor" + channelNumber , "#fffe7a" );
     channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + channelNumber, 0 );
   }
+
+  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_REQUEST_FREQ );
+
 
 
   /*****************************************************************************************

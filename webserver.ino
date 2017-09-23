@@ -288,7 +288,7 @@ void setupWebServer()                                            //https://githu
       }
       for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        actualFreq = ledcSetup( channelNumber, tempPWMfrequency, LEDC_NUMBER_OF_BIT );
+        actualFreq = ledcSetup( channelNumber, tempPWMfrequency, ledcNumberOfBits );
       }
       //TODO: Save in preferences
     }

@@ -50,7 +50,7 @@ double setupDimmerPWMfrequency( const double frequency )
   double newFrequency;
   for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    newFrequency = ledcSetup( channelNumber, frequency, LEDC_NUMBER_OF_BIT );
+    newFrequency = ledcSetup( channelNumber, frequency, ledcNumberOfBits );
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
   return newFrequency;

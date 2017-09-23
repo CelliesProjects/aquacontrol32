@@ -6,7 +6,7 @@ void setupNTP()
 
   String timeZone = readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" );
 
-  tft.print( "Getting time from " + NTPpoolAdress );
+  tft.println( "Getting time from " + NTPpoolAdress );
 
   configTzTime( timeZone.c_str(), NTPpoolAdress.c_str() );
 

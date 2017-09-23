@@ -77,11 +77,14 @@ void tftTask( void * pvParameters )
 
 void setupTFT()
 {
-  tft.begin( 40000000, SPI );
+  tft.begin( 35000000, SPI );
   uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
   Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
 
   tft.fillScreen(ILI9341_BLACK);
+
+  digitalWrite( BACKLIGHT_PIN, HIGH );
+
   ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? TFTorientation = TFTnormal : TFTorientation = TFTupsidedown;
   tft.setRotation( TFTorientation );
   tft.setCursor( 0, 0 );

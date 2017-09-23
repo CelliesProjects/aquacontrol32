@@ -49,14 +49,16 @@ void setupWiFi()
   while ( WiFi.status() != WL_CONNECTED && millis() - WiFiStartTime <= 10000 )
   {
     Serial.print( "." );
+    tft.print( "." );
     delay( 500 );
   }
+  tft.println();
   Serial.println();
   if ( WiFi.status() == WL_CONNECTED )
   {
     //We have succesfully connected...
     tft.invertDisplay( false );
-    tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP() );
+    tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP().toString() );
     saveStringNVS( "wifissid", wifiSSID.c_str() );
     saveStringNVS( "wifipsk", wifiPSK.c_str() );
   }

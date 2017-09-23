@@ -19,6 +19,12 @@
 
 
 /**************************************************************************
+       TFT display backlight control
+**************************************************************************/
+#define BACKLIGHT_PIN       2
+
+
+/**************************************************************************
        country code for ntp server selection
        https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 **************************************************************************/
@@ -202,6 +208,7 @@ void setup()
   pinMode( LED2_PIN, OUTPUT );
   pinMode( LED3_PIN, OUTPUT );
   pinMode( LED4_PIN, OUTPUT );
+  pinMode( BACKLIGHT_PIN, OUTPUT );
 
   Serial.begin( 115200 );
   Serial.println();

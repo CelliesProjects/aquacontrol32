@@ -209,7 +209,7 @@ void setupWebServer()                                            //https://githu
   });
 
   server.on( "/api/lightsprogram", []()
-  {
+  {.
     if ( !server.authenticate( www_username, www_password ) )
     {
       return server.requestAuthentication();
@@ -226,7 +226,7 @@ void setupWebServer()                                            //https://githu
       return server.requestAuthentication();
     }
 
-    server.send( 200, textPlainHeader, defaultTimersLoaded() ? "Succes" : "Failed" );
+    server.send( 200, textPlainHeader, defaultTimersLoaded() ? "Timers loaded." : "Not loaded." );
   });
 
   server.on( "/api/pwmdepth", []()
@@ -333,7 +333,7 @@ void setupWebServer()                                            //https://githu
       newColor.trim();
       channel[channelNumber].color = newColor;
       saveStringNVS( "channelcolor" + char( channelNumber ), channel[channelNumber].color );
-      server.send( 200, textPlainHeader , "Success" );
+      server.send( 200, textPlainHeader , "Color set." );
       return;
     }
     server.send( 400, textPlainHeader , "Invalid input." );
@@ -360,7 +360,7 @@ void setupWebServer()                                            //https://githu
       //TODO: check if illegal cahrs present and get out if so
       channel[channelNumber].name = newName;
       saveStringNVS( "channelname" + char( channelNumber ), channel[channelNumber].name );
-      server.send( 200, textPlainHeader, "Success" );
+      server.send( 200, textPlainHeader, "Channelname set." );
       return;
     }
     server.send( 400, textPlainHeader, "Invalid input." );

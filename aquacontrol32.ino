@@ -185,7 +185,7 @@ String mDNSname = "aquacontrol32";
 TaskHandle_t x_dimmerTaskHandle = NULL;
 
 double   ledcActualFrequency;
-uint16_t ledcMaxValue           = pow( 2, LEDC_NUMBER_OF_BIT ) - 1;
+uint16_t ledcMaxValue           = ( 2 << LEDC_NUMBER_OF_BIT ) - 1;
 uint8_t  ledcNumberOfBits       = LEDC_NUMBER_OF_BIT;
 
 byte numberOfFoundSensors;

@@ -387,7 +387,7 @@ void setupWebServer()                                            //https://githu
 
   server.on( "/api/status", []()
   {
-    char content[40];
+    char content[50];
     int charCount = 0;
     for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {

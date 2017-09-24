@@ -1,5 +1,13 @@
 void oledTask( void * pvParameters )
 {
+  OLED.init();
+  OLED.clear();
+  OLED.setTextAlignment( TEXT_ALIGN_CENTER );
+  OLED.setFont( ArialMT_Plain_16 );
+  OLED.drawString( 64, 10, F( "AquaControl32" ) );
+  OLED.drawString( 64, 30, F( "Booting..." ) );
+  OLED.display();
+
   int oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
 
   while (1)
@@ -21,14 +29,3 @@ void oledTask( void * pvParameters )
   }
 }
 
-void setupOLED()
-{
-  btStop();
-  OLED.init();
-  OLED.clear();
-  OLED.setTextAlignment( TEXT_ALIGN_CENTER );
-  OLED.setFont( ArialMT_Plain_16 );
-  OLED.drawString( 64, 10, F( "AquaControl32" ) );
-  OLED.drawString( 64, 30, F( "Booting..." ) );
-  OLED.display();
-}

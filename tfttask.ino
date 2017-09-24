@@ -1,8 +1,18 @@
 void tftTask( void * pvParameters )
 {
+  tft.begin( 35000000, SPI );
+  uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
+  Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
+
+  tft.fillScreen(ILI9341_BLACK);
+
+  digitalWrite( BACKLIGHT_PIN, HIGH );
+
+  ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? TFTorientation = TFTnormal : TFTorientation = TFTupsidedown;
+  tft.setRotation( TFTorientation );
+
   int tftTaskdelayTime = 1000 / UPDATE_FREQ_LEDS;
 
-  tft.fillScreen( ILI9341_BLACK );
   while (1)
   {
     const uint16_t TFT_TEXT_COLOR   = ILI9341_YELLOW;
@@ -32,13 +42,13 @@ void tftTask( void * pvParameters )
                     BARS_WIDTH - BARS_BORDER * 2,
                     BARS_HEIGHT - channel[thisChannel].currentPercentage * HEIGHT_FACTOR,
                     TFT_BACK_COLOR );
-/*
-      //high water mark
-      tft.drawFastHLine( thisChannel * BARS_WIDTH + BARS_BORDER,
-                         BARS_BOTTOM - BARS_HEIGHT - 1,
-                         BARS_WIDTH - BARS_BORDER * 2,
-                         tft.color565( r, g, b ) );
-*/
+      /*
+            //high water mark
+            tft.drawFastHLine( thisChannel * BARS_WIDTH + BARS_BORDER,
+                               BARS_BOTTOM - BARS_HEIGHT - 1,
+                               BARS_WIDTH - BARS_BORDER * 2,
+                               tft.color565( r, g, b ) );
+      */
       tft.fillRect( thisChannel * BARS_WIDTH + BARS_BORDER,
                     BARS_BOTTOM - channel[thisChannel].currentPercentage * HEIGHT_FACTOR,
                     BARS_WIDTH - BARS_BORDER * 2,
@@ -73,22 +83,4 @@ void tftTask( void * pvParameters )
 
     vTaskDelay( tftTaskdelayTime / portTICK_PERIOD_MS );
   }
-}
-
-void setupTFT()
-{
-  tft.begin( 35000000, SPI );
-  uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
-  Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
-
-  tft.fillScreen(ILI9341_BLACK);
-
-  digitalWrite( BACKLIGHT_PIN, HIGH );
-
-  ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? TFTorientation = TFTnormal : TFTorientation = TFTupsidedown;
-  tft.setRotation( TFTorientation );
-  tft.setCursor( 0, 0 );
-  tft.setTextColor( ILI9341_WHITE );
-  tft.setTextSize(1);
-  tft.println( "TFT started.");
 }

@@ -12,6 +12,12 @@
 
 
 /**************************************************************************
+       1 = tft is enabled   0 = tft is disabled
+**************************************************************************/
+#define TFTenabled          1
+
+
+/**************************************************************************
        defines for TFT display orientation
 **************************************************************************/
 #define TFTnormal           1
@@ -176,8 +182,7 @@ struct sensorStruct
 
 String mDNSname = "aquacontrol32";
 
-TaskHandle_t x_dimmerTaskHandle;
-TaskHandle_t x_tftTaskHandle;
+TaskHandle_t x_dimmerTaskHandle = NULL;
 
 double   ledcActualFrequency;
 uint16_t ledcMaxValue           = pow( 2, LEDC_NUMBER_OF_BIT ) - 1;
@@ -210,6 +215,8 @@ void setup()
   pinMode( LED4_PIN, OUTPUT );
   pinMode( BACKLIGHT_PIN, OUTPUT );
 
+  btStop();
+
   Serial.begin( 115200 );
   Serial.println();
   Serial.println( "aquacontrol32" );
@@ -220,11 +227,16 @@ void setup()
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
 
   SPI.begin( SPI_SCK, SPI_MISO, SPI_MOSI );
-  SPI.setFrequency( 40000000 );
+  SPI.setFrequency( 60000000 );
 
-  setupTFT();
-
-  setupOLED();
+  xTaskCreatePinnedToCore(
+    oledTask,                       /* Function to implement the task */
+    "oledTask ",                    /* Name of the task */
+    2000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    2,                              /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);                             /* Core where the task should run */
 
   setupWiFi();
 
@@ -287,15 +299,6 @@ void setup()
     1);                             /* Core where the task should run */
 
   xTaskCreatePinnedToCore(
-    oledTask,                       /* Function to implement the task */
-    "oledTask ",                    /* Name of the task */
-    2000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    2,                              /* Priority of the task */
-    NULL,                           /* Task handle. */
-    1);                             /* Core where the task should run */
-
-  xTaskCreatePinnedToCore(
     dimmerTask,                     /* Function to implement the task */
     "dimmerTask ",                  /* Name of the task */
     1000,                           /* Stack size in words */
@@ -306,7 +309,10 @@ void setup()
 
   lightStatus = "LIGHTS AUTO";
 
-  xTaskCreatePinnedToCore(
+  if ( TFTenabled )
+  {
+    TaskHandle_t x_tftTaskHandle    = NULL;
+    xTaskCreatePinnedToCore(
     tftTask,                        /* Function to implement the task */
     "tftTask ",                     /* Name of the task */
     2000,                           /* Stack size in words */
@@ -314,6 +320,7 @@ void setup()
     1,                              /* Priority of the task */
     &x_tftTaskHandle,               /* Task handle. */
     1);                             /* Core where the task should run */
+  }
 
   if ( numberOfFoundSensors )
   {

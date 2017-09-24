@@ -373,16 +373,26 @@ void setupWebServer()                                            //https://githu
       return server.requestAuthentication();
     }
 
-    vTaskSuspend( x_dimmerTaskHandle );
     server.arg( "percentage" ).trim();
     float percentage = server.arg( "percentage" ).toFloat();
+    if ( percentage < 0 || percentage > 100 )
+    {
+      server.send( 400, textPlainHeader, "Invalid percentage." );
+      return;
+    }
+
+    vTaskSuspend( x_dimmerTaskHandle );
+
     for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
       channel[channelNumber].currentPercentage = percentage;
       ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, ledcMaxValue ) );
     }
-    lightStatus = "All lights at " + String( percentage ) + "%";
-    server.send( 200, textPlainHeader, lightStatus );
+
+    char content[20];
+    snprintf( content, sizeof( content ), "All lights at %.2f.", percentage );
+    lightStatus = content;
+    server.send( 200, textPlainHeader, content );
   });
 
   server.on( "/api/status", []()

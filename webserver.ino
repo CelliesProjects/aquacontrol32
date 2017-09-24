@@ -209,7 +209,7 @@ void setupWebServer()                                            //https://githu
   });
 
   server.on( "/api/lightsprogram", []()
-  {.
+  {
     if ( !server.authenticate( www_username, www_password ) )
     {
       return server.requestAuthentication();

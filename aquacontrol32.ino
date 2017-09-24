@@ -185,8 +185,8 @@ String mDNSname = "aquacontrol32";
 TaskHandle_t x_dimmerTaskHandle = NULL;
 
 double   ledcActualFrequency;
-uint16_t ledcMaxValue           = ( 2 << LEDC_NUMBER_OF_BIT ) - 1;
-uint8_t  ledcNumberOfBits       = LEDC_NUMBER_OF_BIT;
+uint16_t ledcMaxValue;
+uint8_t  ledcNumberOfBits;
 
 byte numberOfFoundSensors;
 
@@ -277,7 +277,7 @@ void setup()
     channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + channelNumber, 0 );
   }
 
-  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_REQUEST_FREQ, ledcNumberOfBits );
+  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_REQUEST_FREQ, LEDC_NUMBER_OF_BIT );
 
 
 

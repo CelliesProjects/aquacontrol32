@@ -70,5 +70,6 @@ double setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBi
     newFrequency = ledcSetup( channelNumber, frequency, numberOfBits );
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
+  ledcMaxValue = ( 0x00000002 << numberOfBits ) - 1;
   return newFrequency;
 }

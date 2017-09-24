@@ -180,8 +180,8 @@ TaskHandle_t x_dimmerTaskHandle;
 TaskHandle_t x_tftTaskHandle;
 
 double   ledcActualFrequency;
-uint16_t ledcMaxValue = pow( 2, LEDC_NUMBER_OF_BIT ) - 1;
-int    ledcNumberOfBits = LEDC_NUMBER_OF_BIT;
+uint16_t ledcMaxValue           = pow( 2, LEDC_NUMBER_OF_BIT ) - 1;
+uint8_t  ledcNumberOfBits       = LEDC_NUMBER_OF_BIT;
 
 byte numberOfFoundSensors;
 
@@ -265,7 +265,7 @@ void setup()
     channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + channelNumber, 0 );
   }
 
-  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_REQUEST_FREQ );
+  ledcActualFrequency = setupDimmerPWMfrequency( LEDC_REQUEST_FREQ, ledcNumberOfBits );
 
 
 

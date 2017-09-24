@@ -229,16 +229,17 @@ void setupWebServer()                                            //https://githu
     server.send( 200, textPlainHeader, defaultTimersLoaded() ? "Succes" : "Failed" );
   });
 
-  server.on( "/api/pwmdepth", []() {
-    byte newPWMDepth;
-    if ( server.hasArg( "newpwmdepth" ) ) {
+  server.on( "/api/pwmdepth", []()
+  {
+    if ( server.hasArg( "newpwmdepth" ) )
+    {
       if ( !server.authenticate( www_username, www_password ) )
       {
         return server.requestAuthentication();
       }
-
-      newPWMDepth = server.arg( "newpwmdepth" ).toInt();
-      if ( newPWMDepth < 11 || newPWMDepth > 16 ) {
+      uint8_t newPWMDepth = server.arg( "newpwmdepth" ).toInt();
+      if ( newPWMDepth < 11 || newPWMDepth > 16 )
+      {
         server.send( 200, textPlainHeader, "ERROR - Invalid PWM depth" );
         return;
       }
@@ -250,32 +251,31 @@ void setupWebServer()                                            //https://githu
         }
       }
       ledcNumberOfBits = newPWMDepth;
-      //TODO: Save in preferences
     }
-    server.send( 200, textPlainHeader, String( ledcNumberOfBits ) );
+
+    char content[3];
+    snprintf( content, sizeof( content ), "%i", ledcNumberOfBits );
+    server.send( 200, textPlainHeader, content );
   });
 
-
-  server.on( "/api/pwmfrequency", []() {
-    if ( server.hasArg( "newpwmfrequency" ) ) {
+  server.on( "/api/pwmfrequency", []()
+  {
+    if ( server.hasArg( "newpwmfrequency" ) )
+    {
       if ( !server.authenticate( www_username, www_password ) )
       {
         return server.requestAuthentication();
       }
-
       double tempPWMfrequency = server.arg( "newpwmfrequency" ).toFloat();
-      if ( tempPWMfrequency < 100 || tempPWMfrequency > 20000 ) {
+      if ( tempPWMfrequency < 100 || tempPWMfrequency > 20000 )
+      {
         server.send( 200, textPlainHeader, "Invalid PWM frequency" );
         return;
       }
-      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-      {
-        ledcActualFrequency = ledcSetup( channelNumber, tempPWMfrequency, ledcNumberOfBits );
-      }
-      //TODO: Save in preferences
+      ledcActualFrequency = setupDimmerPWMfrequency( tempPWMfrequency, ledcNumberOfBits );
     }
     char content[16];
-    snprintf( content, sizeof( content ), "%i", ledcActualFrequency );
+    snprintf( content, sizeof( content ), "%.0f", ledcActualFrequency );
     server.send( 200, textPlainHeader, content );
   });
 

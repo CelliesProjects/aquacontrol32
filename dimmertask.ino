@@ -61,13 +61,13 @@ void setPercentageFromProgram( const uint8_t channelNumber, const suseconds_t mi
   }
 }
 
-double setupDimmerPWMfrequency( const double frequency )
+double setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits )
 {
   /* Setup timers and attach timer to a led pin */
   double newFrequency;
   for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    newFrequency = ledcSetup( channelNumber, frequency, ledcNumberOfBits );
+    newFrequency = ledcSetup( channelNumber, frequency, numberOfBits );
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
   return newFrequency;

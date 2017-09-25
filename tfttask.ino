@@ -1,10 +1,15 @@
 void tftTask( void * pvParameters )
 {
-  tft.begin( 35000000, SPI );
-  uint8_t x = tft.readcommand8(ILI9341_RDSELFDIAG);
-  Serial.print("ILI9341 TFT Self Diagnostic: 0x"); Serial.println(x, HEX);
+  const uint16_t TFT_TEXT_COLOR   = ILI9341_YELLOW;
+  const uint16_t TFT_DATE_COLOR   = ILI9341_BLUE;
+  const uint16_t TFT_TEMP_COLOR   = ILI9341_WHITE;
+  const uint16_t TFT_BACK_COLOR   = ILI9341_BLACK;
 
-  tft.fillScreen(ILI9341_BLACK);
+  tft.begin( 35000000, SPI );
+  uint8_t x = tft.readcommand8( ILI9341_RDSELFDIAG );
+  Serial.print( "ILI9341 TFT Self Diagnostic: 0x" ); Serial.println( x, HEX );
+
+  tft.fillScreen( TFT_BACK_COLOR );
 
   digitalWrite( TFT_BACKLIGHT_PIN, HIGH );
 
@@ -15,13 +20,8 @@ void tftTask( void * pvParameters )
 
   while (1)
   {
-    const uint16_t TFT_TEXT_COLOR   = ILI9341_YELLOW;
-    const uint16_t TFT_DATE_COLOR   = ILI9341_BLUE;
-    const uint16_t TFT_TEMP_COLOR   = ILI9341_WHITE;
-    const uint16_t TFT_BACK_COLOR   = ILI9341_BLACK;
-
-    const uint16_t BARS_BOTTOM      = 181;
-    const uint16_t BARS_HEIGHT      = 180;
+    const uint16_t BARS_BOTTOM      = 205;
+    const uint16_t BARS_HEIGHT      = BARS_BOTTOM;
     const uint16_t BARS_BORDER      = 10;
     const uint16_t BARS_WIDTH       = ILI9341_TFTHEIGHT / 5;
     const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
@@ -55,7 +55,7 @@ void tftTask( void * pvParameters )
                     channel[thisChannel].currentPercentage * HEIGHT_FACTOR,
                     tft.color565( r, g, b ) );
 
-      tft.setCursor( thisChannel * BARS_WIDTH + 12, BARS_BOTTOM + 4 );
+      tft.setCursor( thisChannel * BARS_WIDTH + 9, BARS_BOTTOM + 4 );
       tft.setTextSize( 1 );
       tft.setTextColor( TFT_TEXT_COLOR , TFT_BACK_COLOR );
 
@@ -64,23 +64,24 @@ void tftTask( void * pvParameters )
       tft.print( buffer );
     }
 
-    tft.setCursor( 0, BARS_BOTTOM + 20 );
     tft.setTextSize( 2 );
-    tft.setTextColor( TFT_TEMP_COLOR , TFT_BACK_COLOR );
-
     if ( numberOfFoundSensors )
     {
       for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
       {
+        tft.setCursor( 0, BARS_BOTTOM + 15 );
+        tft.setTextColor( TFT_TEMP_COLOR , TFT_BACK_COLOR );
         tft.print( " " + String( sensor[thisSensor].temp / 16.0 ) + (char)247 + "C " );
       }
     }
-
-    tft.setCursor( 60, BARS_BOTTOM + 40 );
-    tft.setTextColor( TFT_TEMP_COLOR , TFT_BACK_COLOR );
-
-    tft.print( lightStatus );
-
+    else
+    {
+      struct tm timeinfo;
+      getLocalTime( &timeinfo );
+      tft.setCursor( 18, BARS_BOTTOM + 15 );
+      tft.setTextColor( TFT_DATE_COLOR , TFT_BACK_COLOR );
+      tft.print( asctime( &timeinfo ) );
+    }
     vTaskDelay( tftTaskdelayTime / portTICK_PERIOD_MS );
   }
 }

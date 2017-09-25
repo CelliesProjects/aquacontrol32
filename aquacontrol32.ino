@@ -12,9 +12,15 @@
 
 
 /**************************************************************************
+       1 = show system data on oled   0 = show light and temps on oled
+**************************************************************************/
+#define OLED_SHOW_SYSTEMDATA             0
+
+
+/**************************************************************************
        1 = tft is enabled   0 = tft is disabled
 **************************************************************************/
-#define TFT_ENABLED            1
+#define TFT_ENABLED                      1
 
 
 /**************************************************************************
@@ -234,7 +240,7 @@ void setup()
     "oledTask ",                    /* Name of the task */
     2000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    2,                              /* Priority of the task */
+    1,                              /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 

@@ -59,7 +59,7 @@ void setEmptyTimers()
 bool cardReaderPresent()
 {
   Serial.println("Initializing SD card...");
-  if (!SD.begin( SD_CS, SPI, 2000000 ) )
+  if (!SD.begin( SPI_SD_CS_PIN, SPI, 2000000 ) )
   {
     Serial.println("failed!");
     return false;

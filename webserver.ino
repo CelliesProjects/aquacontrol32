@@ -420,17 +420,17 @@ void setupWebServer()                                            //https://githu
 
       if (  server.arg( "tftorientation" ) == "normal" )
       {
-        TFTorientation = TFTnormal;
+        tftOrientation = TFT_ORIENTATION_NORMAL;
         //vTaskSuspend( x_tftTaskHandle );  //not needed since this task has a higher priority
-        tft.setRotation( TFTorientation );
+        tft.setRotation( tftOrientation );
         tft.fillScreen( ILI9341_BLACK );
         //vTaskResume( x_tftTaskHandle );
       }
       else if ( server.arg( "tftorientation" ) == "upsidedown" )
       {
-        TFTorientation = TFTupsidedown;
+        tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
         //vTaskSuspend( x_tftTaskHandle );
-        tft.setRotation( TFTorientation );
+        tft.setRotation( tftOrientation );
         tft.fillScreen( ILI9341_BLACK );
         //vTaskResume( x_tftTaskHandle );
       } else
@@ -439,8 +439,8 @@ void setupWebServer()                                            //https://githu
         return;
       }
     }
-    saveStringNVS( "tftorientation", ( TFTorientation == TFTnormal ) ? "normal" : "upsidedown" );
-    server.send( 200, textPlainHeader, ( TFTorientation == TFTnormal ) ? "normal" : "upsidedown" );
+    saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+    server.send( 200, textPlainHeader, ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
   });
 
   server.on( "/api/timezone", HTTP_GET, []()

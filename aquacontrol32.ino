@@ -14,20 +14,20 @@
 /**************************************************************************
        1 = tft is enabled   0 = tft is disabled
 **************************************************************************/
-#define TFTenabled          1
+#define TFT_ENABLED            1
 
 
 /**************************************************************************
        defines for TFT display orientation
 **************************************************************************/
-#define TFTnormal           1
-#define TFTupsidedown       3
+#define TFT_ORIENTATION_NORMAL           1
+#define TFT_ORIENTATION_UPSIDEDOWN       3
 
 
 /**************************************************************************
        TFT display backlight control
 **************************************************************************/
-#define BACKLIGHT_PIN       2
+#define TFT_BACKLIGHT_PIN       2
 
 
 /**************************************************************************
@@ -92,13 +92,13 @@
 /**************************************************************************
       HW SPI pin definitions
 **************************************************************************/
-#define TFT_DC                27  // Goes to TFT DC
-#define SPI_SCK               25  // Goes to TFT SCK/CLK
-#define SPI_MOSI              32  // Goes to TFT MOSI
-#define SPI_MISO              14  // Goes to TFT MISO
-#define TFT_CS                 4  // Goes to TFT CS
-#define SD_CS                  0  // Goes to SD CS
-#define TFT_RST                  -1  // ESP RST goes to TFT RESET
+#define SPI_TFT_DC_PIN            27  // Goes to TFT DC
+#define SPI_SCK_PIN               25  // Goes to TFT SCK/CLK
+#define SPI_MOSI_PIN              32  // Goes to TFT MOSI
+#define SPI_MISO_PIN              14  // Goes to TFT MISO
+#define SPI_TFT_CS_PIN             4  // Goes to TFT CS
+#define SPI_SD_CS_PIN              0  // Goes to SD CS
+#define SPI_TFT_RST_PIN           -1  // ESP RST goes to TFT RESET
 //       3.3V                     // Goes to TFT LED
 //       5v                       // Goes to TFT Vcc-
 //       Gnd                      // Goes to TFT Gnd
@@ -126,7 +126,7 @@
 /**************************************************************************
       Setup included libraries
  *************************************************************************/
-Adafruit_ILI9341 tft = Adafruit_ILI9341( TFT_CS, TFT_DC, TFT_RST );
+Adafruit_ILI9341 tft = Adafruit_ILI9341( SPI_TFT_CS_PIN, SPI_TFT_DC_PIN, SPI_TFT_RST_PIN );
 
 Preferences preferences;
 
@@ -197,7 +197,7 @@ struct tm systemStart;
 
 String lightStatus;
 
-int TFTorientation = TFTnormal;
+int tftOrientation = TFT_ORIENTATION_NORMAL;
 
 /*****************************************************************************************
 
@@ -213,7 +213,7 @@ void setup()
   pinMode( LED2_PIN, OUTPUT );
   pinMode( LED3_PIN, OUTPUT );
   pinMode( LED4_PIN, OUTPUT );
-  pinMode( BACKLIGHT_PIN, OUTPUT );
+  pinMode( TFT_BACKLIGHT_PIN, OUTPUT );
 
   btStop();
 
@@ -226,7 +226,7 @@ void setup()
 
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
 
-  SPI.begin( SPI_SCK, SPI_MISO, SPI_MOSI );
+  SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );
 
   xTaskCreatePinnedToCore(
@@ -310,7 +310,7 @@ void setup()
 
   lightStatus = "LIGHTS AUTO";
 
-  if ( TFTenabled )
+  if ( TFT_ENABLED )
   {
     TaskHandle_t x_tftTaskHandle    = NULL;
     xTaskCreatePinnedToCore(

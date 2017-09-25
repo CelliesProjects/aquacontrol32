@@ -275,6 +275,7 @@ void setup()
     channel[ channelNumber ].name          = readStringNVS( "channelname" +  channelNumber , "Channel" + String( channelNumber + 1 ) );
     channel[ channelNumber ].color         = readStringNVS( "channelcolor" + channelNumber , "#fffe7a" );
     channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + channelNumber, 0 );
+    ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
 
   setupDimmerPWMfrequency( LEDC_REQUEST_FREQ, LEDC_NUMBER_OF_BIT );

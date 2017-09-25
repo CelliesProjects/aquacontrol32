@@ -245,14 +245,9 @@ void setupWebServer()                                            //https://githu
       }
       if ( ledcNumberOfBits != newPWMDepth )
       {
-        for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-        {
-          ledcSetup( channelNumber, ledcActualFrequency, newPWMDepth );
-        }
+        setupDimmerPWMfrequency( ledcActualFrequency, newPWMDepth );
       }
-      ledcNumberOfBits = newPWMDepth;
     }
-
     char content[3];
     snprintf( content, sizeof( content ), "%i", ledcNumberOfBits );
     server.send( 200, textPlainHeader, content );
@@ -272,7 +267,10 @@ void setupWebServer()                                            //https://githu
         server.send( 200, textPlainHeader, "Invalid PWM frequency" );
         return;
       }
-      ledcActualFrequency = setupDimmerPWMfrequency( tempPWMfrequency, ledcNumberOfBits );
+      if ( tempPWMfrequency != ledcActualFrequency )
+      {
+        setupDimmerPWMfrequency( tempPWMfrequency, ledcNumberOfBits );
+      }
     }
     char content[16];
     snprintf( content, sizeof( content ), "%.0f", ledcActualFrequency );

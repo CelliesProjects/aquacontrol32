@@ -61,15 +61,17 @@ void setPercentageFromProgram( const uint8_t channelNumber, const suseconds_t mi
   }
 }
 
-double setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits )
+void setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits )
 {
   /* Setup timers and attach timer to a led pin */
-  double newFrequency;
   for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    newFrequency = ledcSetup( channelNumber, frequency, numberOfBits );
+    ledcActualFrequency = ledcSetup( channelNumber, frequency, numberOfBits );
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
-  ledcMaxValue = ( 0x00000002 << numberOfBits ) - 1;
-  return newFrequency;
+  ledcMaxValue = ( 0x00000001 << numberOfBits ) - 1;
+  ledcNumberOfBits = numberOfBits;
+  Serial.printf( "\nPWM frequency set to %fHz\n",ledcActualFrequency);
+  Serial.printf( "PWM bit depth set to %i bits\n", ledcNumberOfBits);
+  Serial.printf( "Maximum raw value set to 0x%x\n\n",ledcMaxValue);
 }

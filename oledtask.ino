@@ -19,11 +19,19 @@ void oledTask( void * pvParameters )
     OLED.clear();
     OLED.setFont( ArialMT_Plain_10 );
     OLED.drawString( 64, 0, asctime( &timeinfo ) );
-    OLED.drawString( 64, 10, String( esp_get_free_heap_size() / 1024.0 ) + " kB RAM FREE" );
+
+    char content[30];
+    snprintf( content, sizeof( content ), "%.2f kB RAM", esp_get_free_heap_size() / 1024.0 );
+    OLED.drawString( 64, 10, content );
+
     OLED.drawString( 64, 20, "IP: " +  WiFi.localIP().toString() );
-    OLED.drawString( 64, 30, String( numberOfFoundSensors ) + " Dallas sensors" );
-    OLED.drawString( 64, 40, "SYSTEM START:" );
-    OLED.drawString( 64, 50, asctime( &systemStart ) );
+
+    snprintf( content, sizeof( content ), "%i Dallas sensors", numberOfFoundSensors );
+    OLED.drawString( 64, 30, content );
+
+    snprintf( content, sizeof( content ), "PWM: %.2f Khz - %i bits", ledcActualFrequency / 1000, ledcNumberOfBits );
+    OLED.drawString( 64, 40, content );
+
     OLED.display();
     vTaskDelay( oledTaskdelayTime / portTICK_PERIOD_MS);
   }

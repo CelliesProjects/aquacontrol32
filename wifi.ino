@@ -26,7 +26,7 @@ void setupWiFi()
     tft.invertDisplay( true );
     while ( !WiFi.smartConfigDone() )
     {
-      delay(500);
+      vTaskDelay( 500 / portTICK_PERIOD_MS );
       Serial.print(".");
     }
     Serial.println("");
@@ -50,7 +50,7 @@ void setupWiFi()
   {
     Serial.print( "." );
     tft.print( "." );
-    delay( 500 );
+    vTaskDelay( 500 / portTICK_PERIOD_MS );
   }
   tft.println();
   Serial.println();
@@ -69,7 +69,7 @@ void setupWiFi()
     Serial.println( WiFi.status() );
     tft.println( WiFi.status() );
     // restart the AP to try again
-    delay(5000);
+    vTaskDelay( 500 / portTICK_PERIOD_MS );
     ESP.restart();
   }
 }

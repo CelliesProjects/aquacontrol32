@@ -16,6 +16,8 @@ void oledTask( void * pvParameters )
     vTaskDelay( 100 / portTICK_PERIOD_MS);
   }
 
+  OLED.setFont( ArialMT_Plain_10 );
+
   while (1)
   {
     char content[30];
@@ -51,6 +53,8 @@ void oledTask( void * pvParameters )
       const uint8_t BARS_WIDTH       = DISPLAY_WIDTH  / NUMBER_OF_CHANNELS;
 
       OLED.clear();
+      OLED.drawString( 64, 0, WiFi.localIP().toString() );
+
       for ( uint8_t thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
       {
         uint8_t x1 = BARS_WIDTH * thisChannel + BARS_BORDER;
@@ -62,12 +66,35 @@ void oledTask( void * pvParameters )
         OLED.setFont( ArialMT_Plain_10 );
         OLED.setTextAlignment( TEXT_ALIGN_CENTER );
 
-        snprintf( content, sizeof( content ), "%.0f", channel[thisChannel].currentPercentage );
+        if ( channel[thisChannel].currentPercentage == 0 || channel[thisChannel].currentPercentage == 100 )
+        {
+          snprintf( content, sizeof( content ), "%.0f", channel[thisChannel].currentPercentage );
+        }
+        else if ( channel[thisChannel].currentPercentage < 10 )
+        {
+          snprintf( content, sizeof( content ), "%.2f", channel[thisChannel].currentPercentage );
+        }
+        else
+        {
+          snprintf( content, sizeof( content ), "%.1f", channel[thisChannel].currentPercentage );
+        }
+
         OLED.drawString( x1 + ( BARS_WIDTH / 2 ) - 1, y1 - 11, content );
       }
-      snprintf( content, sizeof( content ), "%.2f kB RAM", esp_get_free_heap_size() / 1024.0 );
-      OLED.drawString( 64, 0, content );
-      //showIpOrHostname();
+
+      if ( numberOfFoundSensors )
+      {
+        uint8_t charCount = 0;
+        for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
+        {
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C" , sensor[sensorNumber].temp / 16.0 );
+        }
+      }
+      else
+      {
+        snprintf( content, sizeof( content ), "%.2f kB RAM", esp_get_free_heap_size() / 1024.0 );
+      }
+      OLED.drawString( 64, BARS_BOTTOM, content );
       OLED.display();
     }
     vTaskDelay( oledTaskdelayTime / portTICK_PERIOD_MS);

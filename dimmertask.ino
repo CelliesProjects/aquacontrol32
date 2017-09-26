@@ -5,6 +5,8 @@ void dimmerTask ( void * pvParameters )
   /* I probably have to read more of this thread: */
   /* https://stackoverflow.com/questions/3673226/how-to-print-time-in-format-2009-08-10-181754-811 */
 
+  lightStatus = "LIGHTS AUTO";
+
   while (1)
   {
     struct timeval microSecondTime;
@@ -16,9 +18,9 @@ void dimmerTask ( void * pvParameters )
     localTime = localtime( &microSecondTime.tv_sec );
 
     suseconds_t milliSecondsToday = ( localTime->tm_hour * 3600000 )
-                                  + ( localTime->tm_min * 60000 )
-                                  + ( localTime->tm_sec * 1000 )
-                                  + ( microSecondTime.tv_usec / 1000 );
+                                    + ( localTime->tm_min * 60000 )
+                                    + ( localTime->tm_sec * 1000 )
+                                    + ( microSecondTime.tv_usec / 1000 );
 
     for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
@@ -70,7 +72,7 @@ void setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits
   }
   ledcMaxValue = ( 0x00000001 << numberOfBits ) - 1;
   ledcNumberOfBits = numberOfBits;
-  Serial.printf( "\nPWM frequency set to %.2f kHz\n",ledcActualFrequency/1000);
+  Serial.printf( "\nPWM frequency set to %.2f kHz\n", ledcActualFrequency / 1000);
   Serial.printf( "PWM bit depth set to %i bits\n", ledcNumberOfBits);
-  Serial.printf( "Maximum raw value set to 0x%x or %i decimal\n\n",ledcMaxValue,ledcMaxValue);
+  Serial.printf( "Maximum raw value set to 0x%x or %i decimal\n\n", ledcMaxValue, ledcMaxValue);
 }

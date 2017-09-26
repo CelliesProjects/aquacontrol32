@@ -1,20 +1,29 @@
 void oledTask( void * pvParameters )
 {
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
+
   OLED.init();
-  OLED.clear();
+  Serial.println( "OLED initialized." );
+
+  if ( readStringNVS( "oledorientation", "normal" ) == "upsidedown" )
+  {
+    tftOrientation = OLED_ORIENTATION_UPSIDEDOWN;
+    OLED.flipScreenVertically();
+  }
+
   OLED.setTextAlignment( TEXT_ALIGN_CENTER );
   OLED.setFont( ArialMT_Plain_16 );
   OLED.drawString( 64, 10, F( "AquaControl32" ) );
   OLED.drawString( 64, 30, F( "Booting..." ) );
   OLED.display();
 
-  int oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
-
   /* wait for setup to end, but don't block */
-  while ( lightStatus == "" )
+  while ( !setupEnded )
   {
     vTaskDelay( 100 / portTICK_PERIOD_MS);
   }
+
+  int oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
 
   OLED.setFont( ArialMT_Plain_10 );
 
@@ -29,7 +38,7 @@ void oledTask( void * pvParameters )
       getLocalTime( &timeinfo );
 
       OLED.clear();
-      OLED.setFont( ArialMT_Plain_10 );
+      //OLED.setFont( ArialMT_Plain_10 );
       OLED.drawString( 64, 0, asctime( &timeinfo ) );
 
       snprintf( content, sizeof( content ), "%.2f kB RAM", esp_get_free_heap_size() / 1024.0 );
@@ -63,7 +72,7 @@ void oledTask( void * pvParameters )
         uint8_t y2 = BARS_BOTTOM - y1;
         OLED.fillRect( x1, y1, x2, y2 );
 
-        OLED.setFont( ArialMT_Plain_10 );
+        //OLED.setFont( ArialMT_Plain_10 );
         OLED.setTextAlignment( TEXT_ALIGN_CENTER );
 
         if ( channel[thisChannel].currentPercentage == 0 || channel[thisChannel].currentPercentage == 100 )

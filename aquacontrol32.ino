@@ -1,5 +1,5 @@
 #include "SPI.h"                   //should be installed together with ESP32 Arduino install
-#include <SD.h>                    //should be installed together with ESP32 Arduino install
+#include "SPIFFS.h"
 #include <ESPmDNS.h>               //should be installed together with ESP32 Arduino install
 #include <Preferences.h>           //should be installed together with ESP32 Arduino install
 #include "apps/sntp/sntp.h"        //should be installed together with ESP32 Arduino install
@@ -12,9 +12,22 @@
 
 
 /**************************************************************************
+       1 = oled is enabled   0 = oled is disabled
+**************************************************************************/
+#define OLED_ENABLED                      1
+
+
+/**************************************************************************
        1 = show system data on oled   0 = show light and temps on oled
 **************************************************************************/
 #define OLED_SHOW_SYSTEMDATA             0
+
+
+/**************************************************************************
+       defines for OLED display orientation
+**************************************************************************/
+#define OLED_ORIENTATION_NORMAL           1
+#define OLED_ORIENTATION_UPSIDEDOWN       2
 
 
 /**************************************************************************
@@ -165,7 +178,7 @@ struct lightTable
   lightTimer timer[MAX_TIMERS];
   String     name;                /* initially set to 'channel 1' 'channel 2' etc. */
   String     color;               /* interface color, not light color! in hex format*/
-                                  /* Example: '#ff0000' for bright red */
+  /* Example: '#ff0000' for bright red */
   float      currentPercentage;   /* what percentage is this channel set to */
   byte       pin;                 /* which ESP32 pin is this channel on */
   byte       numberOfTimers;      /* actual number of timers for this channel */
@@ -189,9 +202,10 @@ struct sensorStruct
 String mDNSname = "aquacontrol32";
 
 TaskHandle_t x_dimmerTaskHandle = NULL;
+TaskHandle_t x_tftTaskHandle    = NULL;
 
 double   ledcActualFrequency;
-uint32_t ledcMaxValue;
+uint16_t ledcMaxValue;
 uint8_t  ledcNumberOfBits;
 
 byte numberOfFoundSensors;
@@ -203,7 +217,8 @@ struct tm systemStart;
 
 String lightStatus;
 
-int tftOrientation = TFT_ORIENTATION_NORMAL;
+uint8_t tftOrientation  = TFT_ORIENTATION_NORMAL;
+uint8_t oledOrientation = OLED_ORIENTATION_NORMAL;
 
 /*****************************************************************************************
 
@@ -230,27 +245,34 @@ void setup()
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
 
-  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
+  if ( OLED_ENABLED )
+  {
+    xTaskCreatePinnedToCore(
+      oledTask,                       /* Function to implement the task */
+      "oledTask ",                    /* Name of the task */
+      2000,                           /* Stack size in words */
+      NULL,                           /* Task input parameter */
+      1,                              /* Priority of the task */
+      NULL,                           /* Task handle. */
+      1);                             /* Core where the task should run */
+  }
 
-  SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
-  SPI.setFrequency( 60000000 );
+  Serial.println( "Starting and possibly formatting SPIFFS. ( Just be patient... )" );
 
-  xTaskCreatePinnedToCore(
-    oledTask,                       /* Function to implement the task */
-    "oledTask ",                    /* Name of the task */
-    2000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    1,                              /* Priority of the task */
-    NULL,                           /* Task handle. */
-    1);                             /* Core where the task should run */
+  if ( !SPIFFS.begin( true ) )
+  {
+    Serial.println( "No SPIFFS!" );
+  }
+  else
+  {
+    Serial.println( "SPIFFS started." );
+  }
 
   setupWiFi();
 
   setupNTP();
 
   Serial.print( "Local time:" ); Serial.println( getLocalTime( &systemStart ) ? asctime( &systemStart ) : "Failed to obtain time" );
-
-  Serial.println( cardReaderPresent() ? "SD card found." : "No SD card found." );
 
   if ( defaultTimersLoaded() )
   {
@@ -314,19 +336,16 @@ void setup()
     &x_dimmerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 
-  lightStatus = "LIGHTS AUTO";
-
   if ( TFT_ENABLED )
-  {
-    TaskHandle_t x_tftTaskHandle    = NULL;
+  {   
     xTaskCreatePinnedToCore(
-    tftTask,                        /* Function to implement the task */
-    "tftTask ",                     /* Name of the task */
-    2000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    1,                              /* Priority of the task */
-    &x_tftTaskHandle,               /* Task handle. */
-    1);                             /* Core where the task should run */
+      tftTask,                        /* Function to implement the task */
+      "tftTask ",                     /* Name of the task */
+      2000,                           /* Stack size in words */
+      NULL,                           /* Task input parameter */
+      1,                              /* Priority of the task */
+      &x_tftTaskHandle,               /* Task handle. */
+      1);                             /* Core where the task should run */
   }
 
   if ( numberOfFoundSensors )
@@ -351,7 +370,10 @@ void setup()
        http://www.iotsharing.com/2017/05/how-to-apply-finite-state-machine-to-arduino-esp32-avoid-blocking.html
 
 *****************************************************************************************/
+bool setupEnded = false;
+
 void loop()
 {
+  setupEnded = true;
   vTaskDelete( NULL );
 }

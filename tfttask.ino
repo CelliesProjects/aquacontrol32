@@ -5,6 +5,9 @@ void tftTask( void * pvParameters )
   const uint16_t TFT_TEMP_COLOR   = ILI9341_WHITE;
   const uint16_t TFT_BACK_COLOR   = ILI9341_BLACK;
 
+  SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
+  SPI.setFrequency( 60000000 );
+
   tft.begin( 35000000, SPI );
   uint8_t x = tft.readcommand8( ILI9341_RDSELFDIAG );
   Serial.print( "ILI9341 TFT Self Diagnostic: 0x" ); Serial.println( x, HEX );

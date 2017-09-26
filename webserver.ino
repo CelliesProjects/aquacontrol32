@@ -25,7 +25,7 @@ const char* contentSecurityHeaderValue = "script-src 'unsafe-inline' https: http
 void setupWebServer()                                            //https://github.com/espressif/esp-idf/blob/master/components/spi_flash/README.rst
 {
   // Set up the web server
-  tft.println( "Starting webserver. " );
+  Serial.println( "Starting webserver. " );
 
   //home page or 'index.html'
   server.on( "/", []()
@@ -82,8 +82,8 @@ void setupWebServer()                                            //https://githu
     // https://stackoverflow.com/questions/8323159/how-to-convert-uint64-t-value-in-const-char-string
     // cardsize = uint64_t
     // length of 2**64 - 1, +1 for nul.
-    char content[21];
-    snprintf( content, sizeof( content ), "%" PRIu64, SD.cardSize() );
+    char content[5];
+    snprintf( content, sizeof( content ), "%d" , SPIFFS.totalBytes() );
     server.send( 200,  textPlainHeader, content );
   });
 
@@ -91,7 +91,7 @@ void setupWebServer()                                            //https://githu
   {
     String HTTPresponse;
     {
-      File root = SD.open("/");
+      File root = SPIFFS.open("/");
       if (!root)
       {
         server.send( 404, textPlainHeader, "Folder not found." );
@@ -311,6 +311,40 @@ void setupWebServer()                                            //https://githu
     server.send( 200,  textPlainHeader, String( SNTP_UPDATE_DELAY / 1000 ) );
   });
 
+  server.on( "/api/oledorientation", HTTP_GET, []()
+  {
+    if ( server.hasArg( "oledorientation" ) )
+    {
+      if ( !server.authenticate( www_username, www_password ) )
+      {
+        return server.requestAuthentication();
+      }
+
+      if (  server.arg( "oledorientation" ) == "normal" )
+      {
+        oledOrientation = OLED_ORIENTATION_NORMAL;
+        //vTaskSuspend( x_tftTaskHandle );  //not needed since this task has a higher priority
+        OLED.init();
+        OLED.normalDisplay();
+        //vTaskResume( x_tftTaskHandle );
+      }
+      else if ( server.arg( "oledorientation" ) == "upsidedown" )
+      {
+        oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
+        //vTaskSuspend( x_tftTaskHandle );
+        OLED.init();
+        OLED.flipScreenVertically();
+        //vTaskResume( x_tftTaskHandle );
+      } else
+      {
+        server.send( 400, textPlainHeader, "ERROR No valid input." );
+        return;
+      }
+    }
+    saveStringNVS( "oledorientation", ( oledOrientation == OLED_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+    server.send( 200, textPlainHeader, ( oledOrientation == OLED_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+  });
+
   server.on( "/api/setchannelcolor", []()
   {
     if ( !server.authenticate( www_username, www_password ) )
@@ -524,7 +558,7 @@ void setupWebServer()                                            //https://githu
     }
     if ( upload.status == UPLOAD_FILE_START )
     {
-      fsUploadFile = SD.open( filename, "w");
+      fsUploadFile = SPIFFS.open( filename, "w");
     }
     else if ( upload.status == UPLOAD_FILE_WRITE )
     {
@@ -577,7 +611,7 @@ bool handleSDfile( String path , int fileError )
     path += "index.htm";
   }
 
-  if ( SD.exists( path ) )
+  if ( SPIFFS.exists( path ) )
   {
     if ( server.arg( "action" ) == "delete" )
     {
@@ -588,11 +622,11 @@ bool handleSDfile( String path , int fileError )
         return false;
       }
 
-      SD.remove( path );
+      SPIFFS.remove( path );
       server.send( 200,  textPlainHeader, path.substring(1) + " deleted" );
       return true;
     };
-    File file = SD.open( path, "r" );
+    File file = SPIFFS.open( path, "r" );
     size_t sent = server.streamFile( file, getContentType( path ) );
     file.close();
     return true;

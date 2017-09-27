@@ -38,7 +38,6 @@ void oledTask( void * pvParameters )
       getLocalTime( &timeinfo );
 
       OLED.clear();
-      //OLED.setFont( ArialMT_Plain_10 );
       OLED.drawString( 64, 0, asctime( &timeinfo ) );
 
       snprintf( content, sizeof( content ), "%.2f kB RAM", esp_get_free_heap_size() / 1024.0 );
@@ -72,7 +71,6 @@ void oledTask( void * pvParameters )
         uint8_t y2 = BARS_BOTTOM - y1;
         OLED.fillRect( x1, y1, x2, y2 );
 
-        //OLED.setFont( ArialMT_Plain_10 );
         OLED.setTextAlignment( TEXT_ALIGN_CENTER );
 
         if ( channel[thisChannel].currentPercentage == 0 || channel[thisChannel].currentPercentage == 100 )

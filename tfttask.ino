@@ -1,5 +1,6 @@
 void tftTask( void * pvParameters )
 {
+  const bool     TFT_SHOW_RAW     = true;            /* show raw PWM values */
   const uint16_t TFT_TEXT_COLOR   = ILI9341_YELLOW;
   const uint16_t TFT_DATE_COLOR   = ILI9341_BLUE;
   const uint16_t TFT_TEMP_COLOR   = ILI9341_WHITE;
@@ -62,8 +63,15 @@ void tftTask( void * pvParameters )
       tft.setTextSize( 1 );
       tft.setTextColor( TFT_TEXT_COLOR , TFT_BACK_COLOR );
 
-      char buffer [9];
-      snprintf( buffer, sizeof( buffer ), "%*" ".3f%%", 7, channel[thisChannel].currentPercentage );
+      char buffer [8];
+      if ( TFT_SHOW_RAW )
+      {
+        snprintf( buffer, sizeof( buffer ), " 0x%04X", ledcRead( thisChannel ) );
+      }
+      else
+      {
+        snprintf( buffer, sizeof( buffer ), "%*" ".3f%%", 7, channel[thisChannel].currentPercentage );
+      }
       tft.print( buffer );
     }
 

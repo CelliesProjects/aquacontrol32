@@ -398,6 +398,25 @@ void setupWebServer()                                            //https://githu
     server.send( 400, textPlainHeader, "Invalid input." );
   });
 
+  server.on( "/api/setcontrast", []()
+  {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+    server.arg( "contrast" ).trim();
+    int contrast = server.arg( "contrast" ).toInt();
+    if ( contrast < 0 || contrast > 15 )
+    {
+      server.send( 400, textPlainHeader, "Invalid contrast." );
+      return;
+    }
+    OLED.setContrast( contrast << 4 );
+    char content[4];
+    snprintf( content, sizeof( content ), "%2i", contrast );
+    server.send( 200, textPlainHeader, content );
+  });
+
   server.on( "/api/setpercentage", []()
   {
     if ( !server.authenticate( www_username, www_password ) )

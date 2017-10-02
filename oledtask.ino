@@ -7,7 +7,7 @@ void oledTask( void * pvParameters )
 
   if ( readStringNVS( "oledorientation", "normal" ) == "upsidedown" )
   {
-    tftOrientation = OLED_ORIENTATION_UPSIDEDOWN;
+    oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
     OLED.flipScreenVertically();
   }
 
@@ -22,6 +22,9 @@ void oledTask( void * pvParameters )
   {
     vTaskDelay( 100 / portTICK_PERIOD_MS);
   }
+
+  oledContrast = readInt8NVS( "oledcontrast", 15 );
+  OLED.setContrast( oledContrast << 0x04 );
 
   int oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
 

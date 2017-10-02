@@ -2,7 +2,7 @@ void tftTask( void * pvParameters )
 {
   const bool     TFT_SHOW_RAW     = true;            /* show raw PWM values */
   const uint16_t TFT_TEXT_COLOR   = ILI9341_YELLOW;
-  const uint16_t TFT_DATE_COLOR   = ILI9341_BLUE;
+  const uint16_t TFT_DATE_COLOR   = ILI9341_WHITE;
   const uint16_t TFT_TEMP_COLOR   = ILI9341_WHITE;
   const uint16_t TFT_BACK_COLOR   = ILI9341_BLACK;
 

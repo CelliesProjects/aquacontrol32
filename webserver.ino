@@ -596,11 +596,348 @@ void setupWebServer()                                            //https://githu
     }
   });
 
+
+  /**********************************************************************************************/
+
+
+  server.on( "/api/getdevice", []()
+  {
+    char content[100];
+
+    if ( server.hasArg( "boottime" ) )
+    {
+      snprintf( content, sizeof( content ), "%s", asctime( &systemStart ) );
+    }
+    else if ( server.hasArg( "hostname" ) )
+    {
+      snprintf( content, sizeof( content ), "%s", mDNSname.c_str() );
+    }
+    else if ( server.hasArg( "oledcontrast" ) )
+    {
+      snprintf( content, sizeof( content ), "%i", oledContrast );
+    }
+    else if ( server.hasArg( "oledorientation" ) )
+    {
+      snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
+    }
+    else if ( server.hasArg( "pwmdepth" ) )
+    {
+      snprintf( content, sizeof( content ), "%i", ledcNumberOfBits );
+    }
+    else if ( server.hasArg( "pwmfrequency" ) )
+    {
+      snprintf( content, sizeof( content ), "%.0f", ledcActualFrequency );
+    }
+    else if ( server.hasArg( "tftorientation" ) )
+    {
+      snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+    }
+    else if ( server.hasArg( "tftbrightness" ) )
+    {
+      snprintf( content, sizeof( content ), "%.2f", tftBrightness );
+    }
+    else if ( server.hasArg( "timezone" ) )
+    {
+      snprintf( content, sizeof( content ), "%s", timeZone.c_str() );
+    }
+    else
+    {
+      return server.send( 400, textPlainHeader, "Invalid option" );
+    }
+    server.send( 200, textPlainHeader, content );
+  });
+
+
+  /**********************************************************************************************/
+
+
+  server.on( "/api/setdevice", []()
+  {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
+    char content[100];
+
+    if ( server.hasArg( "hostname" ) )
+    {
+      //set hostname NOT READY
+      snprintf( content, sizeof( content ), "%s", mDNSname );
+    }
+
+
+
+    else if ( server.hasArg( "oledcontrast" ) )
+    {
+      server.arg( "oledcontrast" ).trim();
+      int8_t contrast = server.arg( "oledcontrast" ).toInt();
+      if ( contrast < 0 || contrast > 15 )
+      {
+        return server.send( 400, textPlainHeader, "Invalid contrast." );
+      }
+      oledContrast = contrast;
+      OLED.setContrast( contrast << 4 );
+      saveInt8NVS( "oledcontrast", oledContrast );
+      snprintf( content, sizeof( content ), "%i", contrast );
+    }
+
+
+
+    else if ( server.hasArg( "oledorientation" ) )
+    {
+      if ( server.arg( "oledorientation" ) == "upsidedown" )
+      {
+        oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
+      }
+      else if ( server.arg( "oledorientation" ) == "normal" )
+      {
+        oledOrientation = OLED_ORIENTATION_NORMAL;
+      }
+      else
+      {
+        return server.send( 400, textPlainHeader, "Invalid orientation" );
+      }
+      OLED.end();
+      OLED.init();
+      oledOrientation == OLED_ORIENTATION_NORMAL ? OLED.normalDisplay() : OLED.flipScreenVertically();
+      saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+      snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
+    }
+
+
+
+    else if ( server.hasArg( "pwmdepth" ) )
+    {
+      uint8_t newPWMDepth = server.arg( "pwmdepth" ).toInt();
+      if ( newPWMDepth < 11 || newPWMDepth > 16 )
+      {
+        return server.send( 400, textPlainHeader, "Invalid PWM depth" );
+      }
+      if ( ledcNumberOfBits != newPWMDepth )
+      {
+        setupDimmerPWMfrequency( ledcActualFrequency, newPWMDepth );
+        saveInt8NVS( "pwmdepth" , ledcNumberOfBits );
+      }
+      snprintf( content, sizeof( content ), "%i", ledcNumberOfBits );
+    }
+
+
+
+    else if ( server.hasArg( "pwmfrequency" ) )
+    {
+      double tempPWMfrequency = server.arg( "pwmfrequency" ).toFloat();
+      if ( tempPWMfrequency < 100 || tempPWMfrequency > 20000 )
+      {
+        server.send( 200, textPlainHeader, "Invalid PWM frequency" );
+        return;
+      }
+      if ( tempPWMfrequency != ledcActualFrequency )
+      {
+        setupDimmerPWMfrequency( tempPWMfrequency, ledcNumberOfBits );
+        saveDoubleNVS( "pwmfrequency", ledcActualFrequency );
+      }
+      snprintf( content, sizeof( content ), "%.0f", ledcActualFrequency );
+    }
+
+
+
+    else if ( server.hasArg( "tftorientation" ) )
+    {
+      if (  server.arg( "tftorientation" ) == "normal" )
+      {
+        tftOrientation = TFT_ORIENTATION_NORMAL;
+      }
+      else if ( server.arg( "tftorientation" ) == "upsidedown" )
+      {
+        tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
+      }
+      else
+      {
+        return server.send( 400, textPlainHeader, "Invalid tft orientation." );
+      }
+      tft.setRotation( tftOrientation );
+      tft.fillScreen( ILI9341_BLACK );
+      saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+      snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+    }
+
+
+
+    else if ( server.hasArg( "tftbrightness" ) )
+    {
+      float brightness = server.arg( "tftbrightness" ).toFloat();
+      if ( brightness < 0 || brightness > 100 )
+      {
+        return server.send( 400, textPlainHeader, "Invalid tft brightness." );
+      }
+      tftBrightness = brightness;
+      saveInt8NVS( "tftbrightness", brightness );
+      snprintf( content, sizeof( content ), "%.2f", tftBrightness );
+    }
+
+
+
+    else if ( server.hasArg( "timezone" ) )
+    {
+      if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
+      {
+        timeZone = server.arg( "timezone" );
+        saveStringNVS( "timezone", server.arg( "timezone" ) );
+      }
+      else
+      {
+        return server.send( 400, textPlainHeader, "Error setting timezone." );
+      }
+      snprintf( content, sizeof( content ), "%s", timeZone.c_str() );
+    }
+
+
+
+    else
+    {
+      return server.send( 400, textPlainHeader, "Invalid option" );
+    }
+
+    server.send( 200, textPlainHeader, content );
+  });
+
+
+  /**********************************************************************************************/
+
+
+  server.on( "/api/setchannel", []()
+  {
+    if ( !server.authenticate( www_username, www_password ) )
+    {
+      return server.requestAuthentication();
+    }
+
+    char content[100];
+    int8_t channelNumber;
+
+    channelNumber = checkChannelNumber();
+    if ( channelNumber == -1 )
+    {
+      return server.send( 400, textPlainHeader, "Invalid channel" );
+    }
+
+
+
+    if ( server.hasArg( "color" ) )
+    {
+      for ( byte currentChar = 0; currentChar < server.arg( "color" ).length(); currentChar++ )
+      {
+        if ( !isxdigit( server.arg( "color" )[currentChar] ) )
+        {
+          return server.send( 400, textPlainHeader, "Invalid char" );
+        }
+      }
+      channel[ channelNumber ].color = "#" + server.arg( "color" );
+      snprintf( content, sizeof( content ), "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color.c_str() );
+    }
+
+
+
+    else if ( server.hasArg( "minimum" ) )
+    {
+      float minLevel = server.arg( "minimum" ).toFloat();
+      if ( minLevel < 0 || minLevel > 0.991 )
+      {
+        return server.send( 400, textPlainHeader, "Invalid level" );
+      }
+      channel[ channelNumber ].minimumLevel = minLevel;
+      saveFloatNVS( "channelminimum" + channelNumber, channel[channelNumber].minimumLevel );
+      snprintf( content, sizeof( content ), "channel %i minimum set to %.2f", channelNumber + 1, channel[ channelNumber ].minimumLevel );
+    }
+
+
+
+    else if ( server.hasArg( "name" ) )
+    {
+      for ( byte currentChar = 0; currentChar < server.arg( "name" ).length(); currentChar++ )
+      {
+        if ( !isalnum( server.arg( "name" )[currentChar] ) )
+        {
+          return server.send( 400, textPlainHeader, "Invalid char" );
+        }
+      }
+      //what to do if name is empty?
+      channel[ channelNumber ].name = server.arg( "name" );
+      saveStringNVS( "channelname" + char( channelNumber ), channel[channelNumber].name );
+      snprintf( content, sizeof( content ), "channel %i name set to %s", channelNumber + 1, channel[ channelNumber ].name.c_str() );
+    }
+
+
+
+    else
+    {
+      return server.send( 400, textPlainHeader, "Invalid option" );
+    }
+
+    server.send( 200, textPlainHeader, content );
+  });
+
+
+  /**********************************************************************************************/
+
+
+  server.on( "/api/getchannel", []()
+  {
+    char content[30];
+    int8_t channelNumber;
+
+    channelNumber = checkChannelNumber();
+    if ( channelNumber == -1 )
+    {
+      return server.send( 400, textPlainHeader, "Missing or invalid channel" );
+    }
+    if ( server.hasArg( "color" ) )
+    {
+      snprintf( content, sizeof( content ), "%s", channel[ channelNumber ].color.c_str() );
+    }
+    else if ( server.hasArg( "minimum" ) )
+    {
+      snprintf( content, sizeof( content ), "%.2f", channel[ channelNumber ].minimumLevel );
+    }
+    else if ( server.hasArg( "name" ) )
+    {
+      snprintf( content, sizeof( content ), "%s", channel[ channelNumber ].name.c_str() );
+    }
+    else
+    {
+      return server.send( 400, textPlainHeader, "Missing or invalid request" );
+    }
+    server.send( 200, textPlainHeader, content );
+  });
+
+
+  /**********************************************************************************************/
+
+
   server.onNotFound( handleNotFound );
 
   //start the web server
   server.begin();
   Serial.println("HTTP server setup done.");
+}
+
+int8_t checkChannelNumber()
+{
+  if ( !server.hasArg( "channel" ) )
+  {
+    return -1;
+  }
+  else
+  {
+    int8_t channelNumber = server.arg( "channel" ).toInt();
+    if ( channelNumber < 1 || channelNumber > NUMBER_OF_CHANNELS )
+    {
+      return -1;
+    }
+
+    return channelNumber - 1;
+  }
 }
 
 void handleNotFound()

@@ -4,7 +4,7 @@ void setupNTP()
 
   NTPpoolAdress += ".pool.ntp.org";
 
-  String timeZone = readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" );
+  timeZone = readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" );
 
   tft.println( "Getting time from " + NTPpoolAdress );
 
@@ -17,5 +17,7 @@ void setupNTP()
   //http://www.catb.org/esr/time-programming/
   //http://www.lucadentella.it/en/2017/05/11/esp32-17-sntp/
   //https://github.com/espressif/esp-idf/blob/master/components/lwip/apps/sntp/sntp.c
+
+  /* https://stackoverflow.com/questions/3673226/how-to-print-time-in-format-2009-08-10-181754-811 */
 
 }

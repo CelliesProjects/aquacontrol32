@@ -2,9 +2,6 @@ void dimmerTask ( void * pvParameters )
 {
   int dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS;
 
-  /* I probably have to read more of this thread: */
-  /* https://stackoverflow.com/questions/3673226/how-to-print-time-in-format-2009-08-10-181754-811 */
-
   lightStatus = "LIGHTS AUTO";
 
   while (1)

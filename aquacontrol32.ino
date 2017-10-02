@@ -199,6 +199,8 @@ struct sensorStruct
   String name;
 } sensor[MAX_NUMBER_OF_SENSORS];
 
+String timeZone;
+
 String mDNSname = "aquacontrol32";
 
 TaskHandle_t x_dimmerTaskHandle = NULL;
@@ -217,7 +219,10 @@ struct tm systemStart;
 
 String lightStatus;
 
+float   tftBrightness   = 80;                        /* in percent */
 uint8_t tftOrientation  = TFT_ORIENTATION_NORMAL;
+
+int8_t  oledContrast;                                /* 0 .. 15 */
 uint8_t oledOrientation = OLED_ORIENTATION_NORMAL;
 
 /*****************************************************************************************
@@ -306,7 +311,7 @@ void setup()
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
 
-  setupDimmerPWMfrequency( LEDC_REQUEST_FREQ, LEDC_NUMBER_OF_BIT );
+  setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_REQUEST_FREQ ), readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
 
 
 

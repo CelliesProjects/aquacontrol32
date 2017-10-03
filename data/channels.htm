@@ -67,13 +67,15 @@ a {
 }
 
 .itemName{
-  display:inline;
-  margin: 0 1px 0 15px;
+    display: inline-block;
+    margin: 8px;
+    padding: 2px 2px;
 }
 
 .itemValue{
-  display:inline;
-  margin:5px;
+    display: inline-block;
+    width: 90px;
+    text-align: center;
 }
 
 input{
@@ -124,15 +126,15 @@ input[type="color"] {
 <script>
 
 function getChannelColors(){
-  $.get( "api/getchannelcolors" )
+  $.get( "/api/getdevice?channelcolors=" )
     .done( function( data ) {
       var values = data.split("\n");
       values.forEach(function(element, index){
         $('.colorPicker').eq(index).val( element.trim() );
       });
     })
-    .fail( function() {
-      console.log( "Getting channel colors failed." );
+    .fail( function( data ) {
+      console.log( data );
     })
     .always( function() {
       $('body').css({'opacity':'1'});
@@ -140,15 +142,15 @@ function getChannelColors(){
 }
 
 function getChannelNames(){
-  $.get( "/api/getchannelnames" )
+  $.get( "/api/getdevice?channelnames=" )
     .done( function( data ) {
       var values = data.split("\n");
       values.forEach(function(element, index){
         $('.channelName').eq(index).val( element );
       });
     })
-    .fail( function() {
-      console.log( "Getting channel names failed." );
+    .fail( function( data ) {
+      console.log( data );
     })
     .always( function() {
       getChannelColors();
@@ -157,7 +159,7 @@ function getChannelNames(){
 
 $(document).ready( function() {
 
-  $.get( "api/getminimumlevels" )
+  $.get( "/api/getdevice?minimumlevels=" )
   .done( function( data ) {
     var values = data.split("\n");
     values.forEach(function(element, index){
@@ -165,8 +167,8 @@ $(document).ready( function() {
       $('.minimumPercent').eq(index).html( element.trim() + "%" );
     });
   })
-  .fail( function() {
-    console.log( "Getting minimum levels failed." );
+  .fail( function( data ) {
+    console.log( data );
   })
   .always( function() {
     getChannelNames();
@@ -182,11 +184,10 @@ $(document).ready( function() {
   $( '.minLevel' ).on( 'change', function() {
     var thisChannel = $(this).parent().index();
     var newPercentage = $(this).val();
-    $.get( "/api/minimumlevel?channel=" + thisChannel + "&percentage=" + newPercentage, function( data ) {
-      console.log( data );
+    $.get( "/api/setchannel?channel=" +( thisChannel + 1 )+ "&minimum=" + newPercentage, function( data ) {
     })
     .done(function( data ) {
-      $('#statusBox').html( "Minimum level for channel " + ( thisChannel + 1 ) + " set to " + newPercentage + "%" );
+      $('#statusBox').html( data );
     })
     .fail(function( data ) {
       $('#statusBox').html( "Failed to set minimumlevel" );
@@ -196,26 +197,27 @@ $(document).ready( function() {
   $( '.channelName' ).on( 'change', function( ) {
     var thisChannel = $(this).parent().index();
     var newName = $(this).val();
-    $.get( "/api/setchannelname?channel=" + thisChannel + "&newname=" + newName, function( data ) {
-      console.log( "Channel " + thisChannel + " name set to " + newName );
+    $.get( "/api/setchannel?channel=" + ( thisChannel + 1 ) + "&name=" + newName, function( data ) {
     })
-    .done(function(  ) {
-      $('#statusBox').html( "Channel " + ( thisChannel) + " name set to " + newName );
+    .done(function( data ) {
+      $('#statusBox').html( data );
       $('.channelName').eq( thisChannel ).css({'background':'lightgreen'});
     })
     .fail(function( data ) {
-      $('#statusBox').html( "Failed to set channelname" );
+      $('#statusBox').html( data );
     });
   });
 
   $( '.colorPicker' ).on( 'change', function() {
     var thisChannel = $(this).parent().index();
     var thisColor = $(this).val().substr(1);
-    $.get( "/api/setchannelcolor?channel=" + thisChannel + "&newcolor=" + thisColor, function( data ) {
-      console.log( data );
+    $.get( "/api/setchannel?channel=" + ( thisChannel + 1 ) + "&color=" + thisColor, function( data ) {
     })
     .done(function() {
       $('#statusBox').html( "Channel " + ( thisChannel + 1 ) + " color set to <span style=\"color:#" + thisColor + ";\">#" + thisColor + "</span>" );
+    })
+    .fail(function( data ) {
+      $('#statusBox').html( data );
     });
   });
 

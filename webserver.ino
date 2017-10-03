@@ -609,6 +609,22 @@ void setupWebServer()                                            //https://githu
     {
       snprintf( content, sizeof( content ), "%s", asctime( &systemStart ) );
     }
+    else if ( server.hasArg( "channelcolors" ) )
+    {
+      uint8_t charCount = 0;
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      {
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", channel[channelNumber].color.c_str() );
+      }
+    }
+    else if ( server.hasArg( "channelnames" ) )
+    {
+      uint8_t charCount = 0;
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      {
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", channel[channelNumber].name.c_str() );
+      }
+    }
     else if ( server.hasArg( "diskspace" ) )
     {
       snprintf( content, sizeof( content ), "%d" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
@@ -616,6 +632,14 @@ void setupWebServer()                                            //https://githu
     else if ( server.hasArg( "hostname" ) )
     {
       snprintf( content, sizeof( content ), "%s", mDNSname.c_str() );
+    }
+    else if ( server.hasArg( "minimumlevels" ) )
+    {
+      uint8_t charCount = 0;
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      {
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f\n", channel[channelNumber].minimumLevel );
+      }
     }
     else if ( server.hasArg( "oledcontrast" ) )
     {

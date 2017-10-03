@@ -15,7 +15,13 @@ void tftTask( void * pvParameters )
 
   tft.fillScreen( TFT_BACK_COLOR );
 
-  digitalWrite( TFT_BACKLIGHT_PIN, HIGH );
+  //setup backlight pwm
+  const uint8_t BACKLIGHT_BITDEPTH = 16; /*max 16 bits */
+
+  ledcAttachPin( TFT_BACKLIGHT_PIN, NUMBER_OF_CHANNELS );
+  double backlightFrequency = ledcSetup( NUMBER_OF_CHANNELS , 10000, BACKLIGHT_BITDEPTH );
+
+  uint16_t backlightMaxvalue = ( 0x00000001 << BACKLIGHT_BITDEPTH ) - 1;
 
   ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
   tft.setRotation( tftOrientation );
@@ -29,6 +35,8 @@ void tftTask( void * pvParameters )
     const uint16_t BARS_BORDER      = 10;
     const uint16_t BARS_WIDTH       = ILI9341_TFTHEIGHT / 5;
     const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
+
+    ledcWrite( NUMBER_OF_CHANNELS, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
 
     for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
     {

@@ -82,8 +82,9 @@ void setupWebServer()                                            //https://githu
     // https://stackoverflow.com/questions/8323159/how-to-convert-uint64-t-value-in-const-char-string
     // cardsize = uint64_t
     // length of 2**64 - 1, +1 for nul.
-    char content[5];
-    snprintf( content, sizeof( content ), "%d" , SPIFFS.totalBytes() );
+
+    char content[10];
+    snprintf( content, sizeof( content ), "%d" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
     server.send( 200,  textPlainHeader, content );
   });
 

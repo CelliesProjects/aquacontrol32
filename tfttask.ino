@@ -26,7 +26,7 @@ void tftTask( void * pvParameters )
   ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
   tft.setRotation( tftOrientation );
 
-  int tftTaskdelayTime = 1000 / UPDATE_FREQ_LEDS;
+  int tftTaskdelayTime = 1000 / UPDATE_FREQ_TFT;
 
   while (1)
   {

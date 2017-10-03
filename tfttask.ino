@@ -28,6 +28,8 @@ void tftTask( void * pvParameters )
 
   int tftTaskdelayTime = 1000 / UPDATE_FREQ_TFT;
 
+  tftBrightness = readInt8NVS( "tftbrightness", tftBrightness );
+
   while (1)
   {
     const uint16_t BARS_BOTTOM      = 205;

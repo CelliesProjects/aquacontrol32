@@ -609,6 +609,10 @@ void setupWebServer()                                            //https://githu
     {
       snprintf( content, sizeof( content ), "%s", asctime( &systemStart ) );
     }
+    else if ( server.hasArg( "diskspace" ) )
+    {
+      snprintf( content, sizeof( content ), "%d" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
+    }
     else if ( server.hasArg( "hostname" ) )
     {
       snprintf( content, sizeof( content ), "%s", mDNSname.c_str() );
@@ -632,6 +636,19 @@ void setupWebServer()                                            //https://githu
     else if ( server.hasArg( "tftorientation" ) )
     {
       snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+    }
+    else if ( server.hasArg( "status" ) )
+    {
+      int charCount = 0;
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      {
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f,", channel[channelNumber].currentPercentage );
+      }
+      time_t now = time(0);
+      char buff[10];
+      strftime( buff, sizeof( buff ), "%T", localtime( &now ) );
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,", buff );
+      snprintf( content + charCount, sizeof( content ) - charCount, "%s", lightStatus.c_str() );
     }
     else if ( server.hasArg( "tftbrightness" ) )
     {
@@ -665,6 +682,46 @@ void setupWebServer()                                            //https://githu
     {
       //set hostname NOT READY
       snprintf( content, sizeof( content ), "%s", mDNSname );
+
+      //for now return an error
+      return server.send( 400, textPlainHeader, "Not implemented yet." );
+    }
+
+
+
+    else if ( server.hasArg( "lightsoff" ) )
+    {
+      vTaskSuspend( x_dimmerTaskHandle );
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      {
+        channel[channelNumber].currentPercentage = 0;
+        ledcWrite( channelNumber, 0 );
+      }
+      lightStatus = "LIGHTS OFF ";
+      snprintf( content, sizeof( content ), "%s", lightStatus.c_str() );
+    }
+
+
+
+    else if ( server.hasArg( "lightson" ) )
+    {
+      vTaskSuspend( x_dimmerTaskHandle );
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      {
+        channel[channelNumber].currentPercentage = 100;
+        ledcWrite( channelNumber, ledcMaxValue );
+      }
+      lightStatus = " LIGHTS ON ";
+      snprintf( content, sizeof( content ), "%s", lightStatus.c_str() );
+    }
+
+
+
+    else if ( server.hasArg( "lightsprogram" ) )
+    {
+      lightStatus = "LIGHTS AUTO";
+      snprintf( content, sizeof( content ), "%s", lightStatus.c_str() );
+      vTaskResume( x_dimmerTaskHandle );
     }
 
 
@@ -701,6 +758,7 @@ void setupWebServer()                                            //https://githu
       }
       OLED.end();
       OLED.init();
+      OLED.setContrast( oledContrast << 0x04 );
       oledOrientation == OLED_ORIENTATION_NORMAL ? OLED.normalDisplay() : OLED.flipScreenVertically();
       saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
       snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
@@ -717,7 +775,7 @@ void setupWebServer()                                            //https://githu
       }
       if ( ledcNumberOfBits != newPWMDepth )
       {
-        setupDimmerPWMfrequency( ledcActualFrequency, newPWMDepth );
+        setupDimmerPWMfrequency( LEDC_REQUEST_FREQ, newPWMDepth );
         saveInt8NVS( "pwmdepth" , ledcNumberOfBits );
       }
       snprintf( content, sizeof( content ), "%i", ledcNumberOfBits );

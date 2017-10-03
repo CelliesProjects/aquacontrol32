@@ -23,7 +23,7 @@ hr{
 }
 
 h3{
-  margin:0;
+  margin:10px;
 }
 
 p{
@@ -82,14 +82,16 @@ a {
 
 .itemName, .itemValue {
   float:left;
+  line-height: 30px;
 }
 
 .itemName{
-  width:37%
+  width:41%
 }
 
 .itemValue{
-  width:20%
+  width:20%;
+  margin:0 30px;
 }
 
 .deleteButton:hover{
@@ -121,7 +123,7 @@ input[type="text"]{
 input[type="button"]{
   height:30px;
   padding:5px 20px;
-  margin:10px;
+  margin:0 10px;
   border:solid 1px black;
 }
 
@@ -130,7 +132,6 @@ input[type="range"]{
   height:10px;
   box-shadow:unset;
 }
-
 </style>
 <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
 </head>
@@ -138,28 +139,33 @@ input[type="range"]{
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a><a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div id="titleBox" class="shadowedBox">
   <h3>DEVICE SETUP</h3>
-  <p>Control your lights and device.</p>
+  <p class="item">Control your lights and device.</p>
 </div>
 <div class="shadowedBox">
   <h3>LIGHT CONTROL</h3>
-  <input id="lightsOn" type="button" value="LIGHTS ON" disabled/><input id="lightsOff" type="button" value="LIGHTS OFF" disabled/><input id="lightsProgram" type="button" value="PROGRAM" disabled/>
-  <div id="lightStatus">&nbsp;</div>
+  <p class="item"><span id="lightStatus"></span></p>
+  <p class="item"><input id="lightsOn" type="button" value="LIGHTS ON" disabled/><input id="lightsOff" type="button" value="LIGHTS OFF" disabled/><input id="lightsProgram" type="button" value="LIGHTS AUTO" disabled/></p>
 </div>
 <div class="shadowedBox">
   <h3>DEVICE CONTROL</h3>
   <div class="settingsBox">
+    <p class="item"><span id="deviceStatus">&nbsp;</span></p>
     <p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
-    <p class="item"><span class="itemName">TIME ZONE <a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneSlider"></span></p>
-    <p class="item"><span class="itemName">PWM FREQUENCY</span><span id="pwmFreqValue" class="itemValue">&nbsp;</span><input type="range" id="pwmFreqSlider" value="400" min="2" max="1000"></p>
-    <p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="1024" min="1024" max="10240" step="1024"></p>
-    <p class="item"><span class="itemName">NTP UPDATE FREQUENCY</span><span id="ntpUpdateValue" class="itemValue">0</span><input type="range" id="ntpUpdateSlider" value="21600" min="21600" max="86400" step="21600"></p>
-    <p class="item"><span class="itemName">DISPLAY ORIENTATION</span><span id="oledValue" class="itemValue">&nbsp;</span><input type="range" id="oledSlider" min="0" max="1"></p>
+    <p class="item"><span class="itemName">TIME ZONE <a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneTextBox"></span></p>
+    <!--<p class="item"><span class="itemName">PWM FREQUENCY</span><span id="pwmFreqValue" class="itemValue">&nbsp;</span><input type="range" id="pwmFreqSlider" value="100" min="100" max="10000"></p>-->
+    <!--<p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="11" min="11" max="16" step="1"></p>-->
+    <p class="item"><span class="itemName">TFT ORIENTATION</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
+    <p class="item"><span class="itemName">TFT BRIGHTNESS</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
+    <p class="item"><span class="itemName">OLED ORIENTATION</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
+    <p class="item"><span class="itemName">OLED CONTRAST</span><span id="oledContrastValue" class="itemValue">&nbsp;</span><input type="range" id="oledContrastSlider" value="11" min="0" max="15" step="1"></p>
   </div>
 </div>
 <div class="shadowedBox">
+  <h3>DEVICE STATUS</h3>
   <div class="settingsBox">
     <p class="item">SYSTEM START:&nbsp;&nbsp;<span id="bootTime"></span></p>
     <p class="item">FREE DISK SPACE:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
+    <p class="item">PWM STATUS:&nbsp;&nbsp;<span id="pwmStatus"></span></p>
   </div>
 </div>
 <script>
@@ -178,45 +184,60 @@ $(document).ready( function() {
   //disable inputs until all values are loaded
   $('input').prop('disabled', true);
   //load the items one by one
-  $.get( "/api/boottime", function( data ) {
+  $.get( "/api/getdevice?boottime=", function( data ) {
     $('#bootTime').html( data );
 
-    $.get( "/api/pwmfrequency", function( data ) {
-      $('#pwmFreqSlider').val( data );
-      $('#pwmFreqValue').html( data + "Hz" );
+    $.get( "/api/getdevice?oledcontrast=", function( data ) {
+      $('#oledContrastValue').html( data );
+      $('#oledContrastSlider').val( data );
 
-      $.get( "/api/pwmdepth", function( data ) {
-        $('#pwmDepthSlider').val( data );
-        $('#pwmDepthValue').html( data );
+      $.get( "/api/getdevice?tftbrightness=", function( data ) {
+        $('#tftBrightnessValue').html( parseInt( data ) + "%"  );
+        $('#tftBrightnessSlider').val( data );
 
-        $.get("/api/timezone", function( data ) {
-          $('#timeZoneSlider').val( data );
+        $.get("/api/getdevice?timezone=", function( data ) {
+          $('#timeZoneTextBox').val( data );
 
-          $.get("/api/status",function( data ) {
+          $.get("/api/getdevice?status=",function( data ) {
             var item = data.split(',');
             $('#lightStatus').html( item[6] );
 
-            $.get("/api/ntpinterval",function( data ) {
-              $('#ntpUpdateSlider').val( data );
-              $('#ntpUpdateValue').html( data / 3600 + "h" );
+            $.get("/api/getdevice?diskspace=",function( data ) {
+              $('#freeDiskSpace').html( formatBytes( data ) );
 
-              $.get("/api/diskspace",function( data ) {
-                $('#freeDiskSpace').html( formatBytes( data ) );
+              $.get("/api/getdevice?hostname=",function( data ) {
+                $('#hostNameInput').val(  data  );
 
-                $.get("/api/hostname",function( data ) {
-                  $('#hostNameInput').val(  data  );
+                $.get("/api/getdevice?tftorientation=", function( data ) {
+                  $('#tftOrientation').html( data );
+                  if ( data == 'normal' ) {
+                    $('#tftOrientationSlider').val(0);
+                  }
+                  if ( data == 'upsidedown' ) {
+                    $('#tftOrientationSlider').val(1);
+                  }
 
-                  $.get("/api/tftorientation", function( data ) {
-                    $('#oledValue').html( data );
+                  $.get("/api/getdevice?oledorientation=", function( data ) {
+                    $('#oledOrientationValue').html( data );
                     if ( data == 'normal' ) {
-                      $('#oledSlider').val(0);
+                      $('#oledOrientationSlider').val(0);
                     }
                     if ( data == 'upsidedown' ) {
-                      $('#oledSlider').val(1);
+                      $('#oledOrientationSlider').val(1);
                     }
 
-                    $('input').prop('disabled', false); //and finally enable the inputs again
-                    $('body').css('opacity','1'); // and show the page
+                    $.get("/api/getdevice?pwmdepth=", function( data ) {
+                      $('#pwmStatus').html( data + "bit - ");
+
+                      $.get("/api/getdevice?pwmfrequency=", function( data ) {
+                        $('#pwmStatus').append( data + "Hz");
+
+                        $('input').prop('disabled', false); //and finally enable the inputs again
+                        $('body').css('opacity','1'); // and show the page
+                      });
+
+                    });
+
                   });
 
                 });
@@ -237,72 +258,93 @@ $(document).ready( function() {
 
   //event handlers
 
-  $('#oledSlider').on('change', function( event ) {
-    if ( $(this).val() == 0 ) $('#oledValue').html('normal');
-    if ( $(this).val() == 1 ) $('#oledValue').html('upsidedown');
-    $.get( "/api/tftorientation?tftorientation=" + $('#oledValue').html(), function( data ) {
-      console.log( data );
-      $('#lightStatus').html( "TFT ORIENTATION: " + data );
+  $('#oledOrientationSlider').on('change', function( event ) {
+    if ( $(this).val() == 0 ) $('#oledOrientationValue').html('normal');
+    if ( $(this).val() == 1 ) $('#oledOrientationValue').html('upsidedown');
+    $.get( "/api/setdevice?oledorientation=" + $('#oledOrientationValue').html(), function( data ) {
     });
   });
 
-  $('#dstSlider').on('change', function( event ) {
-    $.get( "/api/dststatus?newdststatus=" + $('#dstValue').html(), function( data ) {
-      console.log( data );
+  $('#tftOrientationSlider').on('change', function( event ) {
+    if ( $(this).val() == 0 ) $('#tftOrientation').html('normal');
+    if ( $(this).val() == 1 ) $('#tftOrientation').html('upsidedown');
+    $.get( "/api/setdevice?tftorientation=" + $('#tftOrientation').html(), function( data ) {
     });
-  });
-
-  $('#dstSlider').on('input', function( event ) {
-    if ( $(this).val() == 0 ) $('#dstValue').html('disabled');
-    if ( $(this).val() == 1 ) $('#dstValue').html('enabled');
   });
 
   $('#lightsOn').on('click', function() {
-    $.get( "/api/lightson", function( data ) {
+    $.get( "/api/setdevice?lightson=", function( data ) {
       $("#lightStatus").html( data );
     });
   });
 
   $('#lightsOff').on('click', function() {
-    $.get( "/api/lightsoff", function( data ) {
+    $.get( "/api/setdevice?lightsoff=", function( data ) {
       $('#lightStatus').html( data );
     });
   });
 
   $('#lightsProgram').on('click', function() {
-    $.get( "/api/lightsprogram", function( data ) {
+    $.get( "/api/setdevice?lightsprogram=", function( data ) {
       $('#lightStatus').html( data );
     });
   });
 
   $('#hostNameInput').on('input', function() {
-    $( '#hostNameInput' ).css({'background':'beige'});
+    $( '#hostNameInput' ).css({'background':'yellow'});
   });
 
   $('#hostNameInput').on('change', function( data ) {
     var newHostname = $(this).val();
-    $.get( "/api/hostname?newhostname=" + newHostname )
+    $.get( "/api/setdevice?hostname=" + newHostname )
       .done(function( data ){
-        console.log( data );
-        $( '#lightStatus' ).html( data + "<a href=\"http://" + newHostname + "\">Click here to go to " + newHostname + "</a>");
+        $( '#deviceStatus' ).html( data + "<a href=\"http://" + newHostname + "\">Click here to go to " + newHostname + "</a>");
         $( '#hostNameInput' ).css({'background':'lightgreen'});
       })
       .fail(function( data ){
-        console.log( data );
-        $( '#lightStatus' ).html( "ERROR: " + data.responseText  );
+        $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
         $( '#hostNameInput' ).css({'background':'red'});
       });
   });
 
+  $('#oledContrastSlider').on('input', function() {
+    $('#oledContrastValue').html( $(this).val() );
+  });
+
+  $('#oledContrastSlider').on('change', function() {
+    $.get( "/api/setdevice?oledcontrast=" + $(this).val(), function( data ) {
+      //$('#deviceStatus').html( data );
+    })
+  });
+
+  $('#tftBrightnessSlider').on('input', function() {
+    $('#tftBrightnessValue').html( parseInt( $(this).val() ) + "%" );
+  });
+
+  $('#tftBrightnessSlider').on('change', function() {
+    $.get( "/api/setdevice?tftbrightness=" + $(this).val(), function( data ) {
+      //$('#deviceStatus').html( data );
+    })
+  });
+
+  $('#timeZoneTextBox').on('input', function() {
+    $( '#timeZoneTextBox' ).css({'background':'yellow'});
+  });
+
+  $('#timeZoneTextBox').on('change', function( ) {
+    $.get( '/api/setdevice?timezone=' + $(this).val(), function( data ) {
+      $('#timeZoneTextBox').css( {'background':'lightgreen'} );
+    });
+  });
+/*
   $('#pwmFreqSlider').on('input', function() {
     $('#pwmFreqValue').html( $(this).val() + "Hz" );
   });
 
   $('#pwmFreqSlider').on('change', function() {
-    $.get( "/api/pwmfrequency?newpwmfrequency=" + $(this).val(), function( data ) {
+    $.get( "/api/setdevice?pwmfrequency=" + $(this).val(), function( data ) {
       if ( data == 'Invalid PWM frequency' ) {
-        //TODO: show a popup
-        $('#lightStatus').html( data );
+        $('#deviceStatus').html( data );
       }
     });
   });
@@ -312,47 +354,13 @@ $(document).ready( function() {
   });
 
   $('#pwmDepthSlider').on('change', function() {
-    $.get( "/api/pwmdepth?newpwmdepth=" + $(this).val(), function( data ) {
+    $.get( "/api/setdevice?pwmdepth=" + $(this).val(), function( data ) {
       if ( data == 'ERROR - Invalid PWM depth' ) {
-        //TODO: show a popup
-        $('#lightStatus').html( data );
+        $('#deviceStatus').html( data );
       }
     });
   });
-
-/*
-  $('#timeZoneSlider').on('input', function( ) {
-    if ( parseInt( $(this).val() ) > -1 ) {
-      $('#timeZoneValue').html( "UTC+" + $(this).val() );
-    } else {
-      $('#timeZoneValue').html( "UTC" + $(this).val() );
-    }
-  });
 */
-  $('#timeZoneSlider').on('change', function( ) {
-    $.get( '/api/timezone?timezone=' + $(this).val(), function( data ) {
-      $('#lightStatus').html( data );
-      $('#timeZoneSlider').css( {'background':'lightgreen'} );
-      //$($this).css( {'background':'lightgreen'} );
-    });
-  });
-
-  $('#ntpUpdateSlider').on('change', function() {
-    $.get( '/api/ntpinterval?newntpinterval=' + $(this).val(),function() {
-      $.get("/api/ntplastsynctime",function( data ) {
-        var lastSync = new Date( data * 1000 );
-        $('#lastSyncTime').html( lastSync.toLocaleString() );
-      });
-    });
-  });
-
-  $('#ntpUpdateSlider').on('input', function( ) {
-    $('#ntpUpdateValue').html( $(this).val() / 3600  + "h");
-  });
-
-
-
-
 });
 </script>
 

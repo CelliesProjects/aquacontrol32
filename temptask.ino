@@ -1,7 +1,28 @@
-//#define SHOW_DALLAS_ERROR  // uncomment to show Dallas ( CRC ) errors on Serial.
+//#define SHOW_DALLAS_ERROR  /* uncomment to show Dallas ( CRC ) errors on Serial. */
 
 void tempTask( void * pvParameters )
 {
+  numberOfFoundSensors = 0;
+  byte currentAddr[8];
+  while ( ds.search( currentAddr ) && numberOfFoundSensors < MAX_NUMBER_OF_SENSORS )
+  {
+    //Serial.write( "Sensor "); Serial.print( counter ); Serial.print( ":" );
+    for ( byte i = 0; i < 8; i++) {
+      //Serial.write(' ');
+      //Serial.print( currentAddr[i], HEX );
+      sensor[numberOfFoundSensors].addr[i] = currentAddr[i];
+    }
+    numberOfFoundSensors++;
+  }
+  Serial.printf( "%i Dallas sensors found.\n", numberOfFoundSensors );
+
+  if ( !numberOfFoundSensors )
+  {
+    vTaskDelete( NULL );
+  }
+
+  /* main temptask loop */
+
   while (1)
   {
     for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
@@ -87,23 +108,4 @@ void tempTask( void * pvParameters )
       }
     }
   }
-}
-
-byte searchDallasSensors()
-{
-  tft.println("Searching Dallas temperature sensors...");
-  byte counter = 0, currentAddr[8];
-  while ( ds.search( currentAddr ) && counter < MAX_NUMBER_OF_SENSORS )
-  {
-    //Serial.write( "Sensor "); Serial.print( counter ); Serial.print( ":" );
-    for ( byte i = 0; i < 8; i++) {
-      //Serial.write(' ');
-      //Serial.print( currentAddr[i], HEX );
-      sensor[counter].addr[i] = currentAddr[i];
-    }
-    counter++;
-  }
-  Serial.print( counter ); Serial.println( " sensors found." );
-  tft.print( counter );  tft.println( " Dallas temperature sensors found." );
-  return counter;
 }

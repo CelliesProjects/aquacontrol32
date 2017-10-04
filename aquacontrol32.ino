@@ -167,6 +167,8 @@ WebServer server(80);
 const char* www_username    = "admin";  //change me!
 const char* www_password    = "esp32";  //change me!
 
+const char* defaultTimerFile = "/default.aqu";
+
 struct lightTimer
 {
   time_t      time;               /* time in seconds since midnight so range is 0-86400 */
@@ -212,8 +214,6 @@ uint8_t  ledcNumberOfBits;
 
 byte numberOfFoundSensors;
 
-String defaultTimerFile = "/default.aqu";
-
 //Boot time is saved
 struct tm systemStart;
 
@@ -249,6 +249,15 @@ void setup()
   Serial.print( "ESP32 SDK: " );
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
+
+  xTaskCreatePinnedToCore(
+    tempTask,                       /* Function to implement the task */
+    "tempTask ",                    /* Name of the task */
+    4000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    7,                              /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);                             /* Core where the task should run */
 
   if ( OLED_ENABLED )
   {
@@ -289,7 +298,6 @@ void setup()
     setEmptyTimers();
   }
 
-  numberOfFoundSensors = searchDallasSensors();
 
   setupMDNS();
 
@@ -350,18 +358,6 @@ void setup()
       NULL,                           /* Task input parameter */
       1,                              /* Priority of the task */
       &x_tftTaskHandle,               /* Task handle. */
-      1);                             /* Core where the task should run */
-  }
-
-  if ( numberOfFoundSensors )
-  {
-    xTaskCreatePinnedToCore(
-      tempTask,                       /* Function to implement the task */
-      "tempTask ",                    /* Name of the task */
-      4000,                           /* Stack size in words */
-      NULL,                           /* Task input parameter */
-      7,                              /* Priority of the task */
-      NULL,                           /* Task handle. */
       1);                             /* Core where the task should run */
   }
 }

@@ -182,7 +182,7 @@ function formatBytes( bytes, decimals ) {
 }
 
 function updateDiskspace() {
-  $.get( "/api/diskspace", function( data ) {
+  $.get( "/api/getdevice?diskspace=", function( data ) {
     diskSpace = parseInt( data );
     $('#diskSpace').html( formatBytes( diskSpace ) + " LEFT" );
   });
@@ -209,8 +209,8 @@ function deleteFile(file){
 
 function readFiles(){
   $( '#fileList' ).html( '' );
-  $.get( "/api/files", function( data ) {
-    var files = data.split( "|" );
+  $.get( "/api/getdevice?files=", function( data ) {
+    var files = data.split( "\n" );
     files.forEach( function( item ) {
       if ( item == "" ) { return; }
       thisFile = item.split( "," );

@@ -484,7 +484,7 @@ function readTimerFile( filename ) {
 }
 
 function updateNowIndicator() {
-  $.get( "/api/status", function( data ) {
+  $.get( "/api/getdevice?status=", function( data ) {
     var item = data.split( "," );
     var offSet = map( timeInSeconds( item[5] ), 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
     $('#editorCanvas').removeLayer( 'nowIndicator' ).removeLayer( 'nowTextIndicator' );

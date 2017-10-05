@@ -6,26 +6,16 @@
 #include "fileman_htm.h"
 #include "channels_htm.h"
 
-
-void webServerTask ( void * pvParameters )
-{
-  while (1)
-  {
-    server.handleClient();
-    vTaskDelay( 1 / portTICK_PERIOD_MS );
-  }
-}
-
 const char* textPlainHeader  = "text/plain";
 const char* textHtmlHeader   = "text/html";
 
 const char* contentSecurityHeader      = "Content-Security-Policy";
 const char* contentSecurityHeaderValue = "script-src 'unsafe-inline' https: https://code.jquery.com;";
 
-void setupWebServer()                                            //https://github.com/espressif/esp-idf/blob/master/components/spi_flash/README.rst
+void webServerTask ( void * pvParameters )
 {
   // Set up the web server
-  Serial.println( "Starting webserver. " );
+  Serial.println( "Starting webserver setup. " );
 
   //home page or 'index.html'
   server.on( "/", []()
@@ -65,471 +55,6 @@ void setupWebServer()                                            //https://githu
   /***************************************************************************
       API calls
    **************************************************************************/
-
-  server.on( "/api/clearnvs", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-
-    clearNVS();
-    server.send( 200,  textPlainHeader, "NVS cleared" );
-  });
-
-  server.on( "/api/diskspace", []()
-  {
-    // https://stackoverflow.com/questions/8323159/how-to-convert-uint64-t-value-in-const-char-string
-    // cardsize = uint64_t
-    // length of 2**64 - 1, +1 for nul.
-
-    char content[10];
-    snprintf( content, sizeof( content ), "%d" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
-    server.send( 200,  textPlainHeader, content );
-  });
-
-  server.on( "/api/files", []()
-  {
-    String HTTPresponse;
-    {
-      File root = SPIFFS.open("/");
-      if (!root)
-      {
-        server.send( 404, textPlainHeader, "Folder not found." );
-        return;
-      }
-      if (!root.isDirectory())
-      {
-        server.send( 401, textPlainHeader, "Not a directory");
-        return;
-      }
-
-      File file = root.openNextFile();
-      while (file)
-      {
-        if (!file.isDirectory())
-        {
-          size_t fileSize = file.size();
-          HTTPresponse += String( file.name() ) + "," + humanReadableSize( fileSize ) + "|";
-        }
-        file = root.openNextFile();
-      }
-    }
-    server.send( 200, textPlainHeader, HTTPresponse );
-  });
-
-  server.on( "/api/boottime", []()
-  {
-    server.send( 200, textHtmlHeader, asctime( &systemStart ) );
-  });
-
-  server.on( "/api/getchannelcolors", []()
-  {
-    char content[42];
-    uint8_t charCount = 0;
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", channel[channelNumber].color.c_str() );
-    }
-    server.send( 200, textPlainHeader, content );
-  });
-
-  server.on( "/api/getchannelnames", []()
-  {
-    char content[100];
-    uint8_t charCount = 0;
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", channel[channelNumber].name.c_str() );
-    }
-    server.send( 200, textPlainHeader, content );
-  });
-
-  server.on( "/api/getminimumlevels", []()
-  {
-    char content[30];
-    uint8_t charCount = 0;
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f\n", channel[channelNumber].minimumLevel );
-    }
-    server.send( 200, textPlainHeader, content );
-  });
-
-  server.on( "/api/hostname", HTTP_GET, []()
-  {
-    if ( server.hasArg( "hostname" ) )
-    {
-      server.arg( "hostname" ).trim();
-      mDNSname = server.arg( "hostname" );
-      if ( WiFi.setHostname( mDNSname.c_str() ) )
-      {
-        saveStringNVS( "hostname", mDNSname );
-      }
-      else
-      {
-        server.send( 200, textHtmlHeader, "ERROR setting hostname" );
-        return;
-      }
-    }
-    server.send( 200, textHtmlHeader, WiFi.getHostname() );
-  });
-
-  server.on( "/api/lightsoff", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-
-    vTaskSuspend( x_dimmerTaskHandle );
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      channel[channelNumber].currentPercentage = 0;
-      ledcWrite( channelNumber, 0 );
-    }
-    lightStatus = "LIGHTS OFF ";
-    server.send( 200, textHtmlHeader, lightStatus );
-  });
-
-  server.on( "/api/lightson", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-
-    vTaskSuspend( x_dimmerTaskHandle );
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      channel[channelNumber].currentPercentage = 100;
-      ledcWrite( channelNumber, ledcMaxValue );
-    }
-    lightStatus = " LIGHTS ON ";
-    server.send( 200, textHtmlHeader, lightStatus );
-  });
-
-  server.on( "/api/lightsprogram", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-    vTaskResume( x_dimmerTaskHandle );
-    lightStatus = "LIGHTS AUTO";
-    server.send( 200, textHtmlHeader, lightStatus );
-  });
-
-  server.on( "/api/loadtimers", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-
-    server.send( 200, textPlainHeader, defaultTimersLoaded() ? "Timers loaded." : "Not loaded." );
-  });
-
-  server.on( "/api/pwmdepth", []()
-  {
-    if ( server.hasArg( "newpwmdepth" ) )
-    {
-      if ( !server.authenticate( www_username, www_password ) )
-      {
-        return server.requestAuthentication();
-      }
-      uint8_t newPWMDepth = server.arg( "newpwmdepth" ).toInt();
-      if ( newPWMDepth < 11 || newPWMDepth > 16 )
-      {
-        server.send( 200, textPlainHeader, "ERROR - Invalid PWM depth" );
-        return;
-      }
-      if ( ledcNumberOfBits != newPWMDepth )
-      {
-        setupDimmerPWMfrequency( ledcActualFrequency, newPWMDepth );
-      }
-    }
-    char content[3];
-    snprintf( content, sizeof( content ), "%i", ledcNumberOfBits );
-    server.send( 200, textPlainHeader, content );
-  });
-
-  server.on( "/api/pwmfrequency", []()
-  {
-    if ( server.hasArg( "newpwmfrequency" ) )
-    {
-      if ( !server.authenticate( www_username, www_password ) )
-      {
-        return server.requestAuthentication();
-      }
-      double tempPWMfrequency = server.arg( "newpwmfrequency" ).toFloat();
-      if ( tempPWMfrequency < 100 || tempPWMfrequency > 20000 )
-      {
-        server.send( 200, textPlainHeader, "Invalid PWM frequency" );
-        return;
-      }
-      if ( tempPWMfrequency != ledcActualFrequency )
-      {
-        setupDimmerPWMfrequency( tempPWMfrequency, ledcNumberOfBits );
-      }
-    }
-    char content[16];
-    snprintf( content, sizeof( content ), "%.0f", ledcActualFrequency );
-    server.send( 200, textPlainHeader, content );
-  });
-
-  server.on( "/api/minimumlevel", []()
-  {
-    if ( server.hasArg( "channel" ) && server.hasArg( "percentage" ) )
-    {
-      if ( !server.authenticate( www_username, www_password ) )
-      {
-        return server.requestAuthentication();
-      }
-
-      int channelNumber = server.arg( "channel" ).toInt();
-      if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS )
-      {
-        server.send( 400,  textPlainHeader, "Invalid channel." );
-        return;
-      }
-      float thisPercentage = server.arg( "percentage" ).toFloat();
-      if ( thisPercentage < 0 || thisPercentage > 1 )
-      {
-        server.send( 400,  textPlainHeader, "Invalid percentage." );
-        return;
-      }
-      channel[channelNumber].minimumLevel = thisPercentage;
-      saveFloatNVS( "channelminimum" + channelNumber, channel[channelNumber].minimumLevel );
-      server.send( 200,  textPlainHeader, "Minimum level set." );
-      return;
-    }
-    server.send( 400,  textPlainHeader, "Invalid input." );
-  });
-
-  server.on( "/api/ntpinterval", []()
-  {
-    server.send( 200,  textPlainHeader, String( SNTP_UPDATE_DELAY / 1000 ) );
-  });
-
-  server.on( "/api/oledorientation", HTTP_GET, []()
-  {
-    if ( server.hasArg( "oledorientation" ) )
-    {
-      if ( !server.authenticate( www_username, www_password ) )
-      {
-        return server.requestAuthentication();
-      }
-
-      if (  server.arg( "oledorientation" ) == "normal" )
-      {
-        oledOrientation = OLED_ORIENTATION_NORMAL;
-        //vTaskSuspend( x_tftTaskHandle );  //not needed since this task has a higher priority
-        OLED.init();
-        OLED.normalDisplay();
-        //vTaskResume( x_tftTaskHandle );
-      }
-      else if ( server.arg( "oledorientation" ) == "upsidedown" )
-      {
-        oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
-        //vTaskSuspend( x_tftTaskHandle );
-        OLED.init();
-        OLED.flipScreenVertically();
-        //vTaskResume( x_tftTaskHandle );
-      } else
-      {
-        server.send( 400, textPlainHeader, "ERROR No valid input." );
-        return;
-      }
-    }
-    saveStringNVS( "oledorientation", ( oledOrientation == OLED_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
-    server.send( 200, textPlainHeader, ( oledOrientation == OLED_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
-  });
-
-  server.on( "/api/setchannelcolor", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-
-    int channelNumber;
-    if ( server.hasArg( "channel" ) ) {
-      channelNumber = server.arg( "channel" ).toInt();
-      if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS ) {
-        server.send( 400,  textPlainHeader, "Invalid channel." );
-        return;
-      }
-    }
-    if ( server.hasArg( "newcolor" ) ) {
-      String newColor = "#" + server.arg( "newcolor" );
-      newColor.trim();
-      channel[channelNumber].color = newColor;
-      saveStringNVS( "channelcolor" + char( channelNumber ), channel[channelNumber].color );
-      server.send( 200, textPlainHeader , "Color set." );
-      return;
-    }
-    server.send( 400, textPlainHeader , "Invalid input." );
-  });
-
-  server.on( "/api/setchannelname", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-
-    int channelNumber;
-    if ( server.hasArg( "channel" ) ) {
-      channelNumber = server.arg( "channel" ).toInt();
-      if ( channelNumber < 0 || channelNumber >= NUMBER_OF_CHANNELS ) {
-        server.send( 400, textPlainHeader, "Invalid channel." );
-        return;
-      }
-    }
-    if ( server.hasArg( "newname" ) ) {
-      String newName = server.arg( "newname" );
-      newName.trim();
-      //TODO: check if illegal cahrs present and get out if so
-      channel[channelNumber].name = newName;
-      saveStringNVS( "channelname" + char( channelNumber ), channel[channelNumber].name );
-      server.send( 200, textPlainHeader, "Channelname set." );
-      return;
-    }
-    server.send( 400, textPlainHeader, "Invalid input." );
-  });
-
-  server.on( "/api/setcontrast", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-    server.arg( "contrast" ).trim();
-    int contrast = server.arg( "contrast" ).toInt();
-    if ( contrast < 0 || contrast > 15 )
-    {
-      server.send( 400, textPlainHeader, "Invalid contrast." );
-      return;
-    }
-    OLED.setContrast( contrast << 4 );
-    char content[4];
-    snprintf( content, sizeof( content ), "%2i", contrast );
-    server.send( 200, textPlainHeader, content );
-  });
-
-  server.on( "/api/setpercentage", []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
-    {
-      return server.requestAuthentication();
-    }
-
-    server.arg( "percentage" ).trim();
-    float percentage = server.arg( "percentage" ).toFloat();
-    if ( percentage < 0 || percentage > 100 )
-    {
-      server.send( 400, textPlainHeader, "Invalid percentage." );
-      return;
-    }
-
-    vTaskSuspend( x_dimmerTaskHandle );
-
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      channel[channelNumber].currentPercentage = percentage;
-      ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, ledcMaxValue ) );
-    }
-
-    char content[20];
-    snprintf( content, sizeof( content ), "All lights at %.2f.", percentage );
-    lightStatus = content;
-    server.send( 200, textPlainHeader, content );
-  });
-
-  server.on( "/api/status", []()
-  {
-    char content[56];
-    int charCount = 0;
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f,", channel[channelNumber].currentPercentage );
-    }
-    time_t now = time(0);
-    char buff[10];
-    strftime( buff, sizeof( buff ), "%T", localtime( &now ) );
-    charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,", buff );
-    snprintf( content + charCount, sizeof( content ) - charCount, "%s", lightStatus.c_str() );
-    server.send( 200, textPlainHeader, content );
-  });
-
-  server.on( "/api/tftorientation", HTTP_GET, []()
-  {
-    if ( server.hasArg( "tftorientation" ) )
-    {
-      if ( !server.authenticate( www_username, www_password ) )
-      {
-        return server.requestAuthentication();
-      }
-
-      if (  server.arg( "tftorientation" ) == "normal" )
-      {
-        tftOrientation = TFT_ORIENTATION_NORMAL;
-        //vTaskSuspend( x_tftTaskHandle );  //not needed since this task has a higher priority
-        tft.setRotation( tftOrientation );
-        tft.fillScreen( ILI9341_BLACK );
-        //vTaskResume( x_tftTaskHandle );
-      }
-      else if ( server.arg( "tftorientation" ) == "upsidedown" )
-      {
-        tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
-        //vTaskSuspend( x_tftTaskHandle );
-        tft.setRotation( tftOrientation );
-        tft.fillScreen( ILI9341_BLACK );
-        //vTaskResume( x_tftTaskHandle );
-      } else
-      {
-        server.send( 400, textPlainHeader, "ERROR No valid input." );
-        return;
-      }
-    }
-    saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
-    server.send( 200, textPlainHeader, ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
-  });
-
-  server.on( "/api/timezone", HTTP_GET, []()
-  {
-    if ( server.hasArg( "timezone" ) )
-    {
-      if ( !server.authenticate( www_username, www_password ) )
-      {
-        return server.requestAuthentication();
-      }
-
-      if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
-      {
-        saveStringNVS( "timezone", server.arg( "timezone" ) );
-        server.send( 200, textPlainHeader, server.arg( "timezone" ) );
-        return;
-      }
-      else
-      {
-        server.send( 400, textPlainHeader, "ERROR setting timezone" );
-        return;
-      }
-    }
-    else
-    {
-      char const* timeZone = getenv( "TZ" );
-      if ( timeZone == NULL )
-      {
-        server.send( 200, textPlainHeader, "No timezone set." );
-        return;
-      }
-      server.send( 200, textPlainHeader, timeZone );
-      return;
-    }
-  });
 
   server.on( "/api/upload", HTTP_OPTIONS, []()
   {
@@ -599,7 +124,8 @@ void setupWebServer()                                            //https://githu
 
 
   /**********************************************************************************************/
-
+  /*   api device get calls
+    /**********************************************************************************************/
 
   server.on( "/api/getdevice", []()
   {
@@ -628,6 +154,32 @@ void setupWebServer()                                            //https://githu
     else if ( server.hasArg( "diskspace" ) )
     {
       snprintf( content, sizeof( content ), "%d" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
+    }
+    else if ( server.hasArg( "files" ) )
+    {
+      File root = SPIFFS.open( "/" );
+      if ( !root )
+      {
+        server.send( 404, textPlainHeader, "Folder not found." );
+        return;
+      }
+      if ( !root.isDirectory() )
+      {
+        server.send( 401, textPlainHeader, "Not a directory");
+        return;
+      }
+
+      File file = root.openNextFile();
+      byte charCount = 0;
+      while ( file )
+      {
+        if ( !file.isDirectory() )
+        {
+          size_t fileSize = file.size();
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%s\n", file.name(), humanReadableSize( fileSize ).c_str() );
+        }
+        file = root.openNextFile();
+      }
     }
     else if ( server.hasArg( "hostname" ) )
     {
@@ -691,7 +243,8 @@ void setupWebServer()                                            //https://githu
 
 
   /**********************************************************************************************/
-
+  /*   api device set calls
+    /**********************************************************************************************/
 
   server.on( "/api/setdevice", []()
   {
@@ -702,7 +255,15 @@ void setupWebServer()                                            //https://githu
 
     char content[100];
 
-    if ( server.hasArg( "hostname" ) )
+    if ( server.hasArg( "clearnvs" ) )
+    {
+      clearNVS();
+      snprintf( content, sizeof( content ), "NVS cleared" );
+    }
+
+
+
+    else if ( server.hasArg( "hostname" ) )
     {
       //set hostname NOT READY
       snprintf( content, sizeof( content ), "%s", mDNSname );
@@ -784,7 +345,7 @@ void setupWebServer()                                            //https://githu
       OLED.init();
       OLED.setContrast( oledContrast << 0x04 );
       oledOrientation == OLED_ORIENTATION_NORMAL ? OLED.normalDisplay() : OLED.flipScreenVertically();
-      saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+      saveStringNVS( "oledorientation", ( oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" ) );
       snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
     }
 
@@ -887,7 +448,8 @@ void setupWebServer()                                            //https://githu
 
 
   /**********************************************************************************************/
-
+  /*   api channel set calls
+    /**********************************************************************************************/
 
   server.on( "/api/setchannel", []()
   {
@@ -945,8 +507,14 @@ void setupWebServer()                                            //https://githu
           return server.send( 400, textPlainHeader, "Invalid char" );
         }
       }
-      //what to do if name is empty?
-      channel[ channelNumber ].name = server.arg( "name" );
+      if ( server.arg( "name" ) != "" )
+      {
+        channel[ channelNumber ].name = server.arg( "name" );
+      }
+      else
+      {
+        channel[ channelNumber ].name = "Channel" + String( channelNumber + 1 );
+      }
       saveStringNVS( "channelname" + char( channelNumber ), channel[channelNumber].name );
       snprintf( content, sizeof( content ), "channel %i name set to %s", channelNumber + 1, channel[ channelNumber ].name.c_str() );
     }
@@ -962,8 +530,10 @@ void setupWebServer()                                            //https://githu
   });
 
 
-  /**********************************************************************************************/
 
+  /**********************************************************************************************/
+  /*   api channel get calls
+    /**********************************************************************************************/
 
   server.on( "/api/getchannel", []()
   {
@@ -1003,6 +573,17 @@ void setupWebServer()                                            //https://githu
   //start the web server
   server.begin();
   Serial.println("HTTP server setup done.");
+
+
+  /**********************************************************************/
+  /*    webserver main loop
+    /***********************************************************************/
+
+  while (1)
+  {
+    server.handleClient();
+    vTaskDelay( 1 / portTICK_PERIOD_MS );
+  }
 }
 
 int8_t checkChannelNumber()

@@ -99,7 +99,7 @@ p{
 <body>
 <script>
 function updateBargraph() {
-  $.get( '/api/status', function( data ) {
+  $.get( '/api/getdevice?status=', function( data ) {
     var channelValue = data.split( ',' );
     for ( i=0; i < 5; i++ ) {
       $( '.bar:eq(' + i + ')' ).css( 'height', String( channelValue[i]*.75) + '%' ).css( 'opacity', Math.max( channelValue[i]/100, 0.15 ) );
@@ -154,7 +154,7 @@ var channelColor;
 var repeatTimer;
 
 function getChannelNames(){
-  $.get( "/api/getchannelnames" )
+  $.get( "/api/getdevice?channelnames=" )
     .done(function( data ){
       var channelNames = data.split("\n");
       channelNames.forEach( function( item, index ){
@@ -171,7 +171,7 @@ function getChannelNames(){
 }
 
 function getChannelColors(){
-  $.get( "/api/getchannelcolors" )
+  $.get( "/api/getdevice?channelcolors=" )
     .done(function( data ){
       channelColor = data.split("\n");
       channelColor.forEach( function( item, index ){
@@ -194,7 +194,7 @@ $( document ).ready( function() {
   });
 
   // get the hostname, then the channelcolors and finally the channelnames
-  $.get( "/api/hostname")
+  $.get( "/api/getdevice?hostname=")
     .done(function( data ){
       $( "#hostName" ).html( data + " HOME PAGE" );
       document.title = data.toUpperCase();

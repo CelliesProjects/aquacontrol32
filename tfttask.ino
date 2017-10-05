@@ -1,27 +1,32 @@
 void tftTask( void * pvParameters )
 {
-  const bool     TFT_SHOW_RAW     = true;            /* show raw PWM values */
-  const uint16_t TFT_TEXT_COLOR   = ILI9341_YELLOW;
-  const uint16_t TFT_DATE_COLOR   = ILI9341_WHITE;
-  const uint16_t TFT_TEMP_COLOR   = ILI9341_WHITE;
-  const uint16_t TFT_BACK_COLOR   = ILI9341_BLACK;
+  const bool     TFT_SHOW_RAW           = true;            /* show raw PWM values */
+  const uint16_t TFT_TEXT_COLOR         = ILI9341_YELLOW;
+  const uint16_t TFT_DATE_COLOR         = ILI9341_WHITE;
+  const uint16_t TFT_TEMP_COLOR         = ILI9341_WHITE;
+  const uint16_t TFT_BACK_COLOR         = ILI9341_BLACK;
+  const uint8_t  TFT_BACKLIGHT_BITDEPTH = 16;               /*min 11 bits, max 16 bits */
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );
 
   tft.begin( 35000000, SPI );
   uint8_t x = tft.readcommand8( ILI9341_RDSELFDIAG );
-  Serial.print( "ILI9341 TFT Self Diagnostic: 0x" ); Serial.println( x, HEX );
+  Serial.printf( "ILI9341 TFT Self Diagnostic: 0x%x\n", x );
+  if ( x != 0xe0 )
+  {
+    Serial.println( "No ILI9341 found. Quitting task..." );
+    vTaskDelete( NULL );
+  }
 
   tft.fillScreen( TFT_BACK_COLOR );
 
   //setup backlight pwm
-  const uint8_t BACKLIGHT_BITDEPTH = 16; /*max 16 bits */
 
   ledcAttachPin( TFT_BACKLIGHT_PIN, NUMBER_OF_CHANNELS );
-  double backlightFrequency = ledcSetup( NUMBER_OF_CHANNELS , 10000, BACKLIGHT_BITDEPTH );
+  double backlightFrequency = ledcSetup( NUMBER_OF_CHANNELS , 10000, TFT_BACKLIGHT_BITDEPTH );
 
-  uint16_t backlightMaxvalue = ( 0x00000001 << BACKLIGHT_BITDEPTH ) - 1;
+  uint16_t backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
   ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
   tft.setRotation( tftOrientation );

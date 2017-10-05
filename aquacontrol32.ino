@@ -298,10 +298,7 @@ void setup()
     setEmptyTimers();
   }
 
-
   setupMDNS();
-
-  setupWebServer();
 
   //WiFi.printDiag( Serial );
 

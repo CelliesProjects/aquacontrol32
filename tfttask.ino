@@ -10,7 +10,7 @@ void tftTask( void * pvParameters )
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );
 
-  tft.begin( 35000000, SPI );
+  tft.begin( 20000000, SPI );
   uint8_t x = tft.readcommand8( ILI9341_RDSELFDIAG );
   Serial.printf( "ILI9341 TFT Self Diagnostic: 0x%x\n", x );
   if ( x != 0xe0 )

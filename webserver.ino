@@ -218,12 +218,12 @@ void webServerTask ( void * pvParameters )
       int charCount = 0;
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f,", channel[channelNumber].currentPercentage );
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f\n", channel[channelNumber].currentPercentage );
       }
       time_t now = time(0);
       char buff[10];
       strftime( buff, sizeof( buff ), "%T", localtime( &now ) );
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,", buff );
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", buff );
       snprintf( content + charCount, sizeof( content ) - charCount, "%s", lightStatus.c_str() );
     }
     else if ( server.hasArg( "tftbrightness" ) )

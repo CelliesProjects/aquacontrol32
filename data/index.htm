@@ -100,7 +100,7 @@ p{
 <script>
 function updateBargraph() {
   $.get( '/api/getdevice?status=', function( data ) {
-    var channelValue = data.split( ',' );
+    var channelValue = data.split( '\n' );
     for ( i=0; i < 5; i++ ) {
       $( '.bar:eq(' + i + ')' ).css( 'height', String( channelValue[i]*.75) + '%' ).css( 'opacity', Math.max( channelValue[i]/100, 0.15 ) );
       if ( channelValue[i] <= 0.00 ) {

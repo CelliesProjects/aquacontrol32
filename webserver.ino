@@ -60,8 +60,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( !server.authenticate( www_username, www_password ) )
     {
-      server.requestAuthentication();
-      return;
+      return server.requestAuthentication();
     }
     else
     {
@@ -73,8 +72,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( !server.authenticate( www_username, www_password ) )
     {
-      server.requestAuthentication();
-      return;
+      return server.requestAuthentication();
     }
     else
     {
@@ -84,8 +82,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( !server.authenticate( www_username, www_password ) )
     {
-      server.requestAuthentication();
-      return;
+      return server.requestAuthentication();
     }
 
     static File fsUploadFile;
@@ -98,8 +95,7 @@ void webServerTask ( void * pvParameters )
     }
     if ( filename.length() > 30 )
     {
-      Serial.println( "Upload filename too long!" );
-      return;
+      return server.send( 400, textPlainHeader, "Upload filename too long!" );
     }
     if ( upload.status == UPLOAD_FILE_START )
     {

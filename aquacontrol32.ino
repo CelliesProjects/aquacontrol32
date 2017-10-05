@@ -255,7 +255,7 @@ void setup()
     "tempTask ",                    /* Name of the task */
     4000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    7,                              /* Priority of the task */
+    5,                              /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 

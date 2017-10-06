@@ -20,19 +20,6 @@ String humanReadableSize( size_t bytes )
   }
 }
 
-//https://github.com/hwstar/freertos-avr/blob/master/include/time.h
-
-void printLocalTime()
-{
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo))
-  {
-    Serial.println("Failed to obtain time");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-}
-
 bool setupMDNS()
 {
   // Set up mDNS responder:

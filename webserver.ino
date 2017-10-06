@@ -55,7 +55,7 @@ void webServerTask ( void * pvParameters )
   /***************************************************************************
       API calls
    **************************************************************************/
-
+/*
   server.on( "/api/upload", HTTP_OPTIONS, []()
   {
     if ( !server.authenticate( www_username, www_password ) )
@@ -67,7 +67,7 @@ void webServerTask ( void * pvParameters )
       server.send( 200, textPlainHeader, "" );
     }
   });
-
+*/
   server.on( "/api/upload", HTTP_POST, []()
   {
     if ( !server.authenticate( www_username, www_password ) )
@@ -303,6 +303,13 @@ void webServerTask ( void * pvParameters )
       lightStatus = "LIGHTS AUTO";
       snprintf( content, sizeof( content ), "%s", lightStatus.c_str() );
       vTaskResume( x_dimmerTaskHandle );
+    }
+
+
+
+    else if ( server.hasArg( "loadtimers" ) )
+    {
+      snprintf( content, sizeof( content ), "%s", defaultTimersLoaded() ? "Timers loaded." : "Not loaded." );
     }
 
 

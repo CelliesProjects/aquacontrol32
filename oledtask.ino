@@ -32,7 +32,7 @@ void oledTask( void * pvParameters )
 
   while (1)
   {
-    char content[30];
+    char content[64];
 
     if ( OLED_SHOW_SYSTEMDATA )
     {
@@ -53,6 +53,9 @@ void oledTask( void * pvParameters )
 
       snprintf( content, sizeof( content ), "PWM: %.2f Khz - %i bits", ledcActualFrequency / 1000, ledcNumberOfBits );
       OLED.drawString( 64, 40, content );
+
+      OLED.drawString( 64, 50, asctime( &systemStart ) );
+
 
       OLED.display();
     }

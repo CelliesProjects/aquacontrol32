@@ -17,6 +17,7 @@ void setupNTP()
   //http://www.catb.org/esr/time-programming/
   //http://www.lucadentella.it/en/2017/05/11/esp32-17-sntp/
   //https://github.com/espressif/esp-idf/blob/master/components/lwip/apps/sntp/sntp.c
+  //https://github.com/hwstar/freertos-avr/blob/master/include/time.h
 
   /* https://stackoverflow.com/questions/3673226/how-to-print-time-in-format-2009-08-10-181754-811 */
 

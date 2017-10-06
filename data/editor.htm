@@ -640,7 +640,7 @@ $( document ).ready( function() {
     var request = new XMLHttpRequest();
     request.open("POST", "/api/upload");
     request.onload = function( data ) {
-      $('#statusBox').load( '/api/loadtimers' );
+      $('#statusBox').load( '/api/setdevice?loadtimers=' );
     };
     request.send(formData);
   });

@@ -44,12 +44,6 @@
 
 
 /**************************************************************************
-       TFT display backlight control
-**************************************************************************/
-#define TFT_BACKLIGHT_PIN       2
-
-
-/**************************************************************************
        country code for ntp server selection
        https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 **************************************************************************/
@@ -114,14 +108,20 @@
 #define SPI_TFT_DC_PIN            27  // Goes to TFT DC
 #define SPI_SCK_PIN               25  // Goes to TFT SCK/CLK
 #define SPI_MOSI_PIN              32  // Goes to TFT MOSI
-#define SPI_MISO_PIN              14  // Goes to TFT MISO
-//#define SPI_MISO_PIN              12  // Goes to TFT MISO
+#define SPI_TFT_RST_PIN           12  // Goes to TFT RESET
 #define SPI_TFT_CS_PIN             4  // Goes to TFT CS
 #define SPI_SD_CS_PIN              0  // Goes to SD CS
-#define SPI_TFT_RST_PIN           -1  // ESP RST goes to TFT RESET
+#define SPI_MISO_PIN              14  // Goes to TFT MISO
+
 //       3.3V                     // Goes to TFT LED
 //       5v                       // Goes to TFT Vcc-
 //       Gnd                      // Goes to TFT Gnd
+
+
+/**************************************************************************
+       TFT display backlight control
+**************************************************************************/
+#define TFT_BACKLIGHT_PIN       2
 
 
 /**************************************************************************

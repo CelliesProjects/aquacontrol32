@@ -21,7 +21,7 @@ void tftTask( void * pvParameters )
   //setup backlight pwm
 
   ledcAttachPin( TFT_BACKLIGHT_PIN, NUMBER_OF_CHANNELS );
-  double backlightFrequency = ledcSetup( NUMBER_OF_CHANNELS , 10000, TFT_BACKLIGHT_BITDEPTH );
+  double backlightFrequency = ledcSetup( NUMBER_OF_CHANNELS , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
 
   uint16_t backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
@@ -42,59 +42,57 @@ void tftTask( void * pvParameters )
 
     ledcWrite( NUMBER_OF_CHANNELS, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
 
-    for ( byte thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ )
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {
-      //convert from String to RGB color
-      //https://stackoverflow.com/questions/2342114/extracting-rgb-color-components-from-integer-value/2342149#2342149
-      int r, g, b;
-      uint32_t color = strtol( &channel[thisChannel].color[1], NULL, 16 );
+      uint8_t r, g, b;
+      uint32_t color = strtol( &channel[channelNumber].color[1], NULL, 16 );
       r = ( color & 0xFF0000 ) >> 16; // Filter the 'red' bits from color. Then shift right by 16 bits.
       g = ( color & 0x00FF00 ) >> 8;  // Filter the 'green' bits from color. Then shift right by 8 bits.
       b = ( color & 0x0000FF );       // Filter the 'blue' bits from color. No shift needed.
 
       // redraw the top part of the bar
-      tft.fillRect( thisChannel * BARS_WIDTH + BARS_BORDER,
+      tft.fillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
                     BARS_BOTTOM - BARS_HEIGHT,
                     BARS_WIDTH - BARS_BORDER * 2,
-                    BARS_HEIGHT - channel[thisChannel].currentPercentage * HEIGHT_FACTOR,
+                    BARS_HEIGHT - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
                     TFT_BACK_COLOR );
       /*
             //high water mark
-            tft.drawFastHLine( thisChannel * BARS_WIDTH + BARS_BORDER,
+            tft.drawFastHLine( channelNumber * BARS_WIDTH + BARS_BORDER,
                                BARS_BOTTOM - BARS_HEIGHT - 1,
                                BARS_WIDTH - BARS_BORDER * 2,
                                tft.color565( r, g, b ) );
       */
-      tft.fillRect( thisChannel * BARS_WIDTH + BARS_BORDER,
-                    BARS_BOTTOM - channel[thisChannel].currentPercentage * HEIGHT_FACTOR,
+      tft.fillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
+                    BARS_BOTTOM - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
                     BARS_WIDTH - BARS_BORDER * 2,
-                    channel[thisChannel].currentPercentage * HEIGHT_FACTOR,
+                    channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
                     tft.color565( r, g, b ) );
 
-      tft.setCursor( thisChannel * BARS_WIDTH + 9, BARS_BOTTOM + 4 );
+      tft.setCursor( channelNumber * BARS_WIDTH + 9, BARS_BOTTOM + 4 );
       tft.setTextSize( 1 );
-      tft.setTextColor( TFT_TEXT_COLOR , TFT_BACK_COLOR );
+      tft.setTextColor( tft.color565( r, g, b ) , TFT_BACK_COLOR );
 
-      char buffer [8];
+      char content[8];
       if ( TFT_SHOW_RAW )
       {
-        snprintf( buffer, sizeof( buffer ), " 0x%04X", ledcRead( thisChannel ) );
+        snprintf( content, sizeof( content ), " 0x%04X", ledcRead( channelNumber ) );
       }
       else
       {
-        snprintf( buffer, sizeof( buffer ), "%*" ".3f%%", 7, channel[thisChannel].currentPercentage );
+        snprintf( content, sizeof( content ), "%*" ".3f%%", 7, channel[channelNumber].currentPercentage );
       }
-      tft.print( buffer );
+      tft.print( content );
     }
 
     tft.setTextSize( 2 );
     if ( numberOfFoundSensors )
     {
-      for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
+      for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
       {
         tft.setCursor( 0, BARS_BOTTOM + 15 );
         tft.setTextColor( TFT_TEMP_COLOR , TFT_BACK_COLOR );
-        tft.print( " " + String( sensor[thisSensor].temp / 16.0 ) + (char)247 + "C " );
+        tft.printf( " %.1f%cC", sensor[thisSensor].temp / 16.0, char(247) );
       }
     }
     else

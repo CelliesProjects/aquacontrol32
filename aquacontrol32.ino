@@ -75,9 +75,10 @@
 
 
 /**************************************************************************
-       use this frequency as a LEDC base request frequency (in Hz)
+       maximum allowable pwm frequency in Hz
+       -remember the rise and fall times of a 330R gate resistor!
 **************************************************************************/
-#define LEDC_REQUEST_FREQ     1300
+#define LEDC_MAXIMUM_FREQ     1300
 
 
 /**************************************************************************
@@ -318,7 +319,7 @@ void setup()
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
 
-  setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_REQUEST_FREQ ), readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
+  setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_MAXIMUM_FREQ ), readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
 
 
 

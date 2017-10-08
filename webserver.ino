@@ -363,7 +363,7 @@ void webServerTask ( void * pvParameters )
       }
       if ( ledcNumberOfBits != newPWMDepth )
       {
-        setupDimmerPWMfrequency( LEDC_REQUEST_FREQ, newPWMDepth );
+        setupDimmerPWMfrequency( LEDC_MAXIMUM_FREQ, newPWMDepth );
         saveInt8NVS( "pwmdepth" , ledcNumberOfBits );
       }
       snprintf( content, sizeof( content ), "%i", ledcNumberOfBits );
@@ -374,7 +374,7 @@ void webServerTask ( void * pvParameters )
     else if ( server.hasArg( "pwmfrequency" ) )
     {
       double tempPWMfrequency = server.arg( "pwmfrequency" ).toFloat();
-      if ( tempPWMfrequency < 100 || tempPWMfrequency > LEDC_REQUEST_FREQ )
+      if ( tempPWMfrequency < 100 || tempPWMfrequency > LEDC_MAXIMUM_FREQ )
       {
         server.send( 200, textPlainHeader, "Invalid PWM frequency" );
         return;

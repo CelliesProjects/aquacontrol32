@@ -83,7 +83,7 @@
 /**************************************************************************
        use this frequency as a LEDC base request frequency (in Hz)
 **************************************************************************/
-#define LEDC_REQUEST_FREQ     10000
+#define LEDC_REQUEST_FREQ     1300
 
 
 /**************************************************************************
@@ -115,6 +115,7 @@
 #define SPI_SCK_PIN               25  // Goes to TFT SCK/CLK
 #define SPI_MOSI_PIN              32  // Goes to TFT MOSI
 #define SPI_MISO_PIN              14  // Goes to TFT MISO
+//#define SPI_MISO_PIN              12  // Goes to TFT MISO
 #define SPI_TFT_CS_PIN             4  // Goes to TFT CS
 #define SPI_SD_CS_PIN              0  // Goes to SD CS
 #define SPI_TFT_RST_PIN           -1  // ESP RST goes to TFT RESET
@@ -201,8 +202,6 @@ struct sensorStruct
   String name;
 } sensor[MAX_NUMBER_OF_SENSORS];
 
-String timeZone;
-
 String mDNSname = "aquacontrol32";
 
 TaskHandle_t x_dimmerTaskHandle = NULL;
@@ -249,6 +248,9 @@ void setup()
   Serial.print( "ESP32 SDK: " );
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
+
+  SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
+  SPI.setFrequency( 60000000 );
 
   xTaskCreatePinnedToCore(
     tempTask,                       /* Function to implement the task */
@@ -308,11 +310,11 @@ void setup()
   channel[ 2 ].pin = LED2_PIN;
   channel[ 3 ].pin = LED3_PIN;
   channel[ 4 ].pin = LED4_PIN;
-  for ( byte channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+  for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    channel[ channelNumber ].name          = readStringNVS( "channelname" +  channelNumber , "Channel" + String( channelNumber + 1 ) );
-    channel[ channelNumber ].color         = readStringNVS( "channelcolor" + channelNumber , "#fffe7a" );
-    channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + channelNumber, 0 );
+    channel[ channelNumber ].name          = readStringNVS( "channelname" +  char( channelNumber ), "Channel" + char( channelNumber + 1 ) );
+    channel[ channelNumber ].color         = readStringNVS( "channelcolor" + char( channelNumber ), "#fffe7a" );
+    channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + char( channelNumber ), 0 );
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
 
@@ -347,7 +349,7 @@ void setup()
     1);                             /* Core where the task should run */
 
   if ( TFT_ENABLED )
-  {   
+  {
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
       "tftTask ",                     /* Name of the task */

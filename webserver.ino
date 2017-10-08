@@ -228,7 +228,7 @@ void webServerTask ( void * pvParameters )
     }
     else if ( server.hasArg( "timezone" ) )
     {
-      snprintf( content, sizeof( content ), "%s", timeZone.c_str() );
+      snprintf( content, sizeof( content ), "%s", getenv( "TZ" ) );
     }
     else
     {
@@ -374,7 +374,7 @@ void webServerTask ( void * pvParameters )
     else if ( server.hasArg( "pwmfrequency" ) )
     {
       double tempPWMfrequency = server.arg( "pwmfrequency" ).toFloat();
-      if ( tempPWMfrequency < 100 || tempPWMfrequency > 20000 )
+      if ( tempPWMfrequency < 100 || tempPWMfrequency > LEDC_REQUEST_FREQ )
       {
         server.send( 200, textPlainHeader, "Invalid PWM frequency" );
         return;
@@ -429,14 +429,13 @@ void webServerTask ( void * pvParameters )
     {
       if ( 0 == setenv( "TZ",  server.arg( "timezone" ).c_str(), 1 )  )
       {
-        timeZone = server.arg( "timezone" );
-        saveStringNVS( "timezone", server.arg( "timezone" ) );
+        saveStringNVS( "timezone", getenv( "TZ" ) );
       }
       else
       {
         return server.send( 400, textPlainHeader, "Error setting timezone." );
       }
-      snprintf( content, sizeof( content ), "%s", timeZone.c_str() );
+      snprintf( content, sizeof( content ), "%s", getenv( "TZ" ) );
     }
 
 

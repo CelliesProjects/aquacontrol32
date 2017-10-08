@@ -55,19 +55,19 @@ void webServerTask ( void * pvParameters )
   /***************************************************************************
       API calls
    **************************************************************************/
-/*
-  server.on( "/api/upload", HTTP_OPTIONS, []()
-  {
-    if ( !server.authenticate( www_username, www_password ) )
+  /*
+    server.on( "/api/upload", HTTP_OPTIONS, []()
     {
-      return server.requestAuthentication();
-    }
-    else
-    {
-      server.send( 200, textPlainHeader, "" );
-    }
-  });
-*/
+      if ( !server.authenticate( www_username, www_password ) )
+      {
+        return server.requestAuthentication();
+      }
+      else
+      {
+        server.send( 200, textPlainHeader, "" );
+      }
+    });
+  */
   server.on( "/api/upload", HTTP_POST, []()
   {
     if ( !server.authenticate( www_username, www_password ) )
@@ -481,7 +481,9 @@ void webServerTask ( void * pvParameters )
         }
       }
       channel[ channelNumber ].color = "#" + server.arg( "color" );
+      saveStringNVS( "channelcolor" + channelNumber, channel[channelNumber].color );
       snprintf( content, sizeof( content ), "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color.c_str() );
+
     }
 
 

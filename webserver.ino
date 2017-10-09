@@ -217,10 +217,15 @@ void webServerTask ( void * pvParameters )
         charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f\n", channel[channelNumber].currentPercentage );
       }
       time_t now = time(0);
-      char buff[10];
-      strftime( buff, sizeof( buff ), "%T", localtime( &now ) );
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", buff );
-      snprintf( content + charCount, sizeof( content ) - charCount, "%s", lightStatus.c_str() );
+      charCount += strftime( content + charCount, sizeof( content ) - charCount, "%T\n", localtime( &now ) );
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", lightStatus.c_str() );
+      if ( numberOfFoundSensors )
+      {
+        for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
+        {
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%.1f\n", sensor[sensorNumber].name, sensor[sensorNumber].temp / 16 );
+        }
+      }
     }
     else if ( server.hasArg( "tftbrightness" ) )
     {

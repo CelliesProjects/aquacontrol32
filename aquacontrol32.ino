@@ -198,9 +198,9 @@ struct lightTable
 ******************************************************************************************/
 struct sensorStruct
 {
-  byte addr[8];
-  float temp;
-  String name;
+  byte   addr[8];
+  float  temp;
+  char   name[5];
 } sensor[MAX_NUMBER_OF_SENSORS];
 
 String mDNSname = "aquacontrol32";

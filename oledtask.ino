@@ -100,7 +100,7 @@ void oledTask( void * pvParameters )
         uint8_t charCount = 0;
         for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
         {
-          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C" , sensor[sensorNumber].temp / 16.0 );
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C  " , sensor[sensorNumber].temp / 16.0 );
         }
       }
       else

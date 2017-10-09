@@ -7,11 +7,14 @@ void tempTask( void * pvParameters )
   while ( ds.search( currentAddr ) && numberOfFoundSensors < MAX_NUMBER_OF_SENSORS )
   {
     //Serial.write( "Sensor "); Serial.print( counter ); Serial.print( ":" );
-    for ( byte i = 0; i < 8; i++) {
+    for ( byte i = 0; i < 8; i++)
+    {
       //Serial.write(' ');
       //Serial.print( currentAddr[i], HEX );
       sensor[numberOfFoundSensors].addr[i] = currentAddr[i];
     }
+    //sensor[numberOfFoundSensors].name = 'T ' + char( numberOfFoundSensors );
+    snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), "TMP%i", numberOfFoundSensors  );
     numberOfFoundSensors++;
   }
   Serial.printf( "%i Dallas sensors found.\n", numberOfFoundSensors );

@@ -36,7 +36,14 @@ p{
   margin:0;
 }
 
-#wrapper{
+.shadowedBox {
+  box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
+  border:solid 1px black;
+  border-radius: 15px;
+  margin:10px 0;
+}
+
+#barsBox{
   background-color: black;
   height: 350px;
   position : relative;
@@ -49,14 +56,6 @@ p{
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-}
-
-
-.shadowedBox {
-  box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
-  border:solid 1px black;
-  border-radius: 15px;
-  margin:10px 0;
 }
 
 .bar{
@@ -93,6 +92,15 @@ p{
 #hostName {
   text-transform: uppercase;
 }
+
+#tempBox{
+  display:none;
+}
+
+.tempStr {
+  display:inline-block;
+  margin:0 30px;
+}
 </style>
 <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
 </head>
@@ -111,8 +119,8 @@ function updateBargraph() {
       }
       $( '.pct p:eq(' + i + ')' ).html( String( channelValue[i] ) +'%' );
     }
-    $( '#sysTime' ).html( channelValue[5] );
-    $( '#lightStatus' ).html( channelValue[6] );
+    $( '#sysTime' ).html( "system time<br>" + channelValue[5] );
+    $( '#lightStatus').html( "light status<br>" + channelValue[6] );
     //make the background rgb value the average intensity of all channels
     var total = 0;
     var averageChannelValue;
@@ -121,7 +129,21 @@ function updateBargraph() {
     }
     averageChannelValue = ( total / 5);
     averageChannelValue = parseInt( averageChannelValue * 2 );
-    $( "div#wrapper" ).css( 'background-color', 'rgba(' + averageChannelValue + "," + averageChannelValue + ","  + averageChannelValue + ","  + 255 + ')' );
+    $( "div#barsBox" ).css( 'background-color', 'rgba(' + averageChannelValue + "," + averageChannelValue + ","  + averageChannelValue + ","  + 255 + ')' );
+
+    var sensorNumber = 0;
+    var str = "";
+    while ( channelValue[sensorNumber + 7].length > 0 )
+    {
+      var temp = channelValue[sensorNumber + 7].split(",");
+      str += String( '<p class="tempStr">' + temp[0].toLowerCase() + "<br>" + temp[1] + "°C</p>" );
+      sensorNumber++;
+    }
+    if (str.length)
+    {
+      $( "#tempBox" ).show();
+      $( "#tempStats" ).html( str );
+    }
     $( 'a' ).unbind( 'click' ); //re-enable the links which are bound to e.preventdefault()
   })
 }
@@ -129,10 +151,10 @@ function updateBargraph() {
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a><a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div id="titleBox" class="shadowedBox">
   <h3 id="hostName">Loading...</h3>
-  <p>Light status.</p>
 </div>
-<p class="shadowedBox" style="background-color:beige;"><span id="sysTime"></span> - <span id="lightStatus"></span></p>
-<div id="wrapper" class="shadowedBox"><div class="bar"></div>
+<div id="statusBox" class="shadowedBox" style="background-color:beige;"><p id="sysTime" class="tempStr">Loading...<br>&nbsp;</p><p class="tempStr" id="lightStatus">Loading...<br>&nbsp;</p></div>
+<div id="barsBox" class="shadowedBox">
+  <div class="bar" style="left:0%;height:0%;"></div>
   <div class="bar" style="left:20%;height:0%;"></div>
   <div class="bar" style="left:40%;height:0%;"></div>
   <div class="bar" style="left:60%;height:0%;"></div>
@@ -147,6 +169,8 @@ function updateBargraph() {
   <div class="name" style="left:40%;top:0;"><p>3</p></div>
   <div class="name" style="left:60%;top:0;"><p>4</p></div>
   <div class="name" style="left:80%;top:0;"><p>5</p></div>
+</div>
+<div id="tempBox" class="shadowedBox" style="background-color:beige;">temperature<br><p id="tempStats" class="tempStr"></p></div>
 <script>
 
 var channelNames;
@@ -196,7 +220,7 @@ $( document ).ready( function() {
   // get the hostname, then the channelcolors and finally the channelnames
   $.get( "/api/getdevice?hostname=")
     .done(function( data ){
-      $( "#hostName" ).html( data + " HOME PAGE" );
+      $( "#hostName" ).html( data );
       document.title = data.toUpperCase();
     })
     .fail(function(){
@@ -207,7 +231,7 @@ $( document ).ready( function() {
     });
 
 //event handlers
-  $( "#wrapper" ).on( "contextmenu", "div.name p", function( e ){
+  $( "#barsBox" ).on( "contextmenu", "div.name p", function( e ){
     e.preventDefault();
     console.log( $( this ).html() );
   });

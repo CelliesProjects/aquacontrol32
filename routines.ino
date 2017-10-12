@@ -20,24 +20,34 @@ String humanReadableSize( size_t bytes )
   }
 }
 
-bool setupMDNS()
+/* https://www.esp32.com/viewtopic.php?t=664 */
+
+bool setupMDNS( const String hostname )
 {
-  // Set up mDNS responder:
-  // - first argument is the domain name, in this example
-  //   the fully-qualified domain name is "esp8266.local"
-  // - second argument is the IP address to advertise
-  //   we send our IP address on the WiFi network
-  if (MDNS.begin( mDNSname.c_str() ))
+  Serial.printf( "Check if %s is already present...\n", hostname );
+  uint32_t serviceIp = MDNS.queryHost( hostname );
+  if ( serviceIp != 0 )
+  {
+    Serial.printf( "%s already on network.\n", hostname );
+    return false;
+  }
+  Serial.printf( "%s is available.\nSetting new hostname...\n", hostname );
+
+  MDNS.end();
+
+  if ( MDNS.begin( hostName ) )
   {
     // Add service to MDNS-SD
-    MDNS.addService("http", "tcp", 80);
-    Serial.println("mDNS responder started");
-    Serial.print( "mDNS name: ");  Serial.print( mDNSname );  Serial.println( ".local" );
+    MDNS.addService( "http", "tcp", 80 );
+
+    Serial.printf( "mDNS responder started\nmDNS name: %s.local.\n", hostname );
+    saveStringNVS( "hostname", hostname );
+    Serial.printf( "mDNS hostname set to %s.\n", hostname );
     return true;
   }
   else
   {
-    Serial.println("Error setting up MDNS responder!");
+    Serial.println( "Error setting up MDNS responder!" );
     return false;
   }
 }

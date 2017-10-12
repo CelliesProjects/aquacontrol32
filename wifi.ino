@@ -26,6 +26,7 @@ void setupWiFi()
     tft.invertDisplay( true );
     while ( !WiFi.smartConfigDone() )
     {
+      //vTaskDelay( 500 / portTICK_PERIOD_MS );
       vTaskDelay( 500 / portTICK_PERIOD_MS );
       Serial.print(".");
     }
@@ -42,7 +43,7 @@ void setupWiFi()
   //Wait for WiFi to connect to AP
   Serial.println("Waiting for connection...");
   WiFi.mode( WIFI_STA );
-  WiFi.setHostname( readStringNVS( "hostname", "aquacontrol32" ).c_str() );
+
   WiFi.begin( wifiSSID.c_str(), wifiPSK.c_str() );
 
   unsigned long WiFiStartTime = millis();
@@ -50,10 +51,12 @@ void setupWiFi()
   {
     Serial.print( "." );
     tft.print( "." );
-    vTaskDelay( 500 / portTICK_PERIOD_MS );
+    //vTaskDelay( 500 / portTICK_PERIOD_MS );
+    delay( 500 / portTICK_PERIOD_MS );
   }
   tft.println();
   Serial.println();
+
   if ( WiFi.status() == WL_CONNECTED )
   {
     //We have succesfully connected...
@@ -61,6 +64,40 @@ void setupWiFi()
     tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP().toString() );
     saveStringNVS( "wifissid", wifiSSID.c_str() );
     saveStringNVS( "wifipsk", wifiPSK.c_str() );
+
+
+    Serial.print("MAC: ");
+    Serial.print(WiFi.macAddress()[5], HEX);
+    Serial.print(":");
+    Serial.print(WiFi.macAddress()[4], HEX);
+    Serial.print(":");
+    Serial.print(WiFi.macAddress()[3], HEX);
+    Serial.print(":");
+    Serial.print(WiFi.macAddress()[2], HEX);
+    Serial.print(":");
+    Serial.print(WiFi.macAddress()[1], HEX);
+    Serial.print(":");
+    Serial.println(WiFi.macAddress()[0], HEX);
+
+    if ( readStringNVS( "hostname", "" ) == "" )
+    {
+      snprintf( hostName, sizeof( hostName ), "%s%x%x%x", DEFAULT_HOSTNAME_PREFIX,
+                WiFi.macAddress()[2], WiFi.macAddress()[1], WiFi.macAddress()[0] );
+    }
+    else
+    {
+      snprintf( hostName, sizeof( hostName ), "%s", readStringNVS( "hostname", "" ).c_str() );
+    }
+
+    if ( !MDNS.begin( readStringNVS( "hostname", hostName ).c_str() ) )
+    {
+      Serial.println( "Error setting up mDNS." );
+      memset( hostName, 0, sizeof( hostName ) );
+    }
+    else
+    {
+      Serial.printf(  "MDNS name set to %s.\n", hostName );
+    }
   }
   else
   {
@@ -87,7 +124,7 @@ void setupWiFi()
       break;
     case SYSTEM_EVENT_STA_START:
       Serial.println("STA Started");
-      WiFi.setHostname( mDNSname.c_str() );
+      WiFi.setHostname( DEFAULT_HOSTNAME_PREFIX.c_str() );
       break;
     case SYSTEM_EVENT_STA_CONNECTED:
       Serial.println("STA Connected");

@@ -179,7 +179,7 @@ void webServerTask ( void * pvParameters )
     }
     else if ( server.hasArg( "hostname" ) )
     {
-      snprintf( content, sizeof( content ), "%s", mDNSname.c_str() );
+      snprintf( content, sizeof( content ), "%s", hostName );
     }
     else if ( server.hasArg( "minimumlevels" ) )
     {
@@ -266,11 +266,13 @@ void webServerTask ( void * pvParameters )
 
     else if ( server.hasArg( "hostname" ) )
     {
-      //set hostname NOT READY
-      snprintf( content, sizeof( content ), "%s", mDNSname );
-
-      //for now return an error
-      return server.send( 400, textPlainHeader, "Not implemented yet." );
+      if ( !setupMDNS( server.arg( "hostname" ) ) )
+      {
+        return server.send( 400, textPlainHeader, "name not available." );
+      }
+      snprintf( hostName , sizeof( hostName ), "%s", server.arg( "hostname" ).c_str() );
+      saveStringNVS( "hostname", hostName );
+      snprintf( content, sizeof( content ), "%s", hostName );
     }
 
 

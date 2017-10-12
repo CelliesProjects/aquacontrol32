@@ -145,6 +145,12 @@
 
 
 /**************************************************************************
+       default hostname if no hostname is set
+**************************************************************************/
+#define DEFAULT_HOSTNAME_PREFIX "aquacontrol32_"
+
+
+/**************************************************************************
       Setup included libraries
  *************************************************************************/
 Adafruit_ILI9341 tft = Adafruit_ILI9341( SPI_TFT_CS_PIN, SPI_TFT_DC_PIN, SPI_TFT_RST_PIN );
@@ -170,6 +176,8 @@ const char* www_username    = "admin";  //change me!
 const char* www_password    = "esp32";  //change me!
 
 const char* defaultTimerFile = "/default.aqu";
+
+char hostName[30];
 
 struct lightTimer
 {
@@ -202,8 +210,6 @@ struct sensorStruct
   float  temp;
   char   name[5];
 } sensor[MAX_NUMBER_OF_SENSORS];
-
-String mDNSname = "aquacontrol32";
 
 TaskHandle_t x_dimmerTaskHandle = NULL;
 TaskHandle_t x_tftTaskHandle    = NULL;
@@ -301,10 +307,6 @@ void setup()
     setEmptyTimers();
   }
 
-  setupMDNS();
-
-  //WiFi.printDiag( Serial );
-
   //setup channels
   channel[ 0 ].pin = LED0_PIN;
   channel[ 1 ].pin = LED1_PIN;
@@ -321,22 +323,12 @@ void setup()
 
   setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_MAXIMUM_FREQ ), readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
 
-
-
-  /*****************************************************************************************
-
-         start the different tasks
-         http://exploreembedded.com/wiki/Task_Switching
-
-  *****************************************************************************************/
-
-
   xTaskCreatePinnedToCore(
     webServerTask,                  /* Function to implement the task */
     "webServerTask ",               /* Name of the task */
     3000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    4,                              /* Priority of the task */
+    6,                              /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 
@@ -345,7 +337,7 @@ void setup()
     "dimmerTask ",                  /* Name of the task */
     1000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    6,                              /* Priority of the task */
+    7,                              /* Priority of the task */
     &x_dimmerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 
@@ -361,7 +353,6 @@ void setup()
       1);                             /* Core where the task should run */
   }
 }
-
 
 /*****************************************************************************************
 

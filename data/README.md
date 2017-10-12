@@ -2,7 +2,9 @@
 
 You can convert these files to `.h` files with the linux commandline tool `xxd`.
 
-####Example:
+These files are added as `#include` in `webserver.ino`.
+
+#### Example:
 
     cellie@cellie-Mint-64 ~ $ echo '<h1>Simple webpage</h1>' > index.htm
     cellie@cellie-Mint-64 ~ $ cat index.htm
@@ -27,5 +29,4 @@ The above code should look like:
     
 Now the data is saved in flash memory instead of precious ram memory.
 
-These files are added as `#include` in `webserver.ino`.
 

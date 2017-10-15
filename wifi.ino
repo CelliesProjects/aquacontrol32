@@ -62,6 +62,7 @@ void setupWiFi()
     //We have succesfully connected...
     tft.invertDisplay( false );
     tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP().toString() );
+    Serial.println( "WiFi connected.\nLocal IP: " + WiFi.localIP().toString() );
     saveStringNVS( "wifissid", wifiSSID.c_str() );
     saveStringNVS( "wifipsk", wifiPSK.c_str() );
 

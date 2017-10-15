@@ -1,14 +1,27 @@
-void setupNTP()
+void setupNTP( void * pvParameters )
 {
   String NTPpoolAdress = COUNTRY_CODE_ISO_3166;
 
   NTPpoolAdress += ".pool.ntp.org";
 
-  //timeZone = readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" );
-
   tft.println( "Getting time from " + NTPpoolAdress );
 
-  configTzTime( readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" ).c_str(), NTPpoolAdress.c_str() );
+  configTzTime( readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" ).c_str(),
+                NTPpoolAdress.c_str(), "0.pool.ntp.org", "1.pool.ntp.org" );
+
+  time_t now;
+  struct tm timeinfo;
+
+  while ( timeinfo.tm_year < ( 2016 - 1900 ) ) {
+    vTaskDelay( 50 / portTICK_PERIOD_MS );
+    time( &now );
+    localtime_r( &now, &timeinfo );
+  }
+  gettimeofday( &systemStart, NULL );
+
+  Serial.printf( "NTP sync @ %s\n", asctime( localtime( &systemStart.tv_sec ) ) );
+
+  vTaskDelete( NULL );
 
   //https://www.ibm.com/developerworks/aix/library/au-aix-posix/index.html#artdownload
   //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/README.md

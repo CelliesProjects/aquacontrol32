@@ -54,7 +54,7 @@ void oledTask( void * pvParameters )
       snprintf( content, sizeof( content ), "PWM: %.2f Khz - %i bits", ledcActualFrequency / 1000, ledcNumberOfBits );
       OLED.drawString( 64, 40, content );
 
-      OLED.drawString( 64, 50, asctime( &systemStart ) );
+      OLED.drawString( 64, 50, asctime( localtime( &systemStart.tv_sec ) ) );
 
 
       OLED.display();

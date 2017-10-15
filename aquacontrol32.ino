@@ -222,7 +222,7 @@ uint8_t  ledcNumberOfBits;
 byte numberOfFoundSensors;
 
 //Boot time is saved
-struct tm systemStart;
+struct timeval systemStart;
 
 String lightStatus;
 
@@ -264,7 +264,7 @@ void setup()
 
   xTaskCreatePinnedToCore(
     tempTask,                       /* Function to implement the task */
-    "tempTask ",                    /* Name of the task */
+    "tempTask",                     /* Name of the task */
     4000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     5,                              /* Priority of the task */
@@ -275,7 +275,7 @@ void setup()
   {
     xTaskCreatePinnedToCore(
       oledTask,                       /* Function to implement the task */
-      "oledTask ",                    /* Name of the task */
+      "oledTask",                     /* Name of the task */
       2000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
       1,                              /* Priority of the task */
@@ -296,9 +296,14 @@ void setup()
 
   setupWiFi();
 
-  setupNTP();
-
-  Serial.print( "Local time:" ); Serial.println( getLocalTime( &systemStart ) ? asctime( &systemStart ) : "Failed to obtain time" );
+  xTaskCreatePinnedToCore(
+    setupNTP,                       /* Function to implement the task */
+    "setupNTP",                     /* Name of the task */
+    2000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    1,                              /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);
 
   if ( defaultTimersLoaded() )
   {
@@ -328,7 +333,7 @@ void setup()
 
   xTaskCreatePinnedToCore(
     webServerTask,                  /* Function to implement the task */
-    "webServerTask ",               /* Name of the task */
+    "webServerTask",                /* Name of the task */
     3000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     6,                              /* Priority of the task */
@@ -337,7 +342,7 @@ void setup()
 
   xTaskCreatePinnedToCore(
     dimmerTask,                     /* Function to implement the task */
-    "dimmerTask ",                  /* Name of the task */
+    "dimmerTask",                   /* Name of the task */
     1000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     7,                              /* Priority of the task */
@@ -348,7 +353,7 @@ void setup()
   {
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
-      "tftTask ",                     /* Name of the task */
+      "tftTask",                      /* Name of the task */
       2000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
       1,                              /* Priority of the task */

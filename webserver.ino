@@ -62,15 +62,14 @@ void webServerTask ( void * pvParameters )
   */
 
   server.on( "/api/upload", HTTP_POST,
-             []( AsyncWebServerRequest * request )
+  []( AsyncWebServerRequest * request )
   {
-    request->send(200);
-  },
+    request->send( 404 );
+   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
     static File   newFile;
     static bool   _authenticated;
-    //static size_t receivedBytes;
     static time_t startTimer;
 
     if ( !index )
@@ -84,30 +83,24 @@ void webServerTask ( void * pvParameters )
         {
           filename = "/" + filename;
         }
-        newFile = SPIFFS.open( filename, "w");
-        //receivedBytes = 0;
+        newFile = SPIFFS.open( filename, "w" );
         _authenticated = true;
       }
       else
       {
         Serial.println( "Unauthorized access." );
-        //return request->send( 401, textPlainHeader, "Not logged in." );
         return request->requestAuthentication();
       }
     }
 
     if ( _authenticated )
     {
-      //receivedBytes += len;
       newFile.write( data, len );
-      //Serial.printf( "received %i bytes\n",receivedBytes );
     }
 
     if ( _authenticated && final )
     {
       newFile.close();
-      //Serial.println( "Upload done." );
-      //Serial.printf( "Got %i bytes in %i ms.\n\n", receivedBytes, millis() - startTimer );
     }
   });
 
@@ -151,7 +144,7 @@ void webServerTask ( void * pvParameters )
 
     if ( request->hasArg( "boottime" ) )
     {
-      snprintf( content, sizeof( content ), "%s", asctime( &systemStart ) );
+      snprintf( content, sizeof( content ), "%s", asctime( localtime( &systemStart.tv_sec ) ) );
     }
     else if ( request->hasArg( "channelcolors" ) )
     {
@@ -188,7 +181,7 @@ void webServerTask ( void * pvParameters )
       }
 
       File file = root.openNextFile();
-      byte charCount = 0;
+      uint8_t charCount = 0;
       while ( file )
       {
         if ( !file.isDirectory() )
@@ -269,7 +262,7 @@ void webServerTask ( void * pvParameters )
       api device set calls
   **********************************************************************************************/
 
-  server.on( "/api/setdevice", []( AsyncWebServerRequest * request)
+  server.on( "/api/setdevice", []( AsyncWebServerRequest * request )
   {
     if ( !request->authenticate( www_username, www_password ) )
     {

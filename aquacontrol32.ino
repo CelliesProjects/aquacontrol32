@@ -8,7 +8,8 @@
 #include "OneWire.h"               //https://github.com/CelliesProjects/OneWire
 #include "MHDS18B20.h"             //https://github.com/CelliesProjects/ESP32-MINI-KIT
 #include "SSD1306.h"               //https://github.com/squix78/esp8266-oled-ssd1306
-#include <WebServer.h>             //https://github.com/CelliesProjects/WebServer_tng
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 
 /**************************************************************************
@@ -161,7 +162,7 @@ OneWire  ds( ONEWIRE_PIN );  /* a 4.7K pull-up resistor is necessary */
 
 SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
 
-WebServer server(80);
+AsyncWebServer server(80);
 
 
 /**************************************************************************
@@ -258,6 +259,8 @@ void setup()
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );
+
+
 
   xTaskCreatePinnedToCore(
     tempTask,                       /* Function to implement the task */

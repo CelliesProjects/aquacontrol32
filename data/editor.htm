@@ -636,7 +636,7 @@ $( document ).ready( function() {
       fileData += channel5[lineCounter].time+','+channel5[lineCounter].percentage+'\n';
     }
     var blob = new Blob([ fileData ], {type: 'plain/text'});
-    formData.append('file', blob, "default.aqu");
+    formData.append('file', blob, "/default.aqu");
     var request = new XMLHttpRequest();
     request.open("POST", "/api/upload");
     request.onload = function( data ) {

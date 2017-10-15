@@ -192,7 +192,11 @@ function deleteFile(file){
   if ( confirm( "Are you sure you want to delete '" + file + "'?" ) ) {
     $('input').prop('disabled', true ); //no inputs possible from now on
     $('#fileList').html('<div><br>Deleting ' + file +  '...</div>');
-    $.get( file + "?action=delete" , function( data ) {
+    $.post( "/api/deletefile",
+      {
+        filename: file,
+      },
+    function( data ) {
      console.log( data );
     }).done( function( data ){
         readFiles();
@@ -201,7 +205,7 @@ function deleteFile(file){
       })
       .fail( function(  ){
         readFiles();
-        $('#uploadTitle').html( 'ERROR ' );
+        $('#uploadTitle').html( 'ERROR ' + data );
         $('input').prop('disabled', false); //and finally enable the inputs again
       });
   }

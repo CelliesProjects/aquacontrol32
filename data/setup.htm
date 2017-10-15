@@ -296,9 +296,10 @@ $(document).ready( function() {
 
   $('#hostNameInput').on('change', function( data ) {
     var newHostname = $(this).val();
+    $('#deviceStatus').html("Checking network for hostname " + newHostname + "..." );
     $.get( "/api/setdevice?hostname=" + newHostname )
       .done(function( data ){
-        $( '#deviceStatus' ).html( data + "<a href=\"http://" + newHostname + "\">Click here to go to " + newHostname + "</a>");
+        $( '#deviceStatus' ).html( "Hostname changed. <a href=\"http://" + newHostname + ".local\">Click here to go to " + newHostname + "</a>");
         $( '#hostNameInput' ).css({'background':'lightgreen'});
       })
       .fail(function( data ){
@@ -331,10 +332,19 @@ $(document).ready( function() {
     $( '#timeZoneTextBox' ).css({'background':'yellow'});
   });
 
-  $('#timeZoneTextBox').on('change', function( ) {
-    $.get( '/api/setdevice?timezone=' + $('#timeZoneTextBox').val(), function( data ) {
-      $('#timeZoneTextBox').css( {'background':'lightgreen'} );
-    });
+  $('#timeZoneTextBox').on('change', function( data ) {
+    $.post( '/api/setdevice',
+      {
+        timezone: $(this).val(),
+      })
+      .done(function( data ) {
+        $('#timeZoneTextBox').css( {'background':'lightgreen'} );
+        $('#deviceStatus').html( 'Timezone set to ' + data );
+      })
+      .fail(function( data ) {
+        $('#timeZoneTextBox').css( {'background':'red'} );
+        $('#deviceStatus').html( 'ERROR: ' + data );
+      });
   });
 /*
   $('#pwmFreqSlider').on('input', function() {

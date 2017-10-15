@@ -24,25 +24,25 @@ String humanReadableSize( size_t bytes )
 
 bool setupMDNS( const String hostname )
 {
-  Serial.printf( "Check if %s is already present...\n", hostname );
-  uint32_t serviceIp = MDNS.queryHost( hostname );
+  Serial.printf( "Check if %s is already present...\n", hostname.c_str() );
+  uint32_t serviceIp = MDNS.queryHost( hostname.c_str() );
   if ( serviceIp != 0 )
   {
-    Serial.printf( "%s already on network.\n", hostname );
+    Serial.printf( "%s already on network.\n", hostname.c_str() );
     return false;
   }
-  Serial.printf( "%s is available.\nSetting new hostname...\n", hostname );
+  Serial.printf( "%s is available.\nSetting new hostname...\n", hostname.c_str() );
 
   MDNS.end();
 
-  if ( MDNS.begin( hostName ) )
+  if ( MDNS.begin( hostname.c_str() ) )
   {
     // Add service to MDNS-SD
     MDNS.addService( "http", "tcp", 80 );
 
-    Serial.printf( "mDNS responder started\nmDNS name: %s.local.\n", hostname );
+    Serial.printf( "mDNS responder started\nmDNS name: %s.local.\n", hostname.c_str() );
     saveStringNVS( "hostname", hostname );
-    Serial.printf( "mDNS hostname set to %s.\n", hostname );
+    Serial.printf( "mDNS hostname set to %s.\n", hostname.c_str() );
     return true;
   }
   else

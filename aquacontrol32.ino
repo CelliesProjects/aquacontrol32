@@ -323,9 +323,17 @@ void setup()
   channel[ 4 ].pin = LED4_PIN;
   for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    channel[ channelNumber ].name          = readStringNVS( "channelname" +  char( channelNumber ), "Channel" + char( channelNumber + 1 ) );
-    channel[ channelNumber ].color         = readStringNVS( "channelcolor" + char( channelNumber ), "#fffe7a" );
-    channel[ channelNumber ].minimumLevel  = readFloatNVS( "channelminimum" + char( channelNumber ), 0 );
+    char buff[32];
+
+    snprintf( buff, sizeof( buff ), "channelname%i", channelNumber );
+    channel[ channelNumber ].name          = readStringNVS( buff, "channelname" );
+
+    snprintf( buff, sizeof( buff ), "channelcolor%i", channelNumber );
+    channel[ channelNumber ].color         = readStringNVS( buff, "#fffe7a" );
+
+    snprintf( buff, sizeof( buff ), "channelminimum%i", channelNumber );
+    channel[ channelNumber ].minimumLevel  = readFloatNVS( buff, 0 );
+
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
 

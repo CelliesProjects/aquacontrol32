@@ -20,7 +20,7 @@ float readFloatNVS( char const* key , const float defaultValue)
 void saveFloatNVS( char const* key, const float value )
 {
   preferences.begin( "aquacontrol32", WRITE_ENABLED );
-  if ( int( value ) == 0 )
+  if ( value == 0 )
   {
     preferences.remove( key );
   }

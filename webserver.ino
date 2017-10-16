@@ -504,7 +504,11 @@ void webServerTask ( void * pvParameters )
       }
       channel[ channelNumber ].color = "#" + request->arg( "color" );
 
-      saveStringNVS( "channelcolor" + channelNumber, channel[channelNumber].color );
+
+      //pre-use 'content' buffer
+      snprintf( content, sizeof( content ), "channelcolor%i", channelNumber );
+      saveStringNVS( content, channel[channelNumber].color );
+
       snprintf( content, sizeof( content ), "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color.c_str() );
     }
 
@@ -518,11 +522,13 @@ void webServerTask ( void * pvParameters )
         return request->send( 400, textPlainHeader, "Invalid level" );
       }
       channel[ channelNumber ].minimumLevel = minLevel;
-      saveFloatNVS( "channelminimum" + channelNumber, channel[channelNumber].minimumLevel );
+
+      //pre-use 'content' buffer
+      snprintf( content, sizeof( content ), "channelminimum%i", channelNumber );
+      saveFloatNVS( content, channel[channelNumber].minimumLevel );
+
       snprintf( content, sizeof( content ), "channel %i minimum set to %.2f", channelNumber + 1, channel[ channelNumber ].minimumLevel );
     }
-
-
 
     else if ( request->hasArg( "name" ) )
     {
@@ -541,7 +547,11 @@ void webServerTask ( void * pvParameters )
       {
         channel[ channelNumber ].name = "Channel" + String( channelNumber + 1 );
       }
-      saveStringNVS( "channelname" + char( channelNumber ), channel[channelNumber].name );
+
+      //pre-use 'content' buffer
+      snprintf( content, sizeof( content ), "channelname%i", channelNumber );
+      saveStringNVS( content, channel[channelNumber].name );
+
       snprintf( content, sizeof( content ), "channel %i name set to %s", channelNumber + 1, channel[ channelNumber ].name.c_str() );
     }
 

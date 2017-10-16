@@ -649,6 +649,7 @@ void webServerTask ( void * pvParameters )
     else
       Serial.printf("UNKNOWN");
     Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
+    request->send( 404 );
   });
 
   //start the web server

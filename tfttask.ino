@@ -7,6 +7,8 @@ void tftTask( void * pvParameters )
   const uint16_t TFT_BACK_COLOR         = ILI9341_BLACK;
   const uint8_t  TFT_BACKLIGHT_BITDEPTH = 16;               /*min 11 bits, max 16 bits */
 
+  const uint32_t tftTaskdelayTime = 1000 / UPDATE_FREQ_TFT;
+
   tft.begin( 20000000, SPI );
   uint8_t x = tft.readcommand8( ILI9341_RDSELFDIAG );
   Serial.printf( "ILI9341 TFT Self Diagnostic: 0x%x\n", x );
@@ -28,8 +30,6 @@ void tftTask( void * pvParameters )
   ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
   tft.setRotation( tftOrientation );
 
-  int tftTaskdelayTime = 1000 / UPDATE_FREQ_TFT;
-
   tftBrightness = readInt8NVS( "tftbrightness", tftBrightness );
 
   while (1)
@@ -40,7 +40,16 @@ void tftTask( void * pvParameters )
     const uint16_t BARS_WIDTH       = ILI9341_TFTHEIGHT / 5;
     const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
 
-    ledcWrite( NUMBER_OF_CHANNELS, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
+    uint32_t average = 0;
+
+    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    {
+      average += ledcRead( channelNumber );
+    }
+    average = average / NUMBER_OF_CHANNELS;
+
+    uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1 );
+    ledcWrite( NUMBER_OF_CHANNELS, ( average > rawBrightness ) ? rawBrightness : average );
 
     for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
     {

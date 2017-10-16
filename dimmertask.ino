@@ -1,12 +1,12 @@
 void dimmerTask ( void * pvParameters )
 {
+  const uint32_t dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS;
+
   TickType_t xLastWakeTime;
 
-  xLastWakeTime = xTaskGetTickCount();
-
-  const uint16_t dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS;
-
   lightStatus = "LIGHTS AUTO";
+
+  xLastWakeTime = xTaskGetTickCount();
 
   while (1)
   {

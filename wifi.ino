@@ -66,29 +66,20 @@ void setupWiFi()
     saveStringNVS( "wifissid", wifiSSID.c_str() );
     saveStringNVS( "wifipsk", wifiPSK.c_str() );
 
-
-    Serial.print("MAC: ");
-    Serial.print(WiFi.macAddress()[5], HEX);
-    Serial.print(":");
-    Serial.print(WiFi.macAddress()[4], HEX);
-    Serial.print(":");
-    Serial.print(WiFi.macAddress()[3], HEX);
-    Serial.print(":");
-    Serial.print(WiFi.macAddress()[2], HEX);
-    Serial.print(":");
-    Serial.print(WiFi.macAddress()[1], HEX);
-    Serial.print(":");
-    Serial.println(WiFi.macAddress()[0], HEX);
-
     if ( readStringNVS( "hostname", "" ) == "" )
     {
-      snprintf( hostName, sizeof( hostName ), "%s%x%x%x", DEFAULT_HOSTNAME_PREFIX,
-                WiFi.macAddress()[2], WiFi.macAddress()[1], WiFi.macAddress()[0] );
+      snprintf( hostName, sizeof( hostName ), "%s%c%c%c%c%c%c", DEFAULT_HOSTNAME_PREFIX,
+                WiFi.macAddress()[9], WiFi.macAddress()[10],
+                WiFi.macAddress()[12], WiFi.macAddress()[13],
+                WiFi.macAddress()[15], WiFi.macAddress()[16]
+              );
     }
     else
     {
       snprintf( hostName, sizeof( hostName ), "%s", readStringNVS( "hostname", "" ).c_str() );
     }
+    Serial.println( "MAC address = " + WiFi.macAddress() );
+    Serial.printf( "MAC ident = %s\n", hostName );
 
     if ( !MDNS.begin( readStringNVS( "hostname", hostName ).c_str() ) )
     {

@@ -64,7 +64,7 @@ void webServerTask ( void * pvParameters )
   server.on( "/api/upload", HTTP_POST,
   []( AsyncWebServerRequest * request )
   {
-    request->send( 404 );
+    request->send( 200 );
    },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {

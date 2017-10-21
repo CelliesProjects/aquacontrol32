@@ -12,7 +12,7 @@ void tftTask( void * pvParameters )
   tft.begin( 20000000, SPI );
   uint8_t x = tft.readcommand8( ILI9341_RDSELFDIAG );
   Serial.printf( "ILI9341 TFT Self Diagnostic: 0x%x\n", x );
-  if ( x != 0xe0 )
+  if ( x == 0xff )
   {
     Serial.println( "No ILI9341 found. Quitting task..." );
     vTaskDelete( NULL );

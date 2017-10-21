@@ -151,14 +151,17 @@ input[type="button"]:hover {
 <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/16.7.3/jcanvas.js"></script>
 </head>
+<script>
+var ghLink = '<a href="https://github.com/CelliesProjects/aquacontrol32">Aquacontrol32 on GitHub</a>';
+</script>
 <body>
 <div id="confirmWindow"><div id="confirmMessage">A message</div></div>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a><a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div class="shadowedBox">
-  <h3>TIMER EDITOR</h3>
+  <h3 id="hostName">&nbsp;</h3>
   <p>Program and upload timers to the controller.</p>
 </div>
-<div class="shadowedBox"><p id="statusBox"><a href="https://github.com/CelliesProjects/aquacontrol2">AQUACONTROL GITHUB</a></p></div>
+<div class="shadowedBox"><p id="statusBox"><a href="https://github.com/CelliesProjects/aquacontrol32">Aquacontrol32 on GitHub</a></p></div>
 <div class="shadowedBox" style="background-color:black;">
 <p class="buttonBar"><input id="clearButton" type="button" value="CLEAR"><input id="reloadButton" type="button" value="RELOAD"><input type="button" id="uploadButton" value="UPLOAD"></p>
 <canvas id="editorCanvas" width="1000px" height="200px"></canvas>
@@ -235,7 +238,7 @@ function showMousePosition( event ){
     $('#statusBox').html( formattedTime( clickedTimeInSeconds ).slice(0,5)+" "+currentPercentage+"%" );
     return;
   } else {
-    $('#statusBox').html( '<a href="https://github.com/CelliesProjects/aquacontrol2">AQUACONTROL GITHUB</a>' );
+    $('#statusBox').html( ghLink );
   }
 }
 
@@ -514,6 +517,8 @@ function updateNowIndicator() {
 $( document ).ready( function() {
   $('input').prop("disabled",true);
 
+  $( '#hostName' ).load( "/api/getdevice?hostname=" );
+
   //set correct height for jCanvas - get the width/height set in html
   $('#editorCanvas').width( $('#editorCanvas').width() ).height( $('#editorCanvas').height() );
 
@@ -534,7 +539,7 @@ $( document ).ready( function() {
   });
 
   $('#editorCanvas').on( 'mouseout', function() {
-    $('#statusBox').html( '<a href="https://github.com/CelliesProjects/aquacontrol2">AQUACONTROL GITHUB</a>' );
+    $('#statusBox').html( ghLink );
   });
 
   $('#editorCanvas').on( 'mouseup', function( event ) {

@@ -151,7 +151,7 @@ progress{
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a><a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div class="shadowedBox">
-  <h3>FILE MANAGER</h3>
+  <h3 id="hostName">&nbsp;</h3>
   <p>Upload, download and delete files.</p>
 </div>
 <div class="shadowedBox"><p id="statusBox"></p><p id="diskSpace">&nbsp;</p></div>
@@ -230,6 +230,8 @@ function readFiles(){
 var diskSpace;
 
 $(document).ready( function() {
+
+  $( '#hostName' ).load( "/api/getdevice?hostname=" );
 
   readFiles();
 

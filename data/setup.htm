@@ -138,7 +138,7 @@ input[type="range"]{
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a><a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div id="titleBox" class="shadowedBox">
-  <h3>DEVICE SETUP</h3>
+  <h3 id="hostName">&nbsp;</h3>
   <p class="item">Control your lights and device.</p>
 </div>
 <div class="shadowedBox">
@@ -155,7 +155,7 @@ input[type="range"]{
     <!--<p class="item"><span class="itemName">PWM FREQUENCY</span><span id="pwmFreqValue" class="itemValue">&nbsp;</span><input type="range" id="pwmFreqSlider" value="100" min="100" max="10000"></p>-->
     <!--<p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="11" min="11" max="16" step="1"></p>-->
     <p class="item"><span class="itemName">TFT ORIENTATION</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
-    <p class="item"><span class="itemName">TFT BRIGHTNESS</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
+    <p class="item"><span class="itemName">TFT MAX BRIGHTNESS</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
     <p class="item"><span class="itemName">OLED ORIENTATION</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
     <p class="item"><span class="itemName">OLED CONTRAST</span><span id="oledContrastValue" class="itemValue">&nbsp;</span><input type="range" id="oledContrastSlider" value="11" min="0" max="15" step="1"></p>
   </div>
@@ -180,6 +180,8 @@ function formatBytes( bytes, decimals ) {
 }
 
 $(document).ready( function() {
+
+  $( '#hostName' ).load( "/api/getdevice?hostname=" );
 
   //disable inputs until all values are loaded
   $('input').prop('disabled', true);

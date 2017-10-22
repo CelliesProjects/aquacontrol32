@@ -1,10 +1,10 @@
 //include all web interface header files
 //https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
-#include "index_htm.h"
-#include "editor_htm.h"
-#include "setup_htm.h"
-#include "fileman_htm.h"
-#include "channels_htm.h"
+#include "webif/index_htm.h"
+#include "webif/editor_htm.h"
+#include "webif/setup_htm.h"
+#include "webif/fileman_htm.h"
+#include "webif/channels_htm.h"
 
 const char* textPlainHeader  = "text/plain";
 const char* textHtmlHeader   = "text/html";

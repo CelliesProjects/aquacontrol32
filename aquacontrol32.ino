@@ -7,7 +7,6 @@
 #include "Adafruit_GFX.h"          //Install via 'Manage Libraries' in Arduino IDE
 #include "Adafruit_ILI9341.h"      //Install via 'Manage Libraries' in Arduino IDE
 #include "OneWire.h"               //https://github.com/CelliesProjects/OneWire
-#include "MHDS18B20.h"             //https://github.com/CelliesProjects/ESP32-MINI-KIT
 #include "SSD1306.h"               //https://github.com/squix78/esp8266-oled-ssd1306
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>

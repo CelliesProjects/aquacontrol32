@@ -1,4 +1,5 @@
 #include "SPI.h"                   //should be installed together with ESP32 Arduino install
+#include "SD.h"
 #include "SPIFFS.h"
 #include <ESPmDNS.h>               //should be installed together with ESP32 Arduino install
 #include <Preferences.h>           //should be installed together with ESP32 Arduino install
@@ -113,7 +114,7 @@
 #define SPI_TFT_RST_PIN           12  // Goes to TFT RESET
 #define SPI_TFT_CS_PIN             4  // Goes to TFT CS
 #define SPI_SD_CS_PIN              0  // Goes to SD CS
-#define SPI_MISO_PIN              14  // Goes to TFT MISO
+#define SPI_MISO_PIN              39  // Goes to TFT MISO
 
 //       3.3V                     // Goes to TFT LED
 //       5v                       // Goes to TFT Vcc-
@@ -214,6 +215,7 @@ struct sensorStruct
 
 TaskHandle_t x_dimmerTaskHandle = NULL;
 TaskHandle_t x_tftTaskHandle    = NULL;
+TaskHandle_t x_loggerTaskHandle = NULL;
 
 double   ledcActualFrequency;
 uint16_t ledcMaxValue;
@@ -226,6 +228,7 @@ struct timeval systemStart;
 
 String lightStatus;
 
+bool    tftPresent      = false;
 float   tftBrightness   = 80;                        /* in percent */
 uint8_t tftOrientation  = TFT_ORIENTATION_NORMAL;
 
@@ -250,6 +253,7 @@ void setup()
 
   btStop();
 
+
   Serial.begin( 115200 );
   Serial.println();
   Serial.println( "aquacontrol32" );
@@ -260,7 +264,14 @@ void setup()
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );
 
+  tft.begin( 20000000, SPI );
 
+  tftPresent = ( tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 );
+
+  if ( tftPresent )
+  {
+    Serial.println( "ILI9341 found." );
+  }
 
   xTaskCreatePinnedToCore(
     tempTask,                       /* Function to implement the task */
@@ -357,7 +368,7 @@ void setup()
     &x_dimmerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 
-  if ( TFT_ENABLED )
+  if ( tftPresent )
   {
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
@@ -368,6 +379,15 @@ void setup()
       &x_tftTaskHandle,               /* Task handle. */
       1);                             /* Core where the task should run */
   }
+
+  xTaskCreatePinnedToCore(
+    loggerTask,                     /* Function to implement the task */
+    "loggerTask",                   /* Name of the task */
+    3000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    0,                              /* Priority of the task */
+    &x_loggerTaskHandle,            /* Task handle. */
+    1);                             /* Core where the task should run */
 }
 
 /*****************************************************************************************

@@ -9,19 +9,9 @@ void tftTask( void * pvParameters )
 
   const uint32_t tftTaskdelayTime = 1000 / UPDATE_FREQ_TFT;
 
-  tft.begin( 20000000, SPI );
-  uint8_t x = tft.readcommand8( ILI9341_RDSELFDIAG );
-  Serial.printf( "ILI9341 TFT Self Diagnostic: 0x%x\n", x );
-  if ( x == 0xff )
-  {
-    Serial.println( "No ILI9341 found. Quitting task..." );
-    vTaskDelete( NULL );
-  }
-
   tft.fillScreen( TFT_BACK_COLOR );
 
   //setup backlight pwm
-
   ledcAttachPin( TFT_BACKLIGHT_PIN, NUMBER_OF_CHANNELS );
   double backlightFrequency = ledcSetup( NUMBER_OF_CHANNELS , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
 

@@ -50,7 +50,8 @@ void tftTask( void * pvParameters )
       b = ( color & 0x0000FF );       // Filter the 'blue' bits from color. No shift needed.
 
       // redraw the top part of the bar
-      tft.fillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
+      tft.startWrite();
+      tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
                     BARS_BOTTOM - BARS_HEIGHT,
                     BARS_WIDTH - BARS_BORDER * 2,
                     BARS_HEIGHT - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
@@ -62,11 +63,12 @@ void tftTask( void * pvParameters )
                                BARS_WIDTH - BARS_BORDER * 2,
                                tft.color565( r, g, b ) );
       */
-      tft.fillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
+      tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
                     BARS_BOTTOM - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
                     BARS_WIDTH - BARS_BORDER * 2,
                     channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
                     tft.color565( r, g, b ) );
+      tft.endWrite();
 
       tft.setCursor( channelNumber * BARS_WIDTH + 9, BARS_BOTTOM + 4 );
       tft.setTextSize( 1 );

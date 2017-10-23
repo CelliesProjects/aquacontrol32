@@ -372,7 +372,7 @@ void setup()
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
       "tftTask",                      /* Name of the task */
-      2000,                           /* Stack size in words */
+      3000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
       1,                              /* Priority of the task */
       &x_tftTaskHandle,               /* Task handle. */

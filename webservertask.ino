@@ -11,9 +11,10 @@ const char* textHtmlHeader   = "text/html";
 
 void webServerTask ( void * pvParameters )
 {
-
-  // Set up the web server
   Serial.println( "Starting webserver setup. " );
+
+  server.serveStatic( defaultTimerFile, SPIFFS, defaultTimerFile );
+
   /*
     server.on("/login", HTTP_POST, [](AsyncWebServerRequest *request){
       if(!request->authenticate(www_username, www_password))
@@ -44,7 +45,7 @@ void webServerTask ( void * pvParameters )
         {
           filename = "/" + filename;
         }
-        newFile = SPIFFS.open( filename, "w");
+        newFile = SD.open( filename, "w");
         receivedBytes = 0;
       }
 
@@ -65,7 +66,7 @@ void webServerTask ( void * pvParameters )
   []( AsyncWebServerRequest * request )
   {
     request->send( 200 );
-   },
+  },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
     static File   newFile;
@@ -83,7 +84,14 @@ void webServerTask ( void * pvParameters )
         {
           filename = "/" + filename;
         }
-        newFile = SPIFFS.open( filename, "w" );
+        if ( filename == defaultTimerFile )
+        {
+          newFile = SPIFFS.open( filename, "w" );
+        }
+        else
+        {
+          newFile = SD.open( filename, "w" );
+        }
         _authenticated = true;
       }
       else
@@ -164,11 +172,11 @@ void webServerTask ( void * pvParameters )
     }
     else if ( request->hasArg( "diskspace" ) )
     {
-      snprintf( content, sizeof( content ), "%d" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
+      snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
     }
     else if ( request->hasArg( "files" ) )
     {
-      File root = SPIFFS.open( "/" );
+      File root = SD.open( "/" );
       if ( !root )
       {
         request->send( 404, textPlainHeader, "Folder not found." );
@@ -626,18 +634,18 @@ void webServerTask ( void * pvParameters )
       path = request->arg( "filename" );
     }
 
-    if ( !SPIFFS.exists( path ) )
+    if ( !SD.exists( path ) )
     {
       path = request->arg( "filename" ) + " not found.";
       return request->send( 404, textPlainHeader, path );
     }
 
-    SPIFFS.remove( path );
+    SD.remove( path );
     path = request->arg( "filename" ) + " deleted.";
     request->send( 200, textPlainHeader, path );
   });
 
-  server.serveStatic( "/", SPIFFS, "/" );
+  server.serveStatic( "/", SD, "/" );
 
   server.onNotFound( []( AsyncWebServerRequest * request )
   {

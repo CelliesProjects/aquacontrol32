@@ -1,8 +1,14 @@
 void loggerTask ( void * pvParameters )
 {  
-  const uint32_t loggerTaskdelayTime = 1000 * 10; /* one minute */
+  const uint64_t loggerTaskdelayTime = 1000 * 60; /* one minute */
 
   Serial.println( "Data logger task init." );
+
+  if ( !numberOfFoundSensors )
+  {
+    Serial.println( "No dallas sensors. Exiting task." );
+    vTaskDelete( NULL );
+  }
 
   if ( !SD.begin( SPI_SD_CS_PIN, SPI, 2000000 ) )
   {
@@ -11,8 +17,6 @@ void loggerTask ( void * pvParameters )
   }    
   uint64_t cardSize = SD.cardSize() / ( 1024 * 1024 );
   Serial.printf( "SD Card Size: %lluMB\n", cardSize );
-
-  listDir(SD, "/", 0);
 
   while(1)
   {
@@ -56,16 +60,7 @@ void loggerTask ( void * pvParameters )
 
 bool writelnFile( fs::FS &fs, const char * path, const char * message )
 {
-    File file;
-/*
-    if ( !fs.exists( path ) )
-    {
-      file = fs.open( path, FILE_WRITE );
-      file.println("#aquacontrol log file");
-      file.close();
-    }
-*/
-    file = fs.open( path, FILE_APPEND );
+    File file = fs.open( path, FILE_APPEND );
     if ( !file )
     {
         Serial.println("Failed to open file for writing");
@@ -80,7 +75,7 @@ bool writelnFile( fs::FS &fs, const char * path, const char * message )
     file.close();
     return true;
 }
-
+/*
 void listDir( fs::FS &fs, const char * dirname, uint8_t levels ){
     Serial.printf( "Listing directory: %s\n", dirname );
 
@@ -111,3 +106,4 @@ void listDir( fs::FS &fs, const char * dirname, uint8_t levels ){
         file = root.openNextFile();
     }
 }
+*/

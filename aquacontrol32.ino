@@ -21,7 +21,7 @@
 /**************************************************************************
        1 = show system data on oled   0 = show light and temps on oled
 **************************************************************************/
-#define OLED_SHOW_SYSTEMDATA             0
+#define OLED_SHOW_SYSTEMDATA              0
 
 
 /**************************************************************************
@@ -216,6 +216,9 @@ TaskHandle_t x_dimmerTaskHandle = NULL;
 TaskHandle_t x_tftTaskHandle    = NULL;
 TaskHandle_t x_loggerTaskHandle = NULL;
 
+//take turns using the SPI bus.
+xSemaphoreHandle x_SPI_gatekeeper  = NULL;
+
 double   ledcActualFrequency;
 uint16_t ledcMaxValue;
 uint8_t  ledcNumberOfBits;
@@ -259,6 +262,8 @@ void setup()
   Serial.print( "ESP32 SDK: " );
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
+
+  x_SPI_gatekeeper = xSemaphoreCreateMutex();
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );

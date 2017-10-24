@@ -43,6 +43,8 @@ a {
 
 .fileName a{
   display:block;
+  overflow:hidden;
+  white-space:nowrap;
 }
 
 .shadowedBox  {
@@ -252,6 +254,8 @@ $(document).ready( function() {
     // Also see .name, .type
   });
 
+
+  //https://stackoverflow.com/questions/7940213/aborting-the-xmlhttprequest
   $( '#uploadButton' ).on( 'click' , function() {
     if ( $( '#fileInput' ).val() == "" ) { return; }
     $.ajax({
@@ -273,12 +277,13 @@ $(document).ready( function() {
       // Custom XMLHttpRequest
       xhr: function() {
         var myXhr = $.ajaxSettings.xhr();
-        addEventListener('abort',  function(){ abort(); }, false);
+
         $('input').prop('disabled', true ); //no inputs possible from now on
         $('#fileList').html('<div><br>Uploading ' + $('input#fileInput')[0].files[0].name + '...</div>');
         $( '#uploadButton' ).css( "display", "none" );
         $( 'progress' ).css( "display", "inline-block" );
         if (myXhr.upload) {
+          myXhr.upload.addEventListener( 'error',  function( e ){ this.abort(); }, false );
           // For handling the progress of the upload
           myXhr.upload.addEventListener( 'progress', function( e ) {
             if ( e.lengthComputable ) {

@@ -15,52 +15,18 @@ void webServerTask ( void * pvParameters )
 
   server.serveStatic( defaultTimerFile, SPIFFS, defaultTimerFile );
 
-  /*
-    server.on("/login", HTTP_POST, [](AsyncWebServerRequest *request){
-      if(!request->authenticate(www_username, www_password))
-          return request->requestAuthentication();
-      request->redirect( "/api/upload");
-    });
-
-    server.on( "/api/upload", HTTP_POST,
-    []( AsyncWebServerRequest *request )
+  server.on( "/api/login", HTTP_POST,
+  []( AsyncWebServerRequest * request )
+  {
+    if ( request->authenticate( www_username, www_password ) )
     {
-      request->send(200);
-    },
-    []( AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final )
+      request->send( 200, textPlainHeader, "Logged in." );
+    }
+    else
     {
-      if(!request->authenticate( www_username, www_password ) )
-          return request->redirect( "/login" );
-
-      static File newFile;
-      static bool  _authenticated;
-      static size_t receivedBytes;
-      static time_t startTimer;
-
-      if( !index )
-      {
-        startTimer = millis();
-        Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
-        if ( !filename.startsWith( "/" ) )
-        {
-          filename = "/" + filename;
-        }
-        newFile = SD.open( filename, "w");
-        receivedBytes = 0;
-      }
-
-      receivedBytes += len;
-      newFile.write( data, len );
-      //Serial.printf( "received %i bytes\n",receivedBytes );
-
-      if ( final )
-      {
-        newFile.close();
-        //Serial.println( "Upload done." );
-        Serial.printf( "Got %i bytes in %i ms.\n\n", receivedBytes, millis() - startTimer );
-      }
-    });
-  */
+      request->send( 401, textPlainHeader, "Not logged in." );
+    }
+  });
 
   server.on( "/api/upload", HTTP_POST,
   []( AsyncWebServerRequest * request )
@@ -69,46 +35,59 @@ void webServerTask ( void * pvParameters )
   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
-    static File   newFile;
-    static bool   _authenticated;
-    static time_t startTimer;
-
-    if ( !index )
+    if ( xSemaphoreTake( x_SPI_gatekeeper, 500 ) )
     {
-      _authenticated = false;
-      if ( request->authenticate( www_username, www_password ) )
+      static File   newFile;
+      static bool   _authenticated;
+      static time_t startTimer;
+
+      if ( !index )
       {
-        startTimer = millis();
-        Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
-        if ( !filename.startsWith( "/" ) )
+        _authenticated = false;
+        if ( request->authenticate( www_username, www_password ) )
         {
-          filename = "/" + filename;
-        }
-        if ( filename == defaultTimerFile )
-        {
-          newFile = SPIFFS.open( filename, "w" );
+          startTimer = millis();
+          Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
+          if ( !filename.startsWith( "/" ) )
+          {
+            filename = "/" + filename;
+          }
+          if ( filename == defaultTimerFile )
+          {
+            newFile = SPIFFS.open( filename, "w" );
+          }
+          else
+          {
+            newFile = SD.open( filename, "w" );
+          }
+          _authenticated = true;
         }
         else
         {
-          newFile = SD.open( filename, "w" );
+          Serial.println( "Unauthorized access." );
+          request->send( 401, "text/plain", "Not logged in." );
         }
-        _authenticated = true;
       }
-      else
+
+      if ( _authenticated )
       {
-        Serial.println( "Unauthorized access." );
-        return request->requestAuthentication();
+        newFile.write( data, len );
       }
-    }
 
-    if ( _authenticated )
-    {
-      newFile.write( data, len );
+      if ( _authenticated && final )
+      {
+        newFile.close();
+        if ( filename == defaultTimerFile )
+        {
+          defaultTimersLoaded();
+        }
+        Serial.printf( "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
+      }
+      xSemaphoreGive( x_SPI_gatekeeper );
     }
-
-    if ( _authenticated && final )
+    else
     {
-      newFile.close();
+      request->send( 503, textPlainHeader, "SPI bus not available." );
     }
   });
 
@@ -148,7 +127,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/getdevice", []( AsyncWebServerRequest * request)
   {
-    char content[100];
+    char content[1024];
 
     if ( request->hasArg( "boottime" ) )
     {
@@ -573,42 +552,6 @@ void webServerTask ( void * pvParameters )
     request->send( 200, textPlainHeader, content );
   });
 
-
-
-  /**********************************************************************************************/
-  /*   api channel get calls
-    /**********************************************************************************************/
-  /*
-    server.on( "/api/getchannel", HTTP_GET, []( AsyncWebServerRequest * request)
-    {
-      int8_t channelNumber;
-      char   content[30];
-
-      channelNumber = checkChannelNumber( request );
-      if ( channelNumber == -1 )
-      {
-        return request->send( 400, textPlainHeader, "Missing or invalid channel" );
-      }
-      if ( request->hasArg( "color" ) )
-      {
-        snprintf( content, sizeof( content ), "%s", channel[ channelNumber ].color.c_str() );
-      }
-      else if ( request->hasArg( "minimum" ) )
-      {
-        snprintf( content, sizeof( content ), "%.2f", channel[ channelNumber ].minimumLevel );
-      }
-      else if ( request->hasArg( "name" ) )
-      {
-        snprintf( content, sizeof( content ), "%s", channel[ channelNumber ].name.c_str() );
-      }
-      else
-      {
-        return request->send( 400, textPlainHeader, "Missing or invalid request" );
-      }
-      request->send( 200, textPlainHeader, content );
-    });
-  */
-
   /**********************************************************************************************/
 
   server.on( "/api/deletefile", HTTP_POST, []( AsyncWebServerRequest * request)
@@ -634,13 +577,22 @@ void webServerTask ( void * pvParameters )
       path = request->arg( "filename" );
     }
 
-    if ( !SD.exists( path ) )
+    if ( xSemaphoreTake( x_SPI_gatekeeper, 500 ) )
     {
-      path = request->arg( "filename" ) + " not found.";
-      return request->send( 404, textPlainHeader, path );
+      if ( !SD.exists( path ) )
+      {
+        path = request->arg( "filename" ) + " not found.";
+        return request->send( 404, textPlainHeader, path );
+      }
+
+      SD.remove( path );
+      xSemaphoreGive( x_SPI_gatekeeper );
+    }
+    else
+    {
+      return request->send( 503, textPlainHeader, "SPI bus not available." );
     }
 
-    SD.remove( path );
     path = request->arg( "filename" ) + " deleted.";
     request->send( 200, textPlainHeader, path );
   });

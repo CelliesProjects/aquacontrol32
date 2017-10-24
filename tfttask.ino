@@ -24,85 +24,93 @@ void tftTask( void * pvParameters )
 
   while (1)
   {
-    const uint16_t BARS_BOTTOM      = 205;
-    const uint16_t BARS_HEIGHT      = BARS_BOTTOM;
-    const uint16_t BARS_BORDER      = 10;
-    const uint16_t BARS_WIDTH       = ILI9341_TFTHEIGHT / 5;
-    const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
-
-    uint32_t average = 0;
-
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+    if ( xSemaphoreTake( x_SPI_gatekeeper, tftTaskdelayTime / 2 ) )
     {
-      average += ledcRead( channelNumber );
-    }
-    average = average / NUMBER_OF_CHANNELS;
+      const uint16_t BARS_BOTTOM      = 205;
+      const uint16_t BARS_HEIGHT      = BARS_BOTTOM;
+      const uint16_t BARS_BORDER      = 10;
+      const uint16_t BARS_WIDTH       = ILI9341_TFTHEIGHT / 5;
+      const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
 
-    uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1 );
-    ledcWrite( NUMBER_OF_CHANNELS, ( average > rawBrightness ) ? rawBrightness : average );
+      uint32_t average = 0;
 
-    for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-    {
-      uint8_t r, g, b;
-      uint32_t color = strtol( &channel[channelNumber].color[1], NULL, 16 );
-      r = ( color & 0xFF0000 ) >> 16; // Filter the 'red' bits from color. Then shift right by 16 bits.
-      g = ( color & 0x00FF00 ) >> 8;  // Filter the 'green' bits from color. Then shift right by 8 bits.
-      b = ( color & 0x0000FF );       // Filter the 'blue' bits from color. No shift needed.
-
-      // redraw the top part of the bar
-      tft.startWrite();
-      tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
-                    BARS_BOTTOM - BARS_HEIGHT,
-                    BARS_WIDTH - BARS_BORDER * 2,
-                    BARS_HEIGHT - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
-                    TFT_BACK_COLOR );
-      /*
-            //high water mark
-            tft.drawFastHLine( channelNumber * BARS_WIDTH + BARS_BORDER,
-                               BARS_BOTTOM - BARS_HEIGHT - 1,
-                               BARS_WIDTH - BARS_BORDER * 2,
-                               tft.color565( r, g, b ) );
-      */
-      tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
-                    BARS_BOTTOM - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
-                    BARS_WIDTH - BARS_BORDER * 2,
-                    channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
-                    tft.color565( r, g, b ) );
-      tft.endWrite();
-
-      tft.setCursor( channelNumber * BARS_WIDTH + 9, BARS_BOTTOM + 4 );
-      tft.setTextSize( 1 );
-      tft.setTextColor( tft.color565( r, g, b ) , TFT_BACK_COLOR );
-
-      char content[8];
-      if ( TFT_SHOW_RAW )
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        snprintf( content, sizeof( content ), " 0x%04X", ledcRead( channelNumber ) );
+        average += ledcRead( channelNumber );
+      }
+      average = average / NUMBER_OF_CHANNELS;
+
+      uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1 );
+      ledcWrite( NUMBER_OF_CHANNELS, ( average > rawBrightness ) ? rawBrightness : average );
+
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      {
+        uint8_t r, g, b;
+        uint32_t color = strtol( &channel[channelNumber].color[1], NULL, 16 );
+        r = ( color & 0xFF0000 ) >> 16; // Filter the 'red' bits from color. Then shift right by 16 bits.
+        g = ( color & 0x00FF00 ) >> 8;  // Filter the 'green' bits from color. Then shift right by 8 bits.
+        b = ( color & 0x0000FF );       // Filter the 'blue' bits from color. No shift needed.
+
+        // redraw the top part of the bar
+        tft.startWrite();
+        tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
+                           BARS_BOTTOM - BARS_HEIGHT,
+                           BARS_WIDTH - BARS_BORDER * 2,
+                           BARS_HEIGHT - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
+                           TFT_BACK_COLOR );
+        /*
+              //100% water mark
+              tft.drawFastHLine( channelNumber * BARS_WIDTH + BARS_BORDER,
+                                 BARS_BOTTOM - BARS_HEIGHT - 1,
+                                 BARS_WIDTH - BARS_BORDER * 2,
+                                 tft.color565( r, g, b ) );
+        */
+        tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
+                           BARS_BOTTOM - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
+                           BARS_WIDTH - BARS_BORDER * 2,
+                           channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
+                           tft.color565( r, g, b ) );
+        tft.endWrite();
+
+        tft.setCursor( channelNumber * BARS_WIDTH + 9, BARS_BOTTOM + 4 );
+        tft.setTextSize( 1 );
+        tft.setTextColor( tft.color565( r, g, b ) , TFT_BACK_COLOR );
+
+        char content[8];
+        if ( TFT_SHOW_RAW )
+        {
+          snprintf( content, sizeof( content ), " 0x%04X", ledcRead( channelNumber ) );
+        }
+        else
+        {
+          snprintf( content, sizeof( content ), "%*" ".3f%%", 7, channel[channelNumber].currentPercentage );
+        }
+        tft.print( content );
+      }
+
+      tft.setTextSize( 2 );
+      if ( numberOfFoundSensors )
+      {
+        for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
+        {
+          tft.setCursor( thisSensor * 90, BARS_BOTTOM + 15 );
+          tft.setTextColor( TFT_TEMP_COLOR , TFT_BACK_COLOR );
+          tft.printf( " %.1f%cC", sensor[thisSensor].temp / 16.0, char(247) );
+        }
       }
       else
       {
-        snprintf( content, sizeof( content ), "%*" ".3f%%", 7, channel[channelNumber].currentPercentage );
+        struct tm timeinfo;
+        getLocalTime( &timeinfo );
+        tft.setCursor( 18, BARS_BOTTOM + 15 );
+        tft.setTextColor( TFT_DATE_COLOR , TFT_BACK_COLOR );
+        tft.print( asctime( &timeinfo ) );
       }
-      tft.print( content );
-    }
-
-    tft.setTextSize( 2 );
-    if ( numberOfFoundSensors )
-    {
-      for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
-      {
-        tft.setCursor( thisSensor * 90, BARS_BOTTOM + 15 );
-        tft.setTextColor( TFT_TEMP_COLOR , TFT_BACK_COLOR );
-        tft.printf( " %.1f%cC", sensor[thisSensor].temp / 16.0, char(247) );
-      }
+      xSemaphoreGive( x_SPI_gatekeeper );
     }
     else
     {
-      struct tm timeinfo;
-      getLocalTime( &timeinfo );
-      tft.setCursor( 18, BARS_BOTTOM + 15 );
-      tft.setTextColor( TFT_DATE_COLOR , TFT_BACK_COLOR );
-      tft.print( asctime( &timeinfo ) );
+      Serial.println( "Skipped tft update. SPI bus not available.");
     }
     vTaskDelay( tftTaskdelayTime / portTICK_PERIOD_MS );
   }

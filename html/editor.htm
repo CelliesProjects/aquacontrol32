@@ -644,9 +644,11 @@ $( document ).ready( function() {
     formData.append('file', blob, "/default.aqu");
     var request = new XMLHttpRequest();
     request.open("POST", "/api/upload");
+/*
     request.onload = function( data ) {
       $('#statusBox').load( '/api/setdevice?loadtimers=' );
     };
+*/
     request.send(formData);
   });
 

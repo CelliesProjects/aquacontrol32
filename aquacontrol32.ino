@@ -230,6 +230,7 @@ struct timeval systemStart;
 
 String lightStatus;
 
+bool    sdcardPresent   = false;
 bool    tftPresent      = false;
 float   tftBrightness   = 80;                        /* in percent */
 uint8_t tftOrientation  = TFT_ORIENTATION_NORMAL;

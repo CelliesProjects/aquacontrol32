@@ -151,14 +151,21 @@ void webServerTask ( void * pvParameters )
     }
     else if ( request->hasArg( "diskspace" ) )
     {
-      snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
+      if ( sdcardPresent )
+      {
+        snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
+      }
+      else
+      {
+        return request->send( 501, textPlainHeader, "Not present" );
+      }
     }
     else if ( request->hasArg( "files" ) )
     {
       File root = SD.open( "/" );
       if ( !root )
       {
-        request->send( 404, textPlainHeader, "Folder not found." );
+        request->send( 501, textPlainHeader, "No sd card present." );
         return;
       }
       if ( !root.isDirectory() )
@@ -197,7 +204,14 @@ void webServerTask ( void * pvParameters )
     }
     else if ( request->hasArg( "oledorientation" ) )
     {
-      snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
+      if ( OLED_ENABLED )
+      {
+        snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
+      }
+      else
+      {
+        return request->send( 501, textPlainHeader, "Not present." );
+      }
     }
     else if ( request->hasArg( "pwmdepth" ) )
     {
@@ -207,10 +221,19 @@ void webServerTask ( void * pvParameters )
     {
       snprintf( content, sizeof( content ), "%.0f", ledcActualFrequency );
     }
+
     else if ( request->hasArg( "tftorientation" ) )
     {
-      snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+      if ( tftPresent )
+      {
+        snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+      }
+      else
+      {
+        return request->send( 501, textPlainHeader, "Not present." );
+      }
     }
+
     else if ( request->hasArg( "status" ) )
     {
       int charCount = 0;
@@ -249,7 +272,7 @@ void webServerTask ( void * pvParameters )
       api device set calls
   **********************************************************************************************/
 
-  server.on( "/api/setdevice", []( AsyncWebServerRequest * request )
+  server.on( "/api/setdevice", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     if ( !request->authenticate( www_username, www_password ) )
     {

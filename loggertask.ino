@@ -18,6 +18,7 @@ void loggerTask ( void * pvParameters )
       xSemaphoreGive( x_SPI_gatekeeper );
       vTaskDelete( NULL );
     }
+    sdcardPresent = true;
     uint64_t cardSize = SD.cardSize() / ( 1024 * 1024 );
     Serial.printf( "SD Card Size: %lluMB\n", cardSize );
     xSemaphoreGive( x_SPI_gatekeeper );

@@ -217,7 +217,10 @@ TaskHandle_t x_tftTaskHandle    = NULL;
 TaskHandle_t x_loggerTaskHandle = NULL;
 
 //take turns using the SPI bus.
-xSemaphoreHandle x_SPI_gatekeeper  = NULL;
+xSemaphoreHandle x_SPI_Mutex    = NULL;
+
+//and the Serial port
+xSemaphoreHandle  X_Serial_Mutex = NULL;
 
 double   ledcActualFrequency;
 uint16_t ledcMaxValue;
@@ -264,7 +267,7 @@ void setup()
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
 
-  x_SPI_gatekeeper = xSemaphoreCreateMutex();
+  x_SPI_Mutex = xSemaphoreCreateMutex();
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );
@@ -273,9 +276,17 @@ void setup()
 
   tftPresent = ( tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 );
 
+
   if ( tftPresent )
   {
-    Serial.println( "ILI9341 found." );
+    xTaskCreatePinnedToCore(
+      tftTask,                        /* Function to implement the task */
+      "tftTask",                      /* Name of the task */
+      3000,                           /* Stack size in words */
+      NULL,                           /* Task input parameter */
+      1,                              /* Priority of the task */
+      &x_tftTaskHandle,               /* Task handle. */
+      1);                             /* Core where the task should run */
   }
 
   xTaskCreatePinnedToCore(
@@ -372,18 +383,6 @@ void setup()
     7,                              /* Priority of the task */
     &x_dimmerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
-
-  if ( tftPresent )
-  {
-    xTaskCreatePinnedToCore(
-      tftTask,                        /* Function to implement the task */
-      "tftTask",                      /* Name of the task */
-      3000,                           /* Stack size in words */
-      NULL,                           /* Task input parameter */
-      1,                              /* Priority of the task */
-      &x_tftTaskHandle,               /* Task handle. */
-      1);                             /* Core where the task should run */
-  }
 
   xTaskCreatePinnedToCore(
     loggerTask,                     /* Function to implement the task */

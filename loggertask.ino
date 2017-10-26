@@ -1,6 +1,7 @@
 void loggerTask ( void * pvParameters )
 {
-  const uint64_t loggerTaskdelayTime = 1000 * 60; /* one minute */
+  const uint64_t loggerTaskdelayTime  = ( 1000 * 60 ) / portTICK_PERIOD_MS;
+  const uint64_t SPI_MutexMaxWaitTime =           100 / portTICK_PERIOD_MS;
 
   Serial.println( "Data logger task init." );
 
@@ -10,55 +11,54 @@ void loggerTask ( void * pvParameters )
     vTaskDelete( NULL );
   }
 
-  if ( xSemaphoreTake( x_SPI_gatekeeper, 100 ) )
+  if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
   {
     if ( !SD.begin( SPI_SD_CS_PIN, SPI, 2000000 ) )
     {
       Serial.println( "No sd available. No logging. Exiting task." );
-      xSemaphoreGive( x_SPI_gatekeeper );
+      xSemaphoreGive( x_SPI_Mutex );
       vTaskDelete( NULL );
     }
     sdcardPresent = true;
     uint64_t cardSize = SD.cardSize() / ( 1024 * 1024 );
     Serial.printf( "SD Card Size: %lluMB\n", cardSize );
-    xSemaphoreGive( x_SPI_gatekeeper );
+    xSemaphoreGive( x_SPI_Mutex );
   }
   else
   {
     Serial.println( "Could not find sd card. SPI bus not available" );
-    xSemaphoreGive( x_SPI_gatekeeper );
     vTaskDelete( NULL );
   }
 
   while (1)
   {
-    struct tm timeinfo;
-    getLocalTime( &timeinfo );
-
-    char fileName[17];
-    strftime( fileName , sizeof( fileName ), "/%F.log", &timeinfo );
-
-    char content[40];
-
-    uint8_t charCount = 0;
-
-    charCount += snprintf( content, sizeof( content ), "%i,", time( NULL ) );
-
-    if ( numberOfFoundSensors )
+    if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
     {
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%3.2f", sensor[ 0 ].temp / 16.0 );
+      char content[40];
+      uint8_t charCount = 0;
 
-      for  ( uint8_t sensorNumber = 1; sensorNumber < numberOfFoundSensors; sensorNumber++ )
+      charCount += snprintf( content, sizeof( content ), "%i,", time( NULL ) );
+
+      if ( numberOfFoundSensors )
       {
-        charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%3.2f", sensor[ sensorNumber ].temp / 16.0 );
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%3.2f", sensor[ 0 ].temp / 16.0 );
+
+        for  ( uint8_t sensorNumber = 1; sensorNumber < numberOfFoundSensors; sensorNumber++ )
+        {
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%3.2f", sensor[ sensorNumber ].temp / 16.0 );
+        }
       }
-    }
-    else
-    {
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%s", "No sensors." );
-    }
-    if ( xSemaphoreTake( x_SPI_gatekeeper, 500 ) )
-    {
+      else
+      {
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%s", "No sensors." );
+      }
+
+      struct tm timeinfo;
+      getLocalTime( &timeinfo );
+
+      char fileName[17];
+      strftime( fileName , sizeof( fileName ), "/%F.log", &timeinfo );
+
       if ( !writelnFile( SD, fileName, content ) )
       {
         Serial.println("Failed to open file for appending");
@@ -67,14 +67,13 @@ void loggerTask ( void * pvParameters )
       {
         Serial.printf( "Written '%s' to '%s'.\n", content, fileName );
       }
-      xSemaphoreGive( x_SPI_gatekeeper );
+      xSemaphoreGive( x_SPI_Mutex );
     }
     else
     {
       Serial.println( "Skipped saving log file entry. SPI bus not available." );
-      xSemaphoreGive( x_SPI_gatekeeper );
     }
-    vTaskDelay( loggerTaskdelayTime / portTICK_PERIOD_MS );
+    vTaskDelay( loggerTaskdelayTime );
   }
 }
 

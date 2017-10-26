@@ -7,9 +7,10 @@ void tftTask( void * pvParameters )
   const uint16_t TFT_BACK_COLOR         = ILI9341_BLACK;
   const uint8_t  TFT_BACKLIGHT_BITDEPTH = 16;               /*min 11 bits, max 16 bits */
 
-  const uint32_t tftTaskdelayTime = 1000 / UPDATE_FREQ_TFT;
+  const uint32_t tftTaskdelayTime     =   ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
+  const uint64_t SPI_MutexMaxWaitTime =                         100 / portTICK_PERIOD_MS;
 
-  tft.fillScreen( TFT_BACK_COLOR );
+  bool firstRun = true;
 
   //setup backlight pwm
   ledcAttachPin( TFT_BACKLIGHT_PIN, NUMBER_OF_CHANNELS );
@@ -17,14 +18,30 @@ void tftTask( void * pvParameters )
 
   uint16_t backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
-  ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
-  tft.setRotation( tftOrientation );
+  if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+  {
+    tft.fillScreen( TFT_BACK_COLOR );
 
-  tftBrightness = readInt8NVS( "tftbrightness", tftBrightness );
+    tftBrightness = readInt8NVS( "tftbrightness", tftBrightness );
+    ledcWrite( NUMBER_OF_CHANNELS, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
+
+    ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
+    tft.setRotation( tftOrientation );
+    xSemaphoreGive( x_SPI_Mutex );
+  }
+  else
+  {
+    Serial.println( "tft init - No SPI bus available." );
+  }
+
+  while ( !setupEnded )
+  {
+    vTaskDelay( 10 / portTICK_PERIOD_MS );
+  }
 
   while (1)
   {
-    if ( xSemaphoreTake( x_SPI_gatekeeper, tftTaskdelayTime / 2 ) )
+    if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
     {
       const uint16_t BARS_BOTTOM      = 205;
       const uint16_t BARS_HEIGHT      = BARS_BOTTOM;
@@ -33,6 +50,12 @@ void tftTask( void * pvParameters )
       const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
 
       uint32_t average = 0;
+
+      if ( firstRun )
+      {
+        tft.fillScreen( TFT_BACK_COLOR );
+        firstRun = false;
+      }
 
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
@@ -106,7 +129,7 @@ void tftTask( void * pvParameters )
         tft.setTextColor( TFT_DATE_COLOR , TFT_BACK_COLOR );
         tft.print( asctime( &timeinfo ) );
       }
-      xSemaphoreGive( x_SPI_gatekeeper );
+      xSemaphoreGive( x_SPI_Mutex );
     }
     else
     {

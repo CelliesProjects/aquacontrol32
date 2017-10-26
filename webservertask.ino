@@ -11,6 +11,9 @@ const char* textHtmlHeader   = "text/html";
 
 void webServerTask ( void * pvParameters )
 {
+
+  const uint64_t SPI_MutexMaxWaitTime = 500 / portTICK_PERIOD_MS;   /* 500 ms */
+
   Serial.println( "Starting webserver setup. " );
 
   server.serveStatic( defaultTimerFile, SPIFFS, defaultTimerFile );
@@ -35,7 +38,7 @@ void webServerTask ( void * pvParameters )
   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
-    if ( xSemaphoreTake( x_SPI_gatekeeper, 500 ) )
+    if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
     {
       static File   newFile;
       static bool   _authenticated;
@@ -83,7 +86,7 @@ void webServerTask ( void * pvParameters )
         }
         Serial.printf( "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
       }
-      xSemaphoreGive( x_SPI_gatekeeper );
+      xSemaphoreGive( x_SPI_Mutex );
     }
     else
     {
@@ -151,39 +154,51 @@ void webServerTask ( void * pvParameters )
     }
     else if ( request->hasArg( "diskspace" ) )
     {
-      if ( sdcardPresent )
+      if (  xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime  ) )
       {
-        snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
+        if ( sdcardPresent )
+        {
+          snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
+          xSemaphoreGive( x_SPI_Mutex );
+        }
       }
       else
       {
-        return request->send( 501, textPlainHeader, "Not present" );
+        return request->send( 501, textPlainHeader, "SPI bus not available" );
       }
     }
     else if ( request->hasArg( "files" ) )
     {
-      File root = SD.open( "/" );
-      if ( !root )
+      if (  xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
       {
-        request->send( 501, textPlainHeader, "No sd card present." );
-        return;
-      }
-      if ( !root.isDirectory() )
-      {
-        request->send( 400, textPlainHeader, "Not a directory");
-        return;
-      }
-
-      File file = root.openNextFile();
-      uint8_t charCount = 0;
-      while ( file )
-      {
-        if ( !file.isDirectory() )
+        File root = SD.open( "/" );
+        if ( !root )
         {
-          size_t fileSize = file.size();
-          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%s\n", file.name(), humanReadableSize( fileSize ).c_str() );
+          xSemaphoreGive( x_SPI_Mutex );
+          return request->send( 501, textPlainHeader, "No sd card present." );
         }
-        file = root.openNextFile();
+        if ( !root.isDirectory() )
+        {
+          xSemaphoreGive( x_SPI_Mutex );
+          return request->send( 400, textPlainHeader, "Not a directory");
+        }
+
+        File file = root.openNextFile();
+        uint8_t charCount = 0;
+        while ( file )
+        {
+          if ( !file.isDirectory() )
+          {
+            size_t fileSize = file.size();
+            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%s\n", file.name(), humanReadableSize( fileSize ).c_str() );
+          }
+          file = root.openNextFile();
+        }
+        xSemaphoreGive( x_SPI_Mutex );
+      }
+      else
+      {
+        return request->send( 501, textPlainHeader, "SPI bus not available" );
       }
     }
     else if ( request->hasArg( "hostname" ) )
@@ -254,7 +269,14 @@ void webServerTask ( void * pvParameters )
     }
     else if ( request->hasArg( "tftbrightness" ) )
     {
-      snprintf( content, sizeof( content ), "%.2f", tftBrightness );
+      if ( tftPresent )
+      {
+        snprintf( content, sizeof( content ), "%.2f", tftBrightness );
+      }
+      else
+      {
+        return request->send( 501, textPlainHeader, "Not present." );
+      }
     }
     else if ( request->hasArg( "timezone" ) )
     {
@@ -266,7 +288,6 @@ void webServerTask ( void * pvParameters )
     }
     request->send( 200, textPlainHeader, content );
   });
-
 
   /**********************************************************************************************
       api device set calls
@@ -482,6 +503,10 @@ void webServerTask ( void * pvParameters )
     request->send( 200, textPlainHeader, content );
   });
 
+  server.on( "/api/setdevice", HTTP_GET, []( AsyncWebServerRequest * request )
+  {
+    return request->send( 404, textPlainHeader, "Not found." );
+  });
 
   /**********************************************************************************************
       api channel set calls
@@ -600,7 +625,7 @@ void webServerTask ( void * pvParameters )
       path = request->arg( "filename" );
     }
 
-    if ( xSemaphoreTake( x_SPI_gatekeeper, 500 ) )
+    if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
     {
       if ( !SD.exists( path ) )
       {
@@ -609,7 +634,7 @@ void webServerTask ( void * pvParameters )
       }
 
       SD.remove( path );
-      xSemaphoreGive( x_SPI_gatekeeper );
+      xSemaphoreGive( x_SPI_Mutex );
     }
     else
     {
@@ -687,10 +712,10 @@ int8_t checkChannelNumber( const AsyncWebServerRequest *request )
 
 String getContentType( const String& path )
 {
-  if (path.endsWith(".html")) return textHtmlHeader;
-  else if (path.endsWith(".htm")) return textHtmlHeader;
+  if (path.endsWith(".html")) return "text/html";
+  else if (path.endsWith(".htm")) return "text/html";
   else if (path.endsWith(".css")) return "text/css";
-  else if (path.endsWith(".txt")) return textPlainHeader;
+  else if (path.endsWith(".txt")) return "text/plain";
   else if (path.endsWith(".js")) return "application/javascript";
   else if (path.endsWith(".png")) return "image/png";
   else if (path.endsWith(".gif")) return "image/gif";

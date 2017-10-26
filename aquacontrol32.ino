@@ -332,40 +332,6 @@ void setup()
     NULL,                           /* Task handle. */
     1);
 
-  if ( defaultTimersLoaded() )
-  {
-    Serial.println("Default timers loaded." );
-  }
-  else
-  {
-    Serial.println( "No timers loaded." );
-    setEmptyTimers();
-  }
-
-  //setup channels
-  channel[ 0 ].pin = LED0_PIN;
-  channel[ 1 ].pin = LED1_PIN;
-  channel[ 2 ].pin = LED2_PIN;
-  channel[ 3 ].pin = LED3_PIN;
-  channel[ 4 ].pin = LED4_PIN;
-  for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-  {
-    char buff[32];
-
-    snprintf( buff, sizeof( buff ), "channelname%i", channelNumber );
-    channel[ channelNumber ].name          = readStringNVS( buff, "channelname" );
-
-    snprintf( buff, sizeof( buff ), "channelcolor%i", channelNumber );
-    channel[ channelNumber ].color         = readStringNVS( buff, "#fffe7a" );
-
-    snprintf( buff, sizeof( buff ), "channelminimum%i", channelNumber );
-    channel[ channelNumber ].minimumLevel  = readFloatNVS( buff, 0 );
-
-    ledcAttachPin( channel[channelNumber].pin, channelNumber);
-  }
-
-  setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_MAXIMUM_FREQ ), readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
-
   xTaskCreatePinnedToCore(
     webServerTask,                  /* Function to implement the task */
     "webServerTask",                /* Name of the task */
@@ -373,24 +339,6 @@ void setup()
     NULL,                           /* Task input parameter */
     6,                              /* Priority of the task */
     NULL,                           /* Task handle. */
-    1);                             /* Core where the task should run */
-
-  xTaskCreatePinnedToCore(
-    dimmerTask,                     /* Function to implement the task */
-    "dimmerTask",                   /* Name of the task */
-    1000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    7,                              /* Priority of the task */
-    &x_dimmerTaskHandle,            /* Task handle. */
-    1);                             /* Core where the task should run */
-
-  xTaskCreatePinnedToCore(
-    loggerTask,                     /* Function to implement the task */
-    "loggerTask",                   /* Name of the task */
-    3000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    0,                              /* Priority of the task */
-    &x_loggerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 }
 

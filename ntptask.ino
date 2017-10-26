@@ -21,6 +21,26 @@ void setupNTP( void * pvParameters )
 
   Serial.printf( "NTP sync @ %s\n", asctime( localtime( &systemStart.tv_sec ) ) );
 
+  /* start time dependent tasks */
+
+  xTaskCreatePinnedToCore(
+    dimmerTask,                     /* Function to implement the task */
+    "dimmerTask",                   /* Name of the task */
+    2000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    7,                              /* Priority of the task */
+    &x_dimmerTaskHandle,            /* Task handle. */
+    1);                             /* Core where the task should run */
+
+  xTaskCreatePinnedToCore(
+    loggerTask,                     /* Function to implement the task */
+    "loggerTask",                   /* Name of the task */
+    3000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    0,                              /* Priority of the task */
+    &x_loggerTaskHandle,            /* Task handle. */
+    1);                             /* Core where the task should run */
+
   vTaskDelete( NULL );
 
   //https://www.ibm.com/developerworks/aix/library/au-aix-posix/index.html#artdownload

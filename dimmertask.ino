@@ -4,6 +4,40 @@ void dimmerTask ( void * pvParameters )
 
   TickType_t xLastWakeTime;
 
+  if ( defaultTimersLoaded() )
+  {
+    Serial.println("Default timers loaded." );
+  }
+  else
+  {
+    Serial.println( "No timers loaded." );
+    setEmptyTimers();
+  }
+
+  //setup channels
+  channel[ 0 ].pin = LED0_PIN;
+  channel[ 1 ].pin = LED1_PIN;
+  channel[ 2 ].pin = LED2_PIN;
+  channel[ 3 ].pin = LED3_PIN;
+  channel[ 4 ].pin = LED4_PIN;
+  for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+  {
+    char buff[32];
+
+    snprintf( buff, sizeof( buff ), "channelname%i", channelNumber );
+    channel[ channelNumber ].name          = readStringNVS( buff, "channelname" );
+
+    snprintf( buff, sizeof( buff ), "channelcolor%i", channelNumber );
+    channel[ channelNumber ].color         = readStringNVS( buff, "#fffe7a" );
+
+    snprintf( buff, sizeof( buff ), "channelminimum%i", channelNumber );
+    channel[ channelNumber ].minimumLevel  = readFloatNVS( buff, 0 );
+
+    ledcAttachPin( channel[channelNumber].pin, channelNumber);
+  }
+
+  setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_MAXIMUM_FREQ ), readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
+
   lightStatus = "LIGHTS AUTO";
 
   xLastWakeTime = xTaskGetTickCount();

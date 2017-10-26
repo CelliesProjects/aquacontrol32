@@ -645,27 +645,42 @@ void webServerTask ( void * pvParameters )
     request->send( 200, textPlainHeader, path );
   });
 
-  server.serveStatic( "/", SD, "/" );
-
   server.onNotFound( []( AsyncWebServerRequest * request )
   {
-    Serial.printf("NOT_FOUND: ");
-    if (request->method() == HTTP_GET)
-      Serial.printf("GET");
+    const char* notFound = "NOT_FOUND: ";
+
+    if ( request->method() == HTTP_GET )
+    {
+      if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+      {
+        if ( SD.exists( request->url() ) )
+        {
+          request->send( SD, request->url() );
+          xSemaphoreGive( x_SPI_Mutex );
+          return;
+        }
+        xSemaphoreGive( x_SPI_Mutex );
+      }
+      else
+      {
+        Serial.println( "Server->SPI bus not available." );
+      }
+      Serial.printf( "%s GET",notFound );
+    }
     else if (request->method() == HTTP_POST)
-      Serial.printf("POST");
+      Serial.printf("%s POST",notFound );
     else if (request->method() == HTTP_DELETE)
-      Serial.printf("DELETE");
+      Serial.printf("%s DELETE",notFound );
     else if (request->method() == HTTP_PUT)
-      Serial.printf("PUT");
+      Serial.printf("%s PUT",notFound );
     else if (request->method() == HTTP_PATCH)
-      Serial.printf("PATCH");
+      Serial.printf("%s PATCH",notFound );
     else if (request->method() == HTTP_HEAD)
-      Serial.printf("HEAD");
+      Serial.printf("%s HEAD",notFound );
     else if (request->method() == HTTP_OPTIONS)
-      Serial.printf("OPTIONS");
+      Serial.printf("%s OPTIONS",notFound );
     else
-      Serial.printf("UNKNOWN");
+      Serial.printf("%s UNKNOWN",notFound );
     Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
     request->send( 404 );
   });

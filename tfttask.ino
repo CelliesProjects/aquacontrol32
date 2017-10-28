@@ -6,15 +6,16 @@ void tftTask( void * pvParameters )
   const uint16_t TFT_TEMP_COLOR         = ILI9341_WHITE;
   const uint16_t TFT_BACK_COLOR         = ILI9341_BLACK;
   const uint8_t  TFT_BACKLIGHT_BITDEPTH = 16;               /*min 11 bits, max 16 bits */
-
+  const uint8_t  TFT_BACKLIGHT_CHANNEL = NUMBER_OF_CHANNELS;
+  
   const uint32_t tftTaskdelayTime     =   ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
   const uint64_t SPI_MutexMaxWaitTime =                         100 / portTICK_PERIOD_MS;
 
   bool firstRun = true;
 
   //setup backlight pwm
-  ledcAttachPin( TFT_BACKLIGHT_PIN, NUMBER_OF_CHANNELS );
-  double backlightFrequency = ledcSetup( NUMBER_OF_CHANNELS , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
+  ledcAttachPin( TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_CHANNEL );
+  double backlightFrequency = ledcSetup( TFT_BACKLIGHT_CHANNEL , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
 
   uint16_t backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
@@ -27,7 +28,7 @@ void tftTask( void * pvParameters )
     tft.fillScreen( TFT_BACK_COLOR );
 
     tftBrightness = readInt8NVS( "tftbrightness", tftBrightness );
-    ledcWrite( NUMBER_OF_CHANNELS, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
+    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
 
     ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
     tft.setRotation( tftOrientation );
@@ -61,16 +62,16 @@ void tftTask( void * pvParameters )
         firstRun = false;
       }
 
-      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      for ( uint8_t channelNumber = 0; channelNumber < TFT_BACKLIGHT_CHANNEL; channelNumber++ )
       {
         average += ledcRead( channelNumber );
       }
-      average = average / NUMBER_OF_CHANNELS;
+      average = average / TFT_BACKLIGHT_CHANNEL;
 
       uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1 );
-      ledcWrite( NUMBER_OF_CHANNELS, ( average > rawBrightness ) ? rawBrightness : average );
+      ledcWrite( TFT_BACKLIGHT_CHANNEL, ( average > rawBrightness ) ? rawBrightness : average );
 
-      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+      for ( uint8_t channelNumber = 0; channelNumber < TFT_BACKLIGHT_CHANNEL; channelNumber++ )
       {
         uint8_t r, g, b;
         uint32_t color = strtol( &channel[channelNumber].color[1], NULL, 16 );

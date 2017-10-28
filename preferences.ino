@@ -53,7 +53,7 @@ String readStringNVS( const char* key, const String defaultStr )
   return NVSvalue;
 }
 
-uint8_t readInt8NVS( const char* key,  const int8_t value )
+int8_t readInt8NVS( const char* key,  const int8_t value )
 {
   preferences.begin( "aquacontrol32", WRITE_DISABLED );
   int8_t NVSvalue = preferences.getUChar( key, value );

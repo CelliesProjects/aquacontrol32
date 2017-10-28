@@ -18,8 +18,7 @@ void webServerTask ( void * pvParameters )
 
   server.serveStatic( defaultTimerFile, SPIFFS, defaultTimerFile );
 
-  server.on( "/api/login", HTTP_POST,
-  []( AsyncWebServerRequest * request )
+  server.on( "/api/login", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     if ( request->authenticate( www_username, www_password ) )
     {
@@ -31,67 +30,64 @@ void webServerTask ( void * pvParameters )
     }
   });
 
-  server.on( "/api/upload", HTTP_POST,
-  []( AsyncWebServerRequest * request )
+  server.on( "/api/upload", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     request->send( 200 );
   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
-    if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+    if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
     {
-      static File   newFile;
-      static bool   _authenticated;
-      static time_t startTimer;
+      return request->send( 503, textPlainHeader, "SPI bus not available." );
+    }
 
-      if ( !index )
+    static File   newFile;
+    static bool   _authenticated;
+    static time_t startTimer;
+
+    if ( !index )
+    {
+      _authenticated = false;
+      if ( request->authenticate( www_username, www_password ) )
       {
-        _authenticated = false;
-        if ( request->authenticate( www_username, www_password ) )
+        startTimer = millis();
+        Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
+        if ( !filename.startsWith( "/" ) )
         {
-          startTimer = millis();
-          Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
-          if ( !filename.startsWith( "/" ) )
-          {
-            filename = "/" + filename;
-          }
-          if ( filename == defaultTimerFile )
-          {
-            newFile = SPIFFS.open( filename, "w" );
-          }
-          else
-          {
-            newFile = SD.open( filename, "w" );
-          }
-          _authenticated = true;
+          filename = "/" + filename;
+        }
+        if ( filename == defaultTimerFile )
+        {
+          newFile = SPIFFS.open( filename, "w" );
         }
         else
         {
-          Serial.println( "Unauthorized access." );
-          request->send( 401, "text/plain", "Not logged in." );
+          newFile = SD.open( filename, "w" );
         }
+        _authenticated = true;
       }
-
-      if ( _authenticated )
+      else
       {
-        newFile.write( data, len );
+        Serial.println( "Unauthorized access." );
+        request->send( 401, "text/plain", "Not logged in." );
       }
-
-      if ( _authenticated && final )
-      {
-        newFile.close();
-        if ( filename == defaultTimerFile )
-        {
-          defaultTimersLoaded();
-        }
-        Serial.printf( "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
-      }
-      xSemaphoreGive( x_SPI_Mutex );
     }
-    else
+
+    if ( _authenticated )
     {
-      request->send( 503, textPlainHeader, "SPI bus not available." );
+      newFile.write( data, len );
     }
+
+    if ( _authenticated && final )
+    {
+      newFile.close();
+      if ( filename == defaultTimerFile )
+      {
+        defaultTimersLoaded();
+      }
+      Serial.printf( "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
+    }
+    xSemaphoreGive( x_SPI_Mutex );
   });
 
   // / or 'index.htm'
@@ -154,52 +150,45 @@ void webServerTask ( void * pvParameters )
     }
     else if ( request->hasArg( "diskspace" ) )
     {
-      if (  xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime  ) )
-      {
-        if ( sdcardPresent )
-        {
-          snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
-          xSemaphoreGive( x_SPI_Mutex );
-        }
-      }
-      else
+      if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime  ) )
       {
         return request->send( 501, textPlainHeader, "SPI bus not available" );
       }
+      if ( sdcardPresent )
+      {
+        snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
+      }
+      xSemaphoreGive( x_SPI_Mutex );
     }
     else if ( request->hasArg( "files" ) )
     {
-      if (  xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
-      {
-        File root = SD.open( "/" );
-        if ( !root )
-        {
-          xSemaphoreGive( x_SPI_Mutex );
-          return request->send( 501, textPlainHeader, "No sd card present." );
-        }
-        if ( !root.isDirectory() )
-        {
-          xSemaphoreGive( x_SPI_Mutex );
-          return request->send( 400, textPlainHeader, "Not a directory");
-        }
-
-        File file = root.openNextFile();
-        uint8_t charCount = 0;
-        while ( file )
-        {
-          if ( !file.isDirectory() )
-          {
-            size_t fileSize = file.size();
-            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%s\n", file.name(), humanReadableSize( fileSize ).c_str() );
-          }
-          file = root.openNextFile();
-        }
-        xSemaphoreGive( x_SPI_Mutex );
-      }
-      else
+      if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
       {
         return request->send( 501, textPlainHeader, "SPI bus not available" );
       }
+      File root = SD.open( "/" );
+      if ( !root )
+      {
+        xSemaphoreGive( x_SPI_Mutex );
+        return request->send( 501, textPlainHeader, "No sd card present." );
+      }
+      if ( !root.isDirectory() )
+      {
+        xSemaphoreGive( x_SPI_Mutex );
+        return request->send( 400, textPlainHeader, "Not a directory");
+      }
+      File file = root.openNextFile();
+      uint8_t charCount = 0;
+      while ( file )
+      {
+        if ( !file.isDirectory() )
+        {
+          size_t fileSize = file.size();
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%s\n", file.name(), humanReadableSize( fileSize ).c_str() );
+        }
+        file = root.openNextFile();
+      }
+      xSemaphoreGive( x_SPI_Mutex );
     }
     else if ( request->hasArg( "hostname" ) )
     {
@@ -444,6 +433,11 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "tftorientation" ) )
     {
+      if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+      {
+        return request->send( 501, textPlainHeader, "SPI bus not available" );
+      }
+
       if (  request->arg( "tftorientation" ) == "normal" )
       {
         tftOrientation = TFT_ORIENTATION_NORMAL;
@@ -460,6 +454,8 @@ void webServerTask ( void * pvParameters )
       tft.fillScreen( ILI9341_BLACK );
       saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
       snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+
+      xSemaphoreGive( x_SPI_Mutex );
     }
 
 
@@ -604,6 +600,11 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/deletefile", HTTP_POST, []( AsyncWebServerRequest * request)
   {
+    if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+    {
+      return request->send( 501, textPlainHeader, "SPI Bus not available" );
+    }
+
     if ( !request->authenticate( www_username, www_password ) )
     {
       return request->requestAuthentication();
@@ -611,6 +612,7 @@ void webServerTask ( void * pvParameters )
 
     if ( !request->hasArg( "filename" ) )
     {
+      xSemaphoreGive( x_SPI_Mutex );
       return request->send( 400, textPlainHeader, "Invalid filename." );
     }
 
@@ -625,23 +627,14 @@ void webServerTask ( void * pvParameters )
       path = request->arg( "filename" );
     }
 
-    if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+    if ( !SD.exists( path ) )
     {
-      if ( !SD.exists( path ) )
-      {
-        path = request->arg( "filename" ) + " not found.";
-        return request->send( 404, textPlainHeader, path );
-      }
-
-      SD.remove( path );
-      xSemaphoreGive( x_SPI_Mutex );
+      path = request->arg( "filename" ) + " not found.";
+      return request->send( 404, textPlainHeader, path );
     }
-    else
-    {
-      return request->send( 503, textPlainHeader, "SPI bus not available." );
-    }
-
+    SD.remove( path );
     path = request->arg( "filename" ) + " deleted.";
+    xSemaphoreGive( x_SPI_Mutex );
     request->send( 200, textPlainHeader, path );
   });
 
@@ -651,36 +644,34 @@ void webServerTask ( void * pvParameters )
 
     if ( request->method() == HTTP_GET )
     {
-      if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+      if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
       {
-        if ( SD.exists( request->url() ) )
-        {
-          request->send( SD, request->url() );
-          xSemaphoreGive( x_SPI_Mutex );
-          return;
-        }
+        return request->send( 501, textPlainHeader, "SPI bus not available" );
+      }
+
+      if ( SD.exists( request->url() ) )
+      {
+        request->send( SD, request->url() );
         xSemaphoreGive( x_SPI_Mutex );
+        return;
       }
-      else
-      {
-        Serial.println( "Server->SPI bus not available." );
-      }
-      Serial.printf( "%s GET",notFound );
+      xSemaphoreGive( x_SPI_Mutex );
+      Serial.printf( "%s GET", notFound );
     }
     else if (request->method() == HTTP_POST)
-      Serial.printf("%s POST",notFound );
+      Serial.printf("%s POST", notFound );
     else if (request->method() == HTTP_DELETE)
-      Serial.printf("%s DELETE",notFound );
+      Serial.printf("%s DELETE", notFound );
     else if (request->method() == HTTP_PUT)
-      Serial.printf("%s PUT",notFound );
+      Serial.printf("%s PUT", notFound );
     else if (request->method() == HTTP_PATCH)
-      Serial.printf("%s PATCH",notFound );
+      Serial.printf("%s PATCH", notFound );
     else if (request->method() == HTTP_HEAD)
-      Serial.printf("%s HEAD",notFound );
+      Serial.printf("%s HEAD", notFound );
     else if (request->method() == HTTP_OPTIONS)
-      Serial.printf("%s OPTIONS",notFound );
+      Serial.printf("%s OPTIONS", notFound );
     else
-      Serial.printf("%s UNKNOWN",notFound );
+      Serial.printf("%s UNKNOWN", notFound );
     Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
     request->send( 404 );
   });

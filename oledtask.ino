@@ -19,8 +19,7 @@ void oledTask( void * pvParameters )
   OLED.drawString( 64, 30, F( "Booting..." ) );
   OLED.display();
 
-  /* wait for setup to end, but don't block */
-  while ( !setupEnded )
+  while ( !x_dimmerTaskHandle )
   {
     vTaskDelay( 10 / portTICK_PERIOD_MS );
   }

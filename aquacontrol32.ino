@@ -342,10 +342,8 @@ void setup()
        http://www.iotsharing.com/2017/05/how-to-apply-finite-state-machine-to-arduino-esp32-avoid-blocking.html
 
 *****************************************************************************************/
-bool setupEnded = false;
 
 void loop()
 {
-  setupEnded = true;
   vTaskDelete( NULL );
 }

@@ -18,7 +18,11 @@ void tftTask( void * pvParameters )
 
   uint16_t backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
-  if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+  if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+  {
+    Serial.println( "tft init - No SPI bus available." );
+  }
+  else
   {
     tft.fillScreen( TFT_BACK_COLOR );
 
@@ -29,19 +33,19 @@ void tftTask( void * pvParameters )
     tft.setRotation( tftOrientation );
     xSemaphoreGive( x_SPI_Mutex );
   }
-  else
-  {
-    Serial.println( "tft init - No SPI bus available." );
-  }
 
-  while ( !setupEnded )
+  while ( !x_dimmerTaskHandle )
   {
     vTaskDelay( 10 / portTICK_PERIOD_MS );
   }
 
   while (1)
   {
-    if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+    if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+    {
+      Serial.println( "Skipped tft update. SPI bus not available.");
+    }
+    else
     {
       const uint16_t BARS_BOTTOM      = 205;
       const uint16_t BARS_HEIGHT      = BARS_BOTTOM;
@@ -130,10 +134,6 @@ void tftTask( void * pvParameters )
         tft.print( asctime( &timeinfo ) );
       }
       xSemaphoreGive( x_SPI_Mutex );
-    }
-    else
-    {
-      Serial.println( "Skipped tft update. SPI bus not available.");
     }
     vTaskDelay( tftTaskdelayTime / portTICK_PERIOD_MS );
   }

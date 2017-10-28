@@ -11,24 +11,23 @@ void loggerTask ( void * pvParameters )
     vTaskDelete( NULL );
   }
 
-  if ( xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
-  {
-    if ( !SD.begin( SPI_SD_CS_PIN, SPI, 2000000 ) )
-    {
-      Serial.println( "No sd available. No logging. Exiting task." );
-      xSemaphoreGive( x_SPI_Mutex );
-      vTaskDelete( NULL );
-    }
-    sdcardPresent = true;
-    uint64_t cardSize = SD.cardSize() / ( 1024 * 1024 );
-    Serial.printf( "SD Card Size: %lluMB\n", cardSize );
-    xSemaphoreGive( x_SPI_Mutex );
-  }
-  else
+  if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
   {
     Serial.println( "Could not find sd card. SPI bus not available" );
     vTaskDelete( NULL );
   }
+
+  if ( !SD.begin( SPI_SD_CS_PIN, SPI, 2000000 ) )
+  {
+    Serial.println( "No sd available. No logging. Exiting task." );
+    xSemaphoreGive( x_SPI_Mutex );
+    vTaskDelete( NULL );
+  }
+
+  sdcardPresent = true;
+  uint64_t cardSize = SD.cardSize() / ( 1024 * 1024 );
+  Serial.printf( "SD Card Size: %lluMB\n", cardSize );
+  xSemaphoreGive( x_SPI_Mutex );
 
   while (1)
   {

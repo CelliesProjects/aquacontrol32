@@ -4,7 +4,7 @@ void setupNTP( void * pvParameters )
 
   NTPpoolAdress += ".pool.ntp.org";
 
-  tft.println( "Getting time from " + NTPpoolAdress );
+  Serial.println( "Getting time from " + NTPpoolAdress );
 
   configTzTime( readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" ).c_str(),
                 NTPpoolAdress.c_str(), "0.pool.ntp.org", "1.pool.ntp.org" );

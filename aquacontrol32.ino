@@ -164,82 +164,76 @@ SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
 
 AsyncWebServer server(80);
 
-
 /**************************************************************************
-       start of global variables
+       type definitions
 **************************************************************************/
+struct lightTimerArr_t
+{
+  time_t      time;                    /* time in seconds since midnight so range is 0-86400 */
+  byte        percentage;              /* in percentage so range is 0-100 */
+};
 
+struct channelData_t
+{
+  lightTimerArr_t timer[MAX_TIMERS];
+  String          name;                /* initially set to 'channel 1' 'channel 2' etc. */
+  String          color;               /* interface color, not light color! in hex format*/
+  /*                                      Example: '#ff0000' for bright red */
+  float           currentPercentage;   /* what percentage is this channel set to */
+  byte            pin;                 /* which ESP32 pin is this channel on */
+  byte            numberOfTimers;      /* actual number of timers for this channel */
+  float           minimumLevel;        /* never dim this channel below this percentage */
+};
+
+struct sensorData_t                    /* struct to keep track of Dallas DS18B20 sensors */
+{
+  byte   addr[8];
+  float  temp;
+  char   name[10];
+};
 
 /**************************************************************************
        Username and password for web interface
  *************************************************************************/
-const char* www_username    = "admin";  //change me!
-const char* www_password    = "esp32";  //change me!
+const char* www_username       = "admin";  //change me!
+const char* www_password       = "esp32";  //change me!
 
-const char* defaultTimerFile = "/default.aqu";
+const char* defaultTimerFile   = "/default.aqu";
 
-char hostName[30];
+/**************************************************************************
+       start of global variables
+**************************************************************************/
+channelData_t           channel[NUMBER_OF_CHANNELS];
 
-struct lightTimer
-{
-  time_t      time;               /* time in seconds since midnight so range is 0-86400 */
-  byte        percentage;         /* in percentage so range is 0-100 */
-};
+sensorData_t            sensor[MAX_NUMBER_OF_SENSORS];
 
-struct lightTable
-{
-  lightTimer timer[MAX_TIMERS];
-  String     name;                /* initially set to 'channel 1' 'channel 2' etc. */
-  String     color;               /* interface color, not light color! in hex format*/
-  /* Example: '#ff0000' for bright red */
-  float      currentPercentage;   /* what percentage is this channel set to */
-  byte       pin;                 /* which ESP32 pin is this channel on */
-  byte       numberOfTimers;      /* actual number of timers for this channel */
-  float      minimumLevel;        /* never dim this channel below this percentage */
-} channel[NUMBER_OF_CHANNELS];
-
-
-/******************************************************************************************
-        struct to keep track of Dallas DS18B20 sensors
-        To get from temp saved as float in SensorStruct do:
-        celsius    = temp / 16.0;
-        fahrenheit = celsius * 1.8 + 32.0;
-******************************************************************************************/
-struct sensorStruct
-{
-  byte   addr[8];
-  float  temp;
-  char   name[5];
-} sensor[MAX_NUMBER_OF_SENSORS];
-
-TaskHandle_t x_dimmerTaskHandle = NULL;
-TaskHandle_t x_tftTaskHandle    = NULL;
-TaskHandle_t x_loggerTaskHandle = NULL;
-
-//take turns using the SPI bus.
-xSemaphoreHandle x_SPI_Mutex    = NULL;
-
-//and the Serial port
-xSemaphoreHandle  X_Serial_Mutex = NULL;
-
-double   ledcActualFrequency;
-uint16_t ledcMaxValue;
-uint8_t  ledcNumberOfBits;
-
-byte numberOfFoundSensors;
+TaskHandle_t            x_dimmerTaskHandle            = NULL;
+TaskHandle_t            x_tftTaskHandle               = NULL;
+TaskHandle_t            x_loggerTaskHandle            = NULL;
 
 //Boot time is saved
-struct timeval systemStart;
+timeval                 systemStart;
 
-String lightStatus;
+//take turns using the SPI bus.
+xSemaphoreHandle        x_SPI_Mutex                   = NULL;
 
-bool    sdcardPresent   = false;
-bool    tftPresent      = false;
-float   tftBrightness   = 80;                        /* in percent */
-uint8_t tftOrientation  = TFT_ORIENTATION_NORMAL;
+char                    hostName[30];
 
-int8_t  oledContrast;                                /* 0 .. 15 */
-uint8_t oledOrientation = OLED_ORIENTATION_NORMAL;
+double                  ledcActualFrequency;
+uint16_t                ledcMaxValue;
+uint8_t                 ledcNumberOfBits;
+
+byte                    numberOfFoundSensors;
+
+String                  lightStatus;
+
+bool                    sdcardPresent                 = false;
+bool                    tftPresent                    = false;
+float                   tftBrightness                 = 80;                         /* in percent */
+uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
+
+int8_t                  oledContrast;                                               /* 0 .. 15 */
+uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 
 /*****************************************************************************************
 
@@ -259,7 +253,6 @@ void setup()
 
   btStop();
 
-
   Serial.begin( 115200 );
   Serial.println();
   Serial.println( "aquacontrol32" );
@@ -275,7 +268,6 @@ void setup()
   tft.begin( 20000000, SPI );
 
   tftPresent = ( tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 );
-
 
   if ( tftPresent )
   {

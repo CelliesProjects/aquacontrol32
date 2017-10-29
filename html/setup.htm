@@ -136,7 +136,9 @@ input[type="range"]{
 .oledBar, .tftBar{
   display:none;
 }
-
+#diskSpaceBar{
+  display:none;
+}
 </style>
 <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
 </head>
@@ -169,7 +171,7 @@ input[type="range"]{
   <h3>DEVICE STATUS</h3>
   <div class="settingsBox">
     <p class="item">SYSTEM START:&nbsp;&nbsp;<span id="bootTime"></span></p>
-    <p class="item">FREE DISK SPACE:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
+    <p class="item" id="diskSpaceBar">FREE DISK SPACE:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
     <p class="item">PWM STATUS:&nbsp;&nbsp;<span id="pwmStatus"></span></p>
   </div>
 </div>
@@ -262,7 +264,10 @@ function getTftMaxBrightness(){
       $('#tftBrightnessSlider').val( data );
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting tftmaxbrightness" + data );
+      if ( data.status != 501 ){
+        $( '#deviceStatus' ).html( "Error getting tftmaxbrightness" + data );
+        console.log( data );
+      }
     })
     .always( function( data ){
       getTimeZone();
@@ -312,10 +317,13 @@ function getBootTime(){
 function getDiskSpace(){
   $.get( "/api/getdevice?diskspace=")
     .done( function( data ){
+      $('#diskSpaceBar').show();
       $('#freeDiskSpace').html( formatBytes( data ) );
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting diskspace" + data );
+      if ( data.status != 501 ){
+        $( '#deviceStatus' ).html( "Error getting diskspace: " + data.statusText );
+      }
     })
     .always( function( data ){
       getPwmDepth();

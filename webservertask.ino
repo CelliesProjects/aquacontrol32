@@ -158,6 +158,11 @@ void webServerTask ( void * pvParameters )
       {
         snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
       }
+      else
+      {
+        xSemaphoreGive( x_SPI_Mutex );
+        return request->send( 501, textPlainHeader, "SD card not available" );
+      }
       xSemaphoreGive( x_SPI_Mutex );
     }
     else if ( request->hasArg( "files" ) )
@@ -170,7 +175,7 @@ void webServerTask ( void * pvParameters )
       if ( !root )
       {
         xSemaphoreGive( x_SPI_Mutex );
-        return request->send( 501, textPlainHeader, "No sd card present." );
+        return request->send( 503, textPlainHeader, "SD card not available." );
       }
       if ( !root.isDirectory() )
       {
@@ -179,6 +184,7 @@ void webServerTask ( void * pvParameters )
       }
       File file = root.openNextFile();
       uint8_t charCount = 0;
+      content[0] = 0;        /* solves webif filemanager showing garbage when no files on sd */
       while ( file )
       {
         if ( !file.isDirectory() )
@@ -607,6 +613,7 @@ void webServerTask ( void * pvParameters )
 
     if ( !request->authenticate( www_username, www_password ) )
     {
+      xSemaphoreGive( x_SPI_Mutex );
       return request->requestAuthentication();
     }
 

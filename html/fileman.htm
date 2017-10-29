@@ -109,6 +109,7 @@ a {
 }
 
 #uploadBox{
+  display:none;
 }
 
 form{
@@ -185,9 +186,16 @@ function formatBytes( bytes, decimals ) {
 
 function updateDiskspace() {
   $.get( "/api/getdevice?diskspace=", function( data ) {
-    diskSpace = parseInt( data );
-    $('#diskSpace').html( formatBytes( diskSpace ) + " LEFT" );
-  });
+    console.log( data );
+  })
+    .done( function( data ){
+      diskSpace = parseInt( data );
+      $('#diskSpace').html( formatBytes( diskSpace ) + " LEFT" );
+      $( '#uploadBox').show();
+    })
+    .fail( function( data ){
+      $( '#diskSpace' ).html( '<p class="fileName">NO SD CARD FOUND</p>' );
+    });
 }
 
 function deleteFile(file){
@@ -205,7 +213,7 @@ function deleteFile(file){
         $('#uploadTitle').html( data );
         $('input').prop('disabled', false); //and finally enable the inputs again
       })
-      .fail( function(  ){
+      .fail( function( data ){
         readFiles();
         $('#uploadTitle').html( 'ERROR ' + data );
         $('input').prop('disabled', false); //and finally enable the inputs again
@@ -216,6 +224,9 @@ function deleteFile(file){
 function readFiles(){
   $( '#fileList' ).html( '' );
   $.get( "/api/getdevice?files=", function( data ) {
+    console.log( data );
+  })
+  .done( function( data ) {
     var files = data.split( "\n" );
     files.forEach( function( item ) {
       if ( item == "" ) { return; }
@@ -226,10 +237,13 @@ function readFiles(){
       thisFile[0] + '" target="_blank">' + thisFile[0] + '</a></p><p class="fileSize">' + thisFile[1] + '</p><p class="deleteButton" data-filename="' + thisFile[0] +'">DELETE</p></div>' );
     });
     updateDiskspace();
+  })
+  .fail( function( data ) {
+    $( '#fileList' ).html( '<p class="fileName" style="width:100%;">NO SD CARD FOUND</p>' );
   });
 }
 
-var diskSpace;
+var diskSpace = null;
 
 $(document).ready( function() {
 

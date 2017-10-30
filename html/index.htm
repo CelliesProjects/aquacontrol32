@@ -170,46 +170,8 @@ function updateBargraph() {
   <div class="name" style="left:60%;top:0;"><p>4</p></div>
   <div class="name" style="left:80%;top:0;"><p>5</p></div>
 </div>
-<div id="tempBox" class="shadowedBox" style="background-color:beige;">temperature<br><p id="tempStats" class="tempStr"></p></div>
+<div id="tempBox" class="shadowedBox" style="background-color:beige;"><p id="tempStats" class="tempStr"></p></div>
 <script>
-
-var channelNames;
-var channelColor;
-var repeatTimer;
-
-function getChannelNames(){
-  $.get( "/api/getdevice?channelnames=" )
-    .done(function( data ){
-      var channelNames = data.split("\n");
-      channelNames.forEach( function( item, index ){
-        $('.name p').eq(index).html( item.trim() );
-      })
-    })
-    .fail(function(){
-      console.log("failed getting channelnames");
-    })
-    .always(function(){
-      updateBargraph();
-      repeatTimer = setInterval( updateBargraph, 1000 );  //done with getting stuff
-    });
-}
-
-function getChannelColors(){
-  $.get( "/api/getdevice?channelcolors=" )
-    .done(function( data ){
-      channelColor = data.split("\n");
-      channelColor.forEach( function( item, index ){
-        $('.bar').eq(index).css( { 'background-color': item, 'box-shadow': "0px 0px 43px 0px " + item } );
-      })
-    })
-    .fail(function(){
-      console.log("failed getting channelcolors");
-    })
-    .always(function(){
-      getChannelNames();
-    });
-}
-
 $( document ).ready( function() {
 
   //disable the links
@@ -229,14 +191,41 @@ $( document ).ready( function() {
     .always(function(){
       getChannelColors();
     });
-
-//event handlers
-  $( "#barsBox" ).on( "contextmenu", "div.name p", function( e ){
-    e.preventDefault();
-    console.log( $( this ).html() );
-  });
 });
 
+//functions
+function getChannelColors(){
+  $.get( "/api/getdevice?channelcolors=" )
+    .done(function( data ){
+      channelColor = data.split("\n");
+      channelColor.forEach( function( item, index ){
+        $('.bar').eq(index).css( { 'background-color': item, 'box-shadow': "0px 0px 43px 0px " + item } );
+      })
+    })
+    .fail(function(){
+      console.log("failed getting channelcolors");
+    })
+    .always(function(){
+      getChannelNames();
+    });
+}
+
+function getChannelNames(){
+  $.get( "/api/getdevice?channelnames=" )
+    .done(function( data ){
+      var channelNames = data.split("\n");
+      channelNames.forEach( function( item, index ){
+        $('.name p').eq(index).html( item.trim() );
+      })
+    })
+    .fail(function(){
+      console.log("failed getting channelnames");
+    })
+    .always(function(){
+      updateBargraph();
+      repeatTimer = setInterval( updateBargraph, 1000 );  //done with getting stuff
+    });
+}
 </script>
 </body>
 </html>

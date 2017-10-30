@@ -117,13 +117,61 @@ input[type="color"] {
 </div>
 <div class="shadowedBox"><p id="statusBox">&nbsp;</p></div>
 <div class="shadowedBox">
-    <div class="item"><p class="itemName">1:</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-    <div class="item"><p class="itemName">2:</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-    <div class="item"><p class="itemName">3:</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-    <div class="item"><p class="itemName">4:</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-    <div class="item"><p class="itemName">5:</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item"><p class="itemName">1</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item"><p class="itemName">2</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item"><p class="itemName">3</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item"><p class="itemName">4</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item"><p class="itemName">5</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
 </div>
 <script>
+
+var loadAll = true;
+
+$(document).ready( function() {
+
+  $( '#hostName' ).load( "/api/getdevice?hostname=" );
+
+  // with loadAll set to true, all get calls will be daisy-chained
+  getMinimumLevels();
+});
+
+function getMinimumLevels(){
+  $.get( "/api/getdevice?minimumlevels=" )
+  .done( function( data ) {
+    var values = data.split("\n");
+    values.forEach(function(element, index){
+      $('.minLevel').eq(index).val( parseFloat( element ) );
+      $('.minimumPercent').eq(index).html( element.trim() + "%" );
+    });
+  })
+  .fail( function( data ) {
+    console.log( data );
+  })
+  .always( function() {
+    if ( loadAll ) {
+      getChannelNames();
+    }
+  });
+}
+
+//functions
+function getChannelNames(){
+  $.get( "/api/getdevice?channelnames=" )
+  .done( function( data ) {
+    var values = data.split("\n");
+    values.forEach(function(element, index){
+      $('.channelName').eq(index).val( element );
+    });
+  })
+  .fail( function( data ) {
+    console.log( data );
+  })
+  .always( function() {
+    if ( loadAll ) {
+      getChannelColors();
+    }
+  });
+}
 
 function getChannelColors(){
   $.get( "/api/getdevice?channelcolors=" )
@@ -137,91 +185,70 @@ function getChannelColors(){
       console.log( data );
     })
     .always( function() {
-      $('body').css({'opacity':'1'});
+      if ( loadAll ) {
+        $('body').css({'opacity':'1'});
+        loadAll = false;
+      }
     });
 }
 
-function getChannelNames(){
-  $.get( "/api/getdevice?channelnames=" )
-    .done( function( data ) {
-      var values = data.split("\n");
-      values.forEach(function(element, index){
-        $('.channelName').eq(index).val( element );
-      });
-    })
-    .fail( function( data ) {
-      console.log( data );
-    })
-    .always( function() {
-      getChannelColors();
-    });
-}
+//event handlers
 
-$(document).ready( function() {
+$( '.minLevel' ).on( 'input', function( ) {
+  var thisChannel = $(this).parent().index();
+  $('.minimumPercent').eq( thisChannel ).html( $(this).val() +'%' );
+ });
 
-  $( '#hostName' ).load( "/api/getdevice?hostname=" );
-  $.get( "/api/getdevice?minimumlevels=" )
-  .done( function( data ) {
-    var values = data.split("\n");
-    values.forEach(function(element, index){
-      $('.minLevel').eq(index).val( parseFloat( element ) );
-      $('.minimumPercent').eq(index).html( element.trim() + "%" );
-    });
+$( '.minLevel' ).on( 'change', function() {
+  $.post( "/api/setchannel",
+  {
+    channel : $(this).parent().index() + 1,
+    minimum : $(this).val()
   })
-  .fail( function( data ) {
-    console.log( data );
+  .done(function( data ) {
+    $('#statusBox').html( data );
   })
-  .always( function() {
+  .fail(function( data ) {
+    $('#statusBox').html( data.responseText );
+  });
+});
+
+$( '.channelName' ).on( 'input', function( ) {
+  $('.channelName').eq( $(this).parent().index() ).css({ 'background' : '#fffe75' } );  
+});
+
+$( '.channelName' ).on( 'change', function( ) {
+  var thisChannel = $(this).parent().index();
+  $.post( "/api/setchannel",
+  {
+    channel : thisChannel + 1,
+    name    : $(this).val()
+  })
+  .done(function( data ) {
+    $('#statusBox').html( data );
+    $('.channelName').eq( thisChannel ).css({ 'background' : '' } );
     getChannelNames();
+  })
+  .fail(function( data ) {
+    $('#statusBox').html( data.responseText );
+    $('.channelName').eq( thisChannel ).css({ 'background' : '#ff5e5e' } );
   });
+});
 
-  //event handlers
-
-  $( '.minLevel' ).on( 'input', function( ) {
-    var thisChannel = $(this).parent().index();
-    $('.minimumPercent').eq( thisChannel ).html( $(this).val() +'%' );
-   });
-
-  $( '.minLevel' ).on( 'change', function() {
-    var thisChannel = $(this).parent().index();
-    var newPercentage = $(this).val();
-    $.get( "/api/setchannel?channel=" +( thisChannel + 1 )+ "&minimum=" + newPercentage, function( data ) {
-    })
-    .done(function( data ) {
-      $('#statusBox').html( data );
-    })
-    .fail(function( data ) {
-      $('#statusBox').html( "Failed to set minimumlevel" );
-    });
+$( '.colorPicker' ).on( 'change', function() {
+  var thisChannel = $(this).parent().index();
+  var thisColor = $(this).val().substr(1);
+  $.post( "/api/setchannel",
+  {
+    channel : thisChannel + 1,
+    color   : thisColor
+  })
+  .done(function( data ) {
+    $('#statusBox').html( "Channel " + ( thisChannel + 1 ) + " color set to <span style=\"color:#" + thisColor + ";\">#" + thisColor + "</span>" );
+  })
+  .fail(function( data ) {
+    $('#statusBox').html( data.responseText );
   });
-
-  $( '.channelName' ).on( 'change', function( ) {
-    var thisChannel = $(this).parent().index();
-    var newName = $(this).val();
-    $.get( "/api/setchannel?channel=" + ( thisChannel + 1 ) + "&name=" + newName, function( data ) {
-    })
-    .done(function( data ) {
-      $('#statusBox').html( data );
-      $('.channelName').eq( thisChannel ).css({'background':'lightgreen'});
-    })
-    .fail(function( data ) {
-      $('#statusBox').html( data );
-    });
-  });
-
-  $( '.colorPicker' ).on( 'change', function() {
-    var thisChannel = $(this).parent().index();
-    var thisColor = $(this).val().substr(1);
-    $.get( "/api/setchannel?channel=" + ( thisChannel + 1 ) + "&color=" + thisColor, function( data ) {
-    })
-    .done(function() {
-      $('#statusBox').html( "Channel " + ( thisChannel + 1 ) + " color set to <span style=\"color:#" + thisColor + ";\">#" + thisColor + "</span>" );
-    })
-    .fail(function( data ) {
-      $('#statusBox').html( data );
-    });
-  });
-
 });
 </script>
 

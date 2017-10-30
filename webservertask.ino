@@ -11,7 +11,6 @@ const char* textHtmlHeader   = "text/html";
 
 void webServerTask ( void * pvParameters )
 {
-
   const uint64_t SPI_MutexMaxWaitTime = 500 / portTICK_PERIOD_MS;   /* 500 ms */
 
   Serial.println( "Starting webserver setup. " );
@@ -124,7 +123,7 @@ void webServerTask ( void * pvParameters )
       api device get calls
   **********************************************************************************************/
 
-  server.on( "/api/getdevice", []( AsyncWebServerRequest * request)
+  server.on( "/api/getdevice", HTTP_GET, []( AsyncWebServerRequest * request)
   {
     char content[1024];
 
@@ -514,14 +513,14 @@ void webServerTask ( void * pvParameters )
       api channel set calls
   **********************************************************************************************/
 
-  server.on( "/api/setchannel", []( AsyncWebServerRequest * request )
+  server.on( "/api/setchannel", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     if ( !request->authenticate( www_username, www_password ) )
     {
       return request->requestAuthentication();
     }
 
-    int8_t channelNumber;
+    uint8_t channelNumber;
     char   content[100];
 
     channelNumber = checkChannelNumber( request);
@@ -564,16 +563,17 @@ void webServerTask ( void * pvParameters )
       snprintf( content, sizeof( content ), "channelminimum%i", channelNumber );
       saveFloatNVS( content, channel[channelNumber].minimumLevel );
 
-      snprintf( content, sizeof( content ), "channel %i minimum set to %.2f", channelNumber + 1, channel[ channelNumber ].minimumLevel );
+      snprintf( content, sizeof( content ), "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].minimumLevel );
     }
 
     else if ( request->hasArg( "name" ) )
     {
       for ( uint8_t currentChar = 0; currentChar < request->arg( "name" ).length(); currentChar++ )
       {
-        if ( !isalnum( request->arg( "name" )[currentChar] ) )
+        if ( request->arg( "name" )[currentChar] != 0x20  && !isalnum( request->arg( "name" )[currentChar] ) )
         {
-          return request->send( 400, textPlainHeader, "Invalid char" );
+          snprintf( content, sizeof( content ), "Invalid character '%c'.", request->arg( "name" )[currentChar] );
+          return request->send( 400, textPlainHeader, content );
         }
       }
       if ( request->arg( "name" ) != "" )
@@ -589,7 +589,7 @@ void webServerTask ( void * pvParameters )
       snprintf( content, sizeof( content ), "channelname%i", channelNumber );
       saveStringNVS( content, channel[channelNumber].name );
 
-      snprintf( content, sizeof( content ), "channel %i name set to %s", channelNumber + 1, channel[ channelNumber ].name.c_str() );
+      snprintf( content, sizeof( content ), "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name.c_str() );
     }
 
 
@@ -637,6 +637,7 @@ void webServerTask ( void * pvParameters )
     if ( !SD.exists( path ) )
     {
       path = request->arg( "filename" ) + " not found.";
+      xSemaphoreGive( x_SPI_Mutex );
       return request->send( 404, textPlainHeader, path );
     }
     SD.remove( path );

@@ -4,6 +4,7 @@ void tempTask( void * pvParameters )
 {
   numberOfFoundSensors = 0;
   byte currentAddr[8];
+
   while ( ds.search( currentAddr ) && numberOfFoundSensors < MAX_NUMBER_OF_SENSORS )
   {
     //Serial.write( "Sensor "); Serial.print( counter ); Serial.print( ":" );
@@ -13,8 +14,13 @@ void tempTask( void * pvParameters )
       //Serial.print( currentAddr[i], HEX );
       sensor[numberOfFoundSensors].addr[i] = currentAddr[i];
     }
-    //sensor[numberOfFoundSensors].name = 'T ' + char( numberOfFoundSensors );
-    snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), "TMP%i", numberOfFoundSensors  );
+
+    /* make a key field -in buff- for NVS */
+    char buff[15];
+    snprintf( buff, sizeof( buff ), "sensorname%i", numberOfFoundSensors );
+
+    /* and read value from NVS or use default name */ 
+    snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), readStringNVS( buff, "temp sensor" ).c_str(), numberOfFoundSensors  );
     numberOfFoundSensors++;
   }
   Serial.printf( "%i Dallas sensors found.\n", numberOfFoundSensors );
@@ -28,7 +34,7 @@ void tempTask( void * pvParameters )
 
   while (1)
   {
-    for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
+    for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
     {
       ds.reset();
       ds.select( sensor[thisSensor].addr );

@@ -189,7 +189,7 @@ struct sensorData_t                    /* struct to keep track of Dallas DS18B20
 {
   byte   addr[8];
   float  temp;
-  char   name[10];
+  char   name[15];
 };
 
 /**************************************************************************

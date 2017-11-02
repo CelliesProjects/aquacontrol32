@@ -243,9 +243,60 @@ void webServerTask ( void * pvParameters )
       }
     }
 
+    else if ( request->hasArg( "sensor" ) )
+    {
+      if ( !numberOfFoundSensors )
+      {
+        return request->send( 501, textPlainHeader, "No sensors present." );
+      }
+
+      if ( !request->hasArg( "number" ) )
+      {
+        return request->send( 400, textPlainHeader, "No sensornumber" );
+      }
+
+      uint8_t sensorNumber = request->arg( "number" ).toInt();
+
+      if ( sensorNumber >= numberOfFoundSensors )
+      {
+        return request->send( 400, textPlainHeader, "Invalid sensornumber" );
+      }
+
+      uint8_t charCount = 0;
+
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", sensor[sensorNumber].name );
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%f\n", sensor[sensorNumber].temp / 16.0 );
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%x\n", sensor[sensorNumber].addr );
+    }
+
+    else if ( request->hasArg( "sensorname" ) )
+    {
+      if ( !numberOfFoundSensors )
+      {
+        return request->send( 501, textPlainHeader, "No sensors present." );
+      }
+
+      if ( !request->hasArg( "number" ) )
+      {
+        return request->send( 400, textPlainHeader, "No sensornumber" );
+      }
+
+      uint8_t sensorNumber = request->arg( "number" ).toInt();
+
+      if ( sensorNumber >= numberOfFoundSensors )
+      {
+        return request->send( 400, textPlainHeader, "Invalid sensornumber" );
+      }
+      snprintf( content, sizeof( content ), "%s", sensor[sensorNumber].name );
+    }
+
+
+
+
+
     else if ( request->hasArg( "status" ) )
     {
-      int charCount = 0;
+      uint8_t charCount = 0;
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.2f\n", channel[channelNumber].currentPercentage );
@@ -432,6 +483,32 @@ void webServerTask ( void * pvParameters )
         saveDoubleNVS( "pwmfrequency", ledcActualFrequency );
       }
       snprintf( content, sizeof( content ), "%.0f", ledcActualFrequency );
+    }
+
+
+
+    else if ( request->hasArg( "sensorname" ) )
+    {
+      if ( !request->hasArg( "number" ) )
+      {
+        return request->send( 400, textPlainHeader, "No sensornumber" );
+      }
+
+      uint8_t sensorNumber = request->arg( "number" ).toInt();
+
+      if ( sensorNumber > numberOfFoundSensors )
+      {
+        return request->send( 400, textPlainHeader, "Invalid sensornumber" );
+      }
+
+      snprintf( sensor[sensorNumber].name, sizeof( sensor[sensorNumber].name ), "%s", request->arg( "sensorname" ).c_str() );
+
+      snprintf( content, sizeof( content ), "sensorname%i", sensorNumber );
+      saveStringNVS( content, request->arg( "sensorname" ).c_str() );
+
+      Serial.printf( " Saved '%s' as '%s'\n", request->arg( "sensorname" ).c_str(), content );
+
+      snprintf( content , sizeof( content ), "%s", request->arg( "sensorname" ).c_str() );
     }
 
 
@@ -708,6 +785,20 @@ int8_t checkChannelNumber( const AsyncWebServerRequest *request )
   }
 }
 
+/* DOES NOT RETURN IF INVALID str OFFERED!    */
+/* valid str contain only alphanumeric en spaces */
+void abortOnInvalidChar( const String str, AsyncWebServerRequest * request )
+{
+  for ( uint8_t currentChar = 0; currentChar < str.length(); currentChar++ )
+  {
+    if ( str[currentChar] != 0x20  && !isalnum( str[currentChar] ) )
+    {
+      char content[25];
+      snprintf( content, sizeof( content ), "Invalid character '%c'.", str[currentChar] );
+      return request->send( 400, textPlainHeader, content );
+    }
+  }
+}
 /*
   Copyright (c) 2015 Ivan Grokhotkov. All rights reserved.
   This library is free software; you can redistribute it and/or

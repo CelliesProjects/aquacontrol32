@@ -68,7 +68,8 @@ void webServerTask ( void * pvParameters )
       else
       {
         Serial.println( "Unauthorized access." );
-        request->send( 401, "text/plain", "Not logged in." );
+        xSemaphoreGive( x_SPI_Mutex );
+        return request->send( 401, "text/plain", "Not logged in." );
       }
     }
 

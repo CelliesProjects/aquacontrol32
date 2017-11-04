@@ -423,7 +423,7 @@ void webServerTask ( void * pvParameters )
       }
       oledContrast = contrast;
       OLED.setContrast( contrast << 4 );
-      saveInt8NVS( "oledcontrast", oledContrast );
+      saveUint8NVS( "oledcontrast", oledContrast );
       snprintf( content, sizeof( content ), "%i", contrast );
     }
 

@@ -186,7 +186,7 @@ function formatBytes( bytes, decimals ) {
 
 function updateDiskspace() {
   $.get( "/api/getdevice?diskspace=", function( data ) {
-    console.log( data );
+    //console.log( data );
   })
     .done( function( data ){
       diskSpace = parseInt( data );
@@ -224,7 +224,7 @@ function deleteFile(file){
 function readFiles(){
   $( '#fileList' ).html( '' );
   $.get( "/api/getdevice?files=", function( data ) {
-    console.log( data );
+    //console.log( data );
   })
   .done( function( data ) {
     var files = data.split( "\n" );
@@ -269,7 +269,13 @@ $(document).ready( function() {
   });
 
 
-  //https://stackoverflow.com/questions/7940213/aborting-the-xmlhttprequest
+  // https://stackoverflow.com/questions/21214608/jquery-ajax-single-file-upload
+
+  // https://support.cloudinary.com/hc/en-us/articles/202519972-How-to-abort-an-in-progress-upload-
+
+  // https://stackoverflow.com/questions/377644/jquery-ajax-error-handling-show-custom-exception-messages
+
+  // https://stackoverflow.com/questions/7940213/aborting-the-xmlhttprequest
   $( '#uploadButton' ).on( 'click' , function() {
     if ( $( '#fileInput' ).val() == "" ) { return; }
     $.ajax({
@@ -292,12 +298,13 @@ $(document).ready( function() {
       xhr: function() {
         var myXhr = $.ajaxSettings.xhr();
 
+
         $('input').prop('disabled', true ); //no inputs possible from now on
         $('#fileList').html('<div><br>Uploading ' + $('input#fileInput')[0].files[0].name + '...</div>');
         $( '#uploadButton' ).css( "display", "none" );
         $( 'progress' ).css( "display", "inline-block" );
+
         if (myXhr.upload) {
-          myXhr.upload.addEventListener( 'error',  function( e ){ this.abort(); }, false );
           // For handling the progress of the upload
           myXhr.upload.addEventListener( 'progress', function( e ) {
             if ( e.lengthComputable ) {
@@ -318,7 +325,7 @@ $(document).ready( function() {
         $( '#uploadButton' ).css( "display", "inline-block" );
         $( '#uploadTitle' ).html( "Click or drop a file in the box to upload." );
         $('input').prop('disabled', false); //and finally enable the inputs again
-        console.log( data )
+        //console.log( data )
       })
       .fail(function( data ){
         readFiles();
@@ -327,7 +334,7 @@ $(document).ready( function() {
         $( '#uploadButton' ).css( "display", "inline-block" );
         $( '#uploadTitle' ).html( "Click or drop a file in the box to upload." );
         $('input').prop('disabled', false); //and finally enable the inputs again
-        console.log( data )
+        //console.log( data )
       });
   });
 });

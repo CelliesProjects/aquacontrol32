@@ -24,7 +24,7 @@ void oledTask( void * pvParameters )
     vTaskDelay( 10 / portTICK_PERIOD_MS );
   }
 
-  oledContrast = readInt8NVS( "oledcontrast", 15 );
+  oledContrast = readUint8NVS( "oledcontrast", 15 );
   OLED.setContrast( oledContrast << 0x04 );
 
   OLED.setFont( ArialMT_Plain_10 );

@@ -232,7 +232,7 @@ bool                    tftPresent                    = false;
 float                   tftBrightness                 = 80;                         /* in percent */
 uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
 
-int8_t                  oledContrast;                                               /* 0 .. 15 */
+uint8_t                  oledContrast;                                               /* 0 .. 15 */
 uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 
 /*****************************************************************************************

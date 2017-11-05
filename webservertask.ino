@@ -31,7 +31,14 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/upload", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    request->send( 200 );
+    if ( request->authenticate( www_username, www_password ) )
+      {
+        request->send( 200 );
+      }
+      else
+      {
+        request->requestAuthentication();
+      }
   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
@@ -183,7 +190,7 @@ void webServerTask ( void * pvParameters )
         return request->send( 400, textPlainHeader, "Not a directory");
       }
       File file = root.openNextFile();
-      uint8_t charCount = 0;
+      uint16_t charCount = 0;
       content[0] = 0;        /* solves webif filemanager showing garbage when no files on sd */
       while ( file )
       {

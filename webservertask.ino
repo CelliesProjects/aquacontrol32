@@ -32,13 +32,13 @@ void webServerTask ( void * pvParameters )
   server.on( "/api/upload", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     if ( request->authenticate( www_username, www_password ) )
-      {
-        request->send( 200 );
-      }
-      else
-      {
-        request->requestAuthentication();
-      }
+    {
+      request->send( 200 );
+    }
+    else
+    {
+      request->requestAuthentication();
+    }
   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {

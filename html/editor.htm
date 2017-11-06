@@ -614,7 +614,7 @@ $( document ).ready( function() {
   });
 
   $('#uploadButton').on('click', function() {
-    if (confirm("Uploading these timers will overwrite current timers.\nAre you sure?") != true) {
+    if (!confirm("Uploading these timers will overwrite current timers.\nAre you sure?") ) {
       return;
     }
 
@@ -643,13 +643,15 @@ $( document ).ready( function() {
     var blob = new Blob([ fileData ], {type: 'plain/text'});
     formData.append('file', blob, "/default.aqu");
     var request = new XMLHttpRequest();
-    request.open("POST", "/api/upload");
-/*
-    request.onload = function( data ) {
-      $('#statusBox').load( '/api/setdevice?loadtimers=' );
-    };
-*/
-    request.send(formData);
+
+    //only upload if logged in
+    $.post( '/api/upload', function() {
+      //empty
+    })
+      .done(function(){
+        request.open("POST", "/api/upload");
+        request.send(formData);
+      });
   });
 
   $('#timerList').on('click', '.earlierButton' , function(){

@@ -6,6 +6,15 @@
 #include "webif/fileman_htm.h"
 #include "webif/channels_htm.h"
 
+/**************************************************************************
+       Username and password for web interface
+ *************************************************************************/
+const char* www_username       = "admin";
+const char* www_default_passw  = "esp32";
+
+//the (changed) admin password is saved in NVS under this key
+const char* passwordKeyNVS   = "wwwpassword";
+
 const char* textPlainHeader  = "text/plain";
 const char* textHtmlHeader   = "text/html";
 
@@ -19,7 +28,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/login", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( request->authenticate( www_username, www_password ) )
+    if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       request->send( 200, textPlainHeader, "Logged in." );
     }
@@ -31,7 +40,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/upload", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( request->authenticate( www_username, www_password ) )
+    if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       request->send( 200 );
     }
@@ -54,7 +63,7 @@ void webServerTask ( void * pvParameters )
     if ( !index )
     {
       _authenticated = false;
-      if ( request->authenticate( www_username, www_password ) )
+      if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
       {
         startTimer = millis();
         Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
@@ -348,7 +357,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/setdevice", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, www_password ) )
+    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -456,6 +465,23 @@ void webServerTask ( void * pvParameters )
       oledOrientation == OLED_ORIENTATION_NORMAL ? OLED.normalDisplay() : OLED.flipScreenVertically();
       saveStringNVS( "oledorientation", ( oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" ) );
       snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
+    }
+
+
+
+    else if ( request->hasArg( "password" ) )
+    {
+      //TODO:check password is valid
+      if ( request->arg( "password") == "" )
+      {
+        return request->send( 400, textPlainHeader, "Supply a password. Password not changed." );
+      }
+
+      //some more tests...
+
+      saveStringNVS( passwordKeyNVS, request->arg( "password") );
+
+      strncpy( content, "Password saved.", sizeof( content ) );
     }
 
 
@@ -600,7 +626,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/setchannel", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, www_password ) )
+    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -696,7 +722,7 @@ void webServerTask ( void * pvParameters )
       return request->send( 501, textPlainHeader, "SPI Bus not available" );
     }
 
-    if ( !request->authenticate( www_username, www_password ) )
+    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       xSemaphoreGive( x_SPI_Mutex );
       return request->requestAuthentication();

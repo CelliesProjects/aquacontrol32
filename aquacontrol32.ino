@@ -192,11 +192,6 @@ struct sensorData_t                    /* struct to keep track of Dallas DS18B20
   char   name[15];
 };
 
-/**************************************************************************
-       Username and password for web interface
- *************************************************************************/
-const char* www_username       = "admin";  //change me!
-const char* www_password       = "esp32";  //change me!
 
 const char* defaultTimerFile   = "/default.aqu";
 

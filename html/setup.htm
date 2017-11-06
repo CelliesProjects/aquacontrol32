@@ -109,7 +109,7 @@ input{
   border-radius: 5px;
 }
 
-input[type="text"]{
+input[type="text"], input[type="password"]{
     background: beige;
 //    width: 401px;
     height: 25px;
@@ -147,7 +147,7 @@ input#timeZoneTextBox{
 .sensorBar{
   display:none;
 }
-input.sensorNameInput, input#hostNameInput{
+input.sensorNameInput, input#hostNameInput, input#passwordInput{
   width:250px;
 }
 </style>
@@ -170,6 +170,7 @@ input.sensorNameInput, input#hostNameInput{
     <p class="item"><span id="deviceStatus">&nbsp;</span></p>
     <p class="item"><span class="itemName">TIME ZONE <a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneTextBox"></span></p>
     <p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
+    <p class="item"><span class="itemName">ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 1 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 2 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 3 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
@@ -380,6 +381,22 @@ function getPwmFrequency(){
 }
 
   /* event handlers */
+
+$('#passwordInput').on('change', function( event ) {
+  if (!confirm("You are about to change the admin password.\nAre you sure?") ) {
+    return;
+  }
+  $.post( "/api/setdevice",
+  {
+    password : $(this).val()
+  })
+  .done(function( data ){
+    $( '#deviceStatus' ).html( data );
+  })
+  .fail(function( data ){
+    $( '#deviceStatus' ).html( data.statusText );
+  });
+});
 
 $('#oledOrientationSlider').on('change', function( event ) {
   if ( $(this).val() == 0 ) $('#oledOrientationValue').html('normal');

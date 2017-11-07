@@ -28,82 +28,11 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/login", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
-      request->send( 200, textPlainHeader, "Logged in." );
+      return request->requestAuthentication();
     }
-    else
-    {
-      request->send( 401, textPlainHeader, "Not logged in." );
-    }
-  });
-
-  server.on( "/api/upload", HTTP_POST, []( AsyncWebServerRequest * request )
-  {
-    if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
-    {
-      request->send( 200 );
-    }
-    else
-    {
-      request->requestAuthentication();
-    }
-  },
-  []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
-  {
-    if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
-    {
-      return request->send( 503, textPlainHeader, "SPI bus not available." );
-    }
-
-    static File   newFile;
-    static bool   _authenticated;
-    static time_t startTimer;
-
-    if ( !index )
-    {
-      _authenticated = false;
-      if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
-      {
-        startTimer = millis();
-        Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
-        if ( !filename.startsWith( "/" ) )
-        {
-          filename = "/" + filename;
-        }
-        if ( filename == defaultTimerFile )
-        {
-          newFile = SPIFFS.open( filename, "w" );
-        }
-        else
-        {
-          newFile = SD.open( filename, "w" );
-        }
-        _authenticated = true;
-      }
-      else
-      {
-        Serial.println( "Unauthorized access." );
-        xSemaphoreGive( x_SPI_Mutex );
-        return request->send( 401, "text/plain", "Not logged in." );
-      }
-    }
-
-    if ( _authenticated )
-    {
-      newFile.write( data, len );
-    }
-
-    if ( _authenticated && final )
-    {
-      newFile.close();
-      if ( filename == defaultTimerFile )
-      {
-        defaultTimersLoaded();
-      }
-      Serial.printf( "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
-    }
-    xSemaphoreGive( x_SPI_Mutex );
+    request->send( 200 );
   });
 
   // / or 'index.htm'
@@ -139,6 +68,47 @@ void webServerTask ( void * pvParameters )
   /**********************************************************************************************
       api device get calls
   **********************************************************************************************/
+
+  server.on( "/api/deletefile", HTTP_POST, []( AsyncWebServerRequest * request)
+  {
+    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    {
+      return request->requestAuthentication();
+    }
+    
+    if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+    {
+      return request->send( 501, textPlainHeader, "SPI Bus not available" );
+    }
+
+    if ( !request->hasArg( "filename" ) )
+    {
+      xSemaphoreGive( x_SPI_Mutex );
+      return request->send( 400, textPlainHeader, "Invalid filename." );
+    }
+
+    String path;
+
+    if ( !request->arg( "filename" ).startsWith( "/" ) )
+    {
+      path = "/" + request->arg( "filename" );
+    }
+    else
+    {
+      path = request->arg( "filename" );
+    }
+
+    if ( !SD.exists( path ) )
+    {
+      path = request->arg( "filename" ) + " not found.";
+      xSemaphoreGive( x_SPI_Mutex );
+      return request->send( 404, textPlainHeader, path );
+    }
+    SD.remove( path );
+    path = request->arg( "filename" ) + " deleted.";
+    xSemaphoreGive( x_SPI_Mutex );
+    request->send( 200, textPlainHeader, path );
+  });
 
   server.on( "/api/getdevice", HTTP_GET, []( AsyncWebServerRequest * request)
   {
@@ -351,9 +321,94 @@ void webServerTask ( void * pvParameters )
     request->send( 200, textPlainHeader, content );
   });
 
-  /**********************************************************************************************
-      api device set calls
-  **********************************************************************************************/
+  server.on( "/api/setchannel", HTTP_POST, []( AsyncWebServerRequest * request )
+  {
+    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    {
+      return request->requestAuthentication();
+    }
+
+    uint8_t channelNumber;
+    char   content[100];
+
+    channelNumber = checkChannelNumber( request);
+    if ( channelNumber == -1 )
+    {
+      return request->send( 400, textPlainHeader, "Invalid channel" );
+    }
+
+    if ( request->hasArg( "color" ) )
+    {
+      for ( uint8_t currentChar = 0; currentChar < request->arg( "color" ).length(); currentChar++ )
+      {
+        if ( !isxdigit( request->arg( "color" )[currentChar] ) )
+        {
+          return request->send( 400, textPlainHeader, "Invalid char" );
+        }
+      }
+      channel[ channelNumber ].color = "#" + request->arg( "color" );
+
+
+      //pre-use 'content' buffer
+      snprintf( content, sizeof( content ), "channelcolor%i", channelNumber );
+      saveStringNVS( content, channel[channelNumber].color );
+
+      snprintf( content, sizeof( content ), "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color.c_str() );
+    }
+
+
+
+    else if ( request->hasArg( "minimum" ) )
+    {
+      float minLevel = request->arg( "minimum" ).toFloat();
+      if ( minLevel < 0 || minLevel > 0.991 )
+      {
+        return request->send( 400, textPlainHeader, "Invalid level" );
+      }
+      channel[ channelNumber ].minimumLevel = minLevel;
+
+      //pre-use 'content' buffer
+      snprintf( content, sizeof( content ), "channelminimum%i", channelNumber );
+      saveFloatNVS( content, channel[channelNumber].minimumLevel );
+
+      snprintf( content, sizeof( content ), "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].minimumLevel );
+    }
+
+    else if ( request->hasArg( "name" ) )
+    {
+      for ( uint8_t currentChar = 0; currentChar < request->arg( "name" ).length(); currentChar++ )
+      {
+        if ( request->arg( "name" )[currentChar] != 0x20  && !isalnum( request->arg( "name" )[currentChar] ) )
+        {
+          snprintf( content, sizeof( content ), "Invalid character '%c'.", request->arg( "name" )[currentChar] );
+          return request->send( 400, textPlainHeader, content );
+        }
+      }
+      if ( request->arg( "name" ) != "" )
+      {
+        channel[ channelNumber ].name = request->arg( "name" );
+      }
+      else
+      {
+        channel[ channelNumber ].name = "Channel" + String( channelNumber + 1 );
+      }
+
+      //pre-use 'content' buffer
+      snprintf( content, sizeof( content ), "channelname%i", channelNumber );
+      saveStringNVS( content, channel[channelNumber].name );
+
+      snprintf( content, sizeof( content ), "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name.c_str() );
+    }
+
+
+
+    else
+    {
+      return request->send( 400, textPlainHeader, "Invalid option" );
+    }
+
+    request->send( 200, textPlainHeader, content );
+  });
 
   server.on( "/api/setdevice", HTTP_POST, []( AsyncWebServerRequest * request )
   {
@@ -615,146 +670,69 @@ void webServerTask ( void * pvParameters )
     request->send( 200, textPlainHeader, content );
   });
 
-  server.on( "/api/setdevice", HTTP_GET, []( AsyncWebServerRequest * request )
-  {
-    return request->send( 404, textPlainHeader, "Not found." );
-  });
-
-  /**********************************************************************************************
-      api channel set calls
-  **********************************************************************************************/
-
-  server.on( "/api/setchannel", HTTP_POST, []( AsyncWebServerRequest * request )
+  server.on( "/api/upload", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       return request->requestAuthentication();
     }
-
-    uint8_t channelNumber;
-    char   content[100];
-
-    channelNumber = checkChannelNumber( request);
-    if ( channelNumber == -1 )
-    {
-      return request->send( 400, textPlainHeader, "Invalid channel" );
-    }
-
-    if ( request->hasArg( "color" ) )
-    {
-      for ( uint8_t currentChar = 0; currentChar < request->arg( "color" ).length(); currentChar++ )
-      {
-        if ( !isxdigit( request->arg( "color" )[currentChar] ) )
-        {
-          return request->send( 400, textPlainHeader, "Invalid char" );
-        }
-      }
-      channel[ channelNumber ].color = "#" + request->arg( "color" );
-
-
-      //pre-use 'content' buffer
-      snprintf( content, sizeof( content ), "channelcolor%i", channelNumber );
-      saveStringNVS( content, channel[channelNumber].color );
-
-      snprintf( content, sizeof( content ), "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color.c_str() );
-    }
-
-
-
-    else if ( request->hasArg( "minimum" ) )
-    {
-      float minLevel = request->arg( "minimum" ).toFloat();
-      if ( minLevel < 0 || minLevel > 0.991 )
-      {
-        return request->send( 400, textPlainHeader, "Invalid level" );
-      }
-      channel[ channelNumber ].minimumLevel = minLevel;
-
-      //pre-use 'content' buffer
-      snprintf( content, sizeof( content ), "channelminimum%i", channelNumber );
-      saveFloatNVS( content, channel[channelNumber].minimumLevel );
-
-      snprintf( content, sizeof( content ), "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].minimumLevel );
-    }
-
-    else if ( request->hasArg( "name" ) )
-    {
-      for ( uint8_t currentChar = 0; currentChar < request->arg( "name" ).length(); currentChar++ )
-      {
-        if ( request->arg( "name" )[currentChar] != 0x20  && !isalnum( request->arg( "name" )[currentChar] ) )
-        {
-          snprintf( content, sizeof( content ), "Invalid character '%c'.", request->arg( "name" )[currentChar] );
-          return request->send( 400, textPlainHeader, content );
-        }
-      }
-      if ( request->arg( "name" ) != "" )
-      {
-        channel[ channelNumber ].name = request->arg( "name" );
-      }
-      else
-      {
-        channel[ channelNumber ].name = "Channel" + String( channelNumber + 1 );
-      }
-
-      //pre-use 'content' buffer
-      snprintf( content, sizeof( content ), "channelname%i", channelNumber );
-      saveStringNVS( content, channel[channelNumber].name );
-
-      snprintf( content, sizeof( content ), "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name.c_str() );
-    }
-
-
-
-    else
-    {
-      return request->send( 400, textPlainHeader, "Invalid option" );
-    }
-
-    request->send( 200, textPlainHeader, content );
-  });
-
-  /**********************************************************************************************/
-
-  server.on( "/api/deletefile", HTTP_POST, []( AsyncWebServerRequest * request)
+    request->send( 200 );
+  },
+  []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
     if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
     {
-      return request->send( 501, textPlainHeader, "SPI Bus not available" );
+      return request->send( 503, textPlainHeader, "SPI bus not available." );
     }
 
-    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    static File   newFile;
+    static bool   _authenticated;
+    static time_t startTimer;
+
+    if ( !index )
     {
-      xSemaphoreGive( x_SPI_Mutex );
-      return request->requestAuthentication();
+      _authenticated = false;
+      if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+      {
+        startTimer = millis();
+        Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
+        if ( !filename.startsWith( "/" ) )
+        {
+          filename = "/" + filename;
+        }
+        if ( filename == defaultTimerFile )
+        {
+          newFile = SPIFFS.open( filename, "w" );
+        }
+        else
+        {
+          newFile = SD.open( filename, "w" );
+        }
+        _authenticated = true;
+      }
+      else
+      {
+        Serial.println( "Unauthorized access." );
+        xSemaphoreGive( x_SPI_Mutex );
+        return request->send( 401, "text/plain", "Not logged in." );
+      }
     }
 
-    if ( !request->hasArg( "filename" ) )
+    if ( _authenticated )
     {
-      xSemaphoreGive( x_SPI_Mutex );
-      return request->send( 400, textPlainHeader, "Invalid filename." );
+      newFile.write( data, len );
     }
 
-    String path;
-
-    if ( !request->arg( "filename" ).startsWith( "/" ) )
+    if ( _authenticated && final )
     {
-      path = "/" + request->arg( "filename" );
+      newFile.close();
+      if ( filename == defaultTimerFile )
+      {
+        defaultTimersLoaded();
+      }
+      Serial.printf( "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
     }
-    else
-    {
-      path = request->arg( "filename" );
-    }
-
-    if ( !SD.exists( path ) )
-    {
-      path = request->arg( "filename" ) + " not found.";
-      xSemaphoreGive( x_SPI_Mutex );
-      return request->send( 404, textPlainHeader, path );
-    }
-    SD.remove( path );
-    path = request->arg( "filename" ) + " deleted.";
     xSemaphoreGive( x_SPI_Mutex );
-    request->send( 200, textPlainHeader, path );
   });
 
   server.onNotFound( []( AsyncWebServerRequest * request )

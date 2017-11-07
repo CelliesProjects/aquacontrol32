@@ -66,7 +66,7 @@ void webServerTask ( void * pvParameters )
   });
 
   /**********************************************************************************************
-      api device get calls
+      api calls
   **********************************************************************************************/
 
   server.on( "/api/deletefile", HTTP_POST, []( AsyncWebServerRequest * request)
@@ -75,7 +75,7 @@ void webServerTask ( void * pvParameters )
     {
       return request->requestAuthentication();
     }
-    
+
     if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
     {
       return request->send( 501, textPlainHeader, "SPI Bus not available" );
@@ -277,10 +277,6 @@ void webServerTask ( void * pvParameters )
       snprintf( content, sizeof( content ), "%s", sensor[sensorNumber].name );
     }
 
-
-
-
-
     else if ( request->hasArg( "status" ) )
     {
       uint8_t charCount = 0;
@@ -299,6 +295,7 @@ void webServerTask ( void * pvParameters )
         }
       }
     }
+
     else if ( request->hasArg( "tftbrightness" ) )
     {
       if ( tftPresent )
@@ -310,14 +307,17 @@ void webServerTask ( void * pvParameters )
         return request->send( 501, textPlainHeader, "Not present." );
       }
     }
+
     else if ( request->hasArg( "timezone" ) )
     {
       snprintf( content, sizeof( content ), "%s", getenv( "TZ" ) );
     }
+
     else
     {
       return request->send( 400, textPlainHeader, "Invalid option" );
     }
+
     request->send( 200, textPlainHeader, content );
   });
 
@@ -347,7 +347,6 @@ void webServerTask ( void * pvParameters )
         }
       }
       channel[ channelNumber ].color = "#" + request->arg( "color" );
-
 
       //pre-use 'content' buffer
       snprintf( content, sizeof( content ), "channelcolor%i", channelNumber );

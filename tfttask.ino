@@ -62,16 +62,16 @@ void tftTask( void * pvParameters )
         firstRun = false;
       }
 
-      for ( uint8_t channelNumber = 0; channelNumber < TFT_BACKLIGHT_CHANNEL; channelNumber++ )
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         average += ledcRead( channelNumber );
       }
-      average = average / TFT_BACKLIGHT_CHANNEL;
+      average = average / NUMBER_OF_CHANNELS;
 
       uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1 );
       ledcWrite( TFT_BACKLIGHT_CHANNEL, ( average > rawBrightness ) ? rawBrightness : average );
 
-      for ( uint8_t channelNumber = 0; channelNumber < TFT_BACKLIGHT_CHANNEL; channelNumber++ )
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         uint8_t r, g, b;
         uint32_t color = strtol( &channel[channelNumber].color[1], NULL, 16 );

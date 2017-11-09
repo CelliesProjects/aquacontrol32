@@ -21,7 +21,7 @@
 /**************************************************************************
        1 = show system data on oled   0 = show light and temps on oled
 **************************************************************************/
-#define OLED_SHOW_SYSTEMDATA              0
+#define OLED_SHOW_SYSTEMDATA              1
 
 
 /**************************************************************************
@@ -227,7 +227,7 @@ bool                    tftPresent                    = false;
 float                   tftBrightness                 = 80;                         /* in percent */
 uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
 
-uint8_t                  oledContrast;                                               /* 0 .. 15 */
+uint8_t                 oledContrast;                                               /* 0 .. 15 */
 uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 
 /*****************************************************************************************
@@ -277,6 +277,15 @@ void setup()
   }
 
   xTaskCreatePinnedToCore(
+    wifiTask,                       /* Function to implement the task */
+    "wifiTask",                     /* Name of the task */
+    2000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    1,                              /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);
+
+  xTaskCreatePinnedToCore(
     tempTask,                       /* Function to implement the task */
     "tempTask",                     /* Name of the task */
     4000,                           /* Stack size in words */
@@ -299,7 +308,7 @@ void setup()
 
   Serial.println( "Starting and possibly formatting SPIFFS. ( Just be patient... )" );
 
-  if ( !SPIFFS.begin( true ) )
+  if ( !SPIFFS.begin( false ) )
   {
     Serial.println( "No SPIFFS!" );
   }
@@ -307,26 +316,6 @@ void setup()
   {
     Serial.println( "SPIFFS started." );
   }
-
-  setupWiFi();
-
-  xTaskCreatePinnedToCore(
-    setupNTP,                       /* Function to implement the task */
-    "setupNTP",                     /* Name of the task */
-    2000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    1,                              /* Priority of the task */
-    NULL,                           /* Task handle. */
-    1);
-
-  xTaskCreatePinnedToCore(
-    webServerTask,                  /* Function to implement the task */
-    "webServerTask",                /* Name of the task */
-    1000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    6,                              /* Priority of the task */
-    NULL,                           /* Task handle. */
-    1);                             /* Core where the task should run */
 }
 
 /*****************************************************************************************

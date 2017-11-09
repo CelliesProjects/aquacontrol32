@@ -1,4 +1,4 @@
-void setupNTP( void * pvParameters )
+void ntpTask( void * pvParameters )
 {
   String NTPpoolAdress = COUNTRY_CODE_ISO_3166;
 
@@ -26,7 +26,7 @@ void setupNTP( void * pvParameters )
   xTaskCreatePinnedToCore(
     dimmerTask,                     /* Function to implement the task */
     "dimmerTask",                   /* Name of the task */
-    2000,                           /* Stack size in words */
+    2500,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     7,                              /* Priority of the task */
     &x_dimmerTaskHandle,            /* Task handle. */

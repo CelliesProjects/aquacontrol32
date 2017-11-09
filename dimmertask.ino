@@ -1,6 +1,6 @@
 void dimmerTask ( void * pvParameters )
 {
-  const uint32_t dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS;
+  const uint32_t dimmerTaskdelayTime = 1000U / UPDATE_FREQ_LEDS;
 
   TickType_t xLastWakeTime;
 
@@ -36,7 +36,8 @@ void dimmerTask ( void * pvParameters )
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
 
-  setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_MAXIMUM_FREQ ), readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
+  setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_MAXIMUM_FREQ ),
+                           readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
 
   lightStatus = "LIGHTS AUTO";
 
@@ -44,6 +45,8 @@ void dimmerTask ( void * pvParameters )
 
   while (1)
   {
+    //time_t startTimer = micros();
+
     struct timeval microSecondTime;
 
     gettimeofday( &microSecondTime, NULL );
@@ -52,42 +55,55 @@ void dimmerTask ( void * pvParameters )
 
     localTime = localtime( &microSecondTime.tv_sec );
 
-    suseconds_t milliSecondsToday = ( localTime->tm_hour * 3600000 )
-                                    + ( localTime->tm_min * 60000 )
-                                    + ( localTime->tm_sec * 1000 )
-                                    + ( microSecondTime.tv_usec / 1000 );
+    suseconds_t milliSecondsToday = ( localTime->tm_hour       * 3600000U ) +
+                                    ( localTime->tm_min        * 60000U ) +
+                                    ( localTime->tm_sec        * 1000U ) +
+                                    ( microSecondTime.tv_usec  / 1000U );
 
     if ( milliSecondsToday ) /* to solve flashing at 00:00:000 due to the fact that the first timer has no predecessor */
     {
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         uint8_t thisTimer = 0;
-        while ( channel[channelNumber].timer[thisTimer].time * 1000 < milliSecondsToday )
+
+        while ( channel[channelNumber].timer[thisTimer].time * 1000U < milliSecondsToday )
         {
           thisTimer++;
         }
+
+        float newPercentage;
+
         /* only do a lot of math if really neccesary */
         if ( channel[channelNumber].timer[thisTimer].time != channel[channelNumber].timer[thisTimer - 1].time )
         {
-          float dimPercentage = channel[channelNumber].timer[thisTimer].percentage - channel[channelNumber].timer[thisTimer - 1].percentage;
-          suseconds_t numberOfMilliSecondsBetween = ( channel[channelNumber].timer[thisTimer].time - channel[channelNumber].timer[thisTimer - 1].time ) * 1000;
-          suseconds_t milliSecondsSinceLastTimer = milliSecondsToday - ( channel[channelNumber].timer[thisTimer - 1].time * 1000 );
-          float changePerMilliSecond = dimPercentage / numberOfMilliSecondsBetween;
-          channel[channelNumber].currentPercentage = channel[channelNumber].timer[thisTimer - 1].percentage + ( milliSecondsSinceLastTimer * changePerMilliSecond );
+          newPercentage = mapFloat( milliSecondsToday,
+                                    channel[channelNumber].timer[thisTimer - 1].time * 1000U,
+                                    channel[channelNumber].timer[thisTimer].time * 1000U,
+                                    channel[channelNumber].timer[thisTimer - 1].percentage,
+                                    channel[channelNumber].timer[thisTimer].percentage );
         }
         else
         {
           /* timers are equal so no math neccesary */
-          channel[channelNumber].currentPercentage = channel[channelNumber].timer[thisTimer].percentage;
+          newPercentage = channel[channelNumber].timer[thisTimer].percentage;
         }
+
         /* check if channel has a minimum set */
-        if ( channel[channelNumber].currentPercentage < channel[channelNumber].minimumLevel )
+        if ( newPercentage < channel[channelNumber].minimumLevel )
         {
-          channel[channelNumber].currentPercentage = channel[channelNumber].minimumLevel;
+          newPercentage = channel[channelNumber].minimumLevel;
         }
-        ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage, 0, 100, 0, ledcMaxValue ) );
+
+        /* done, set the channel */
+        channel[channelNumber].currentPercentage = newPercentage;
+        ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage,
+                                            0,
+                                            100,
+                                            0,
+                                            ledcMaxValue ) );
       }
     }
+    //Serial.println( micros() - startTimer );
     vTaskDelayUntil( &xLastWakeTime, dimmerTaskdelayTime / portTICK_PERIOD_MS );
   }
 }

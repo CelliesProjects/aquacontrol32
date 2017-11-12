@@ -1,30 +1,26 @@
 void wifiTask( void * pvParameters )
 {
   /* trying last accesspoint */
+  WiFi.mode( WIFI_STA );
   WiFi.begin();
-  time_t startTime = millis();
+  //WiFi.onEvent( WiFiEvent );
+
   Serial.println( "Connecting WiFi");
   tft.println( "Connecting WiFi");
-  while ( WiFi.status() != WL_CONNECTED && millis() - startTime <= 15 * 1000 ) /* 15 sec */
-  {
-    Serial.print( "." );
-    tft.print( "." );
-    vTaskDelay( 500 / portTICK_PERIOD_MS );
-  }
+  connectWiFi();
   tft.setTextColor( ILI9341_WHITE , ILI9341_BLACK );
 
   /* check if we are connected */
   if ( WiFi.status() != WL_CONNECTED )
   {
     /* wait for SC */
-    Serial.println( "\nNo WiFi connection.\nWaiting for SmartConfig." );
-    //tft.setCursor( 0, 0 );
+    Serial.printf( "\nWaiting %i seconds for SmartConfig.\n", 60 * 5 );
     tft.println( "\nNo WiFi connection.\nWaiting for SmartConfig." );
     tft.invertDisplay( true );
     WiFi.mode( WIFI_AP_STA );
     WiFi.beginSmartConfig();
 
-    const time_t rebootTime = millis() + 60 * 1000; /* 1 min */
+    const time_t rebootTime = millis() + 60 * 5 * 1000; /* 5 min */
 
     while ( !WiFi.smartConfigDone() && millis() < rebootTime )
     {
@@ -32,25 +28,21 @@ void wifiTask( void * pvParameters )
 
       tft.setCursor( 70, 100 );
       tft.printf( "%2i seconds until reboot.", ( 100 + rebootTime - millis() ) / 1000 );
-      Serial.print(".");
     }
+
     if ( !WiFi.smartConfigDone() )
     {
-      digitalWrite( SPI_TFT_RST_PIN, LOW );
-      //ESP.restart();
-      esp_restart();
+      SPI.end();
+      /* set bootstrapping pins */
+      /* https://github.com/espressif/esptool/wiki/ESP32-Boot-Mode-Selection */
+      digitalWrite( 0, HIGH );
+      digitalWrite( 2, HIGH );
+      ESP.restart();
     }
   }
-  else
-  {
-    //Wait for WiFi to connect to AP
-    while ( WiFi.status() != WL_CONNECTED )
-    {
-      vTaskDelay( 500 / portTICK_PERIOD_MS );
-      Serial.print( "." );
-      tft.print( "." );
-    }
-  }
+
+  //Wait for WiFi to connect to AP
+  connectWiFi();
 
 
   /* We have succesfully connected */
@@ -104,5 +96,55 @@ void wifiTask( void * pvParameters )
       WiFi.reconnect();
     }
     vTaskDelay( 10000 / portTICK_PERIOD_MS );
+  }
+}
+
+void connectWiFi()
+{
+  const time_t endTime = millis() +  15 * 1000; /* 15 sec */
+
+  while ( WiFi.status() != WL_CONNECTED && millis() < endTime )
+  {
+    Serial.print( "." );
+    tft.print( "." );
+    vTaskDelay( 500 / portTICK_PERIOD_MS );
+  }
+}
+
+void WiFiEvent( WiFiEvent_t event )
+{
+  switch ( event )
+  {
+    case SYSTEM_EVENT_AP_START:
+      Serial.println("AP Started");
+      //WiFi.softAPsetHostname(AP_SSID);
+      break;
+    case SYSTEM_EVENT_AP_STOP:
+      Serial.println("AP Stopped");
+      break;
+    case SYSTEM_EVENT_STA_START:
+      Serial.println("STA Started");
+      //WiFi.setHostname( DEFAULT_HOSTNAME_PREFIX.c_str( );
+      break;
+    case SYSTEM_EVENT_STA_CONNECTED:
+      Serial.println("STA Connected");
+      //WiFi.enableIpV6();
+      break;
+    case SYSTEM_EVENT_AP_STA_GOT_IP6:
+      Serial.print("STA IPv6: ");
+      Serial.println(WiFi.localIPv6());
+      break;
+    case SYSTEM_EVENT_STA_GOT_IP:
+      Serial.print("STA IPv4: ");
+      Serial.println(WiFi.localIP());
+      break;
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+      Serial.println("STA Disconnected");
+      break;
+    case SYSTEM_EVENT_STA_STOP:
+      Serial.println("STA Stopped");
+      break;
+    default:
+      break;
   }
 }

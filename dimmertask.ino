@@ -121,3 +121,8 @@ void setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits
   Serial.printf( "PWM bit depth set to %i bits\n", ledcNumberOfBits);
   Serial.printf( "Maximum raw value set to 0x%x or %i decimal\n\n", ledcMaxValue, ledcMaxValue);
 }
+
+static inline __attribute__((always_inline)) float mapFloat( float x, const float in_min, const float in_max, const float out_min, const float out_max)
+{
+  return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
+}

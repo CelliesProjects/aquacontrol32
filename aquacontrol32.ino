@@ -275,6 +275,10 @@ void setup()
       &x_tftTaskHandle,               /* Task handle. */
       1);                             /* Core where the task should run */
   }
+  else
+  {
+    Serial.println( "No tft present" );
+  }
 
   xTaskCreatePinnedToCore(
     wifiTask,                       /* Function to implement the task */

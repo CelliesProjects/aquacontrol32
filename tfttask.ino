@@ -62,15 +62,11 @@ void tftTask( void * pvParameters )
         firstRun = false;
       }
 
-      uint32_t averageLedBrightness = 0;
-
       uint16_t channelColor565[NUMBER_OF_CHANNELS];
 
       tft.startWrite();
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        averageLedBrightness += ledcRead( channelNumber );
-
         // redraw the top part of the bar
         tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
                            BARS_BOTTOM - BARS_HEIGHT,
@@ -97,6 +93,8 @@ void tftTask( void * pvParameters )
       }
       tft.endWrite();
 
+      uint32_t averageLedBrightness = 0;
+
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         tft.setCursor( channelNumber * BARS_WIDTH + 9, BARS_BOTTOM + 4 );
@@ -113,7 +111,13 @@ void tftTask( void * pvParameters )
           snprintf( content, sizeof( content ), "%*" ".3f%%", 7, channel[channelNumber].currentPercentage );
         }
         tft.print( content );
+        averageLedBrightness += ledcRead( channelNumber );
       }
+      averageLedBrightness = averageLedBrightness / NUMBER_OF_CHANNELS;
+
+      uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, backlightMaxvalue );
+
+      ledcWrite( TFT_BACKLIGHT_CHANNEL, ( averageLedBrightness > rawBrightness ) ? rawBrightness : averageLedBrightness );
 
       tft.setTextSize( 2 );
       if ( numberOfFoundSensors )
@@ -133,13 +137,6 @@ void tftTask( void * pvParameters )
         tft.setTextColor( TFT_DATE_COLOR , TFT_BACK_COLOR );
         tft.print( asctime( &timeinfo ) );
       }
-
-      averageLedBrightness = averageLedBrightness / NUMBER_OF_CHANNELS;
-
-      uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, backlightMaxvalue );
-
-      ledcWrite( TFT_BACKLIGHT_CHANNEL, ( averageLedBrightness > rawBrightness ) ? rawBrightness : averageLedBrightness );
-
       xSemaphoreGive( x_SPI_Mutex );
     }
     vTaskDelay( tftTaskdelayTime / portTICK_PERIOD_MS );

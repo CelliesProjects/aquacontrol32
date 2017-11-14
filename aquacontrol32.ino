@@ -105,7 +105,7 @@
 
 
 /**************************************************************************
-      HW SPI pin definitions
+      SPI pin definitions
 **************************************************************************/
 #define SPI_TFT_DC_PIN            27  // Goes to TFT DC
 #define SPI_SCK_PIN               25  // Goes to TFT SCK/CLK
@@ -115,7 +115,6 @@
 #define SPI_SD_CS_PIN              0  // Goes to SD CS
 #define SPI_MISO_PIN              39  // Goes to TFT MISO
 
-//       3.3V                     // Goes to TFT LED
 //       5v                       // Goes to TFT Vcc-
 //       Gnd                      // Goes to TFT Gnd
 
@@ -272,7 +271,7 @@ void setup()
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );
 
-  tft.begin( 10000000, SPI );
+  tft.begin( 40000000, SPI );
 
   tftPresent = tft.readcommand8( ILI9341_RDSELFDIAG ) != 0x00;
 

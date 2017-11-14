@@ -28,7 +28,7 @@ void ntpTask( void * pvParameters )
     "dimmerTask",                   /* Name of the task */
     2500,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    7,                              /* Priority of the task */
+    dimmerTaskPriority,             /* Priority of the task */
     &x_dimmerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 
@@ -37,7 +37,7 @@ void ntpTask( void * pvParameters )
     "loggerTask",                   /* Name of the task */
     3000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    0,                              /* Priority of the task */
+    loggerTaskPriority,             /* Priority of the task */
     &x_loggerTaskHandle,            /* Task handle. */
     1);                             /* Core where the task should run */
 

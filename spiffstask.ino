@@ -1,3 +1,18 @@
+void spiffsTask( void * pvParameters )
+{
+  Serial.println( "Starting SPIFFS." );
+
+  if ( !SPIFFS.begin( true ) )
+  {
+    Serial.println( "Error starting SPIFFS." );
+  }
+  else
+  {
+    Serial.println( "SPIFFS started." );
+  }  
+  vTaskDelete( NULL );
+}
+
 bool defaultTimersLoaded()
 {
   //find 'default.aqu' on SD card and if present load the timerdata from this file

@@ -21,7 +21,7 @@
 /**************************************************************************
        1 = show system data on oled   0 = show light and temps on oled
 **************************************************************************/
-#define OLED_SHOW_SYSTEMDATA              1
+#define OLED_SHOW_SYSTEMDATA              0
 
 
 /**************************************************************************
@@ -192,8 +192,20 @@ struct sensorData_t                    /* struct to keep track of Dallas DS18B20
   char   name[15];
 };
 
-
+/* const */
 const char* defaultTimerFile   = "/default.aqu";
+
+/* task priorities */
+const uint8_t dimmerTaskPriority       = 7;
+const uint8_t webserverTaskPriority    = 6;
+const uint8_t tempTaskPriority         = 5;
+const uint8_t tftTaskPriority          = 2;
+const uint8_t ntpTaskPriority          = 1;
+const uint8_t oledTaskPriority         = 1;
+const uint8_t wifiTaskPriority         = 1;
+const uint8_t loggerTaskPriority       = 0;
+const uint8_t spiffsTaskPriority       = 0;
+
 
 /**************************************************************************
        start of global variables
@@ -260,9 +272,9 @@ void setup()
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 60000000 );
 
-  tft.begin( 20000000, SPI );
+  tft.begin( 10000000, SPI );
 
-  tftPresent = ( tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 );
+  tftPresent = tft.readcommand8( ILI9341_RDSELFDIAG ) != 0x00;
 
   if ( tftPresent )
   {
@@ -271,7 +283,7 @@ void setup()
       "tftTask",                      /* Name of the task */
       3000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
-      1,                              /* Priority of the task */
+      tftTaskPriority,                /* Priority of the task */
       &x_tftTaskHandle,               /* Task handle. */
       1);                             /* Core where the task should run */
   }
@@ -285,7 +297,7 @@ void setup()
     "wifiTask",                     /* Name of the task */
     2000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    1,                              /* Priority of the task */
+    wifiTaskPriority,               /* Priority of the task */
     NULL,                           /* Task handle. */
     1);
 
@@ -294,7 +306,7 @@ void setup()
     "tempTask",                     /* Name of the task */
     4000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    5,                              /* Priority of the task */
+    tempTaskPriority,               /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 
@@ -305,31 +317,20 @@ void setup()
       "oledTask",                     /* Name of the task */
       2000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
-      1,                              /* Priority of the task */
+      oledTaskPriority,               /* Priority of the task */
       NULL,                           /* Task handle. */
       1);                             /* Core where the task should run */
   }
 
-  Serial.println( "Starting and possibly formatting SPIFFS. ( Just be patient... )" );
-
-  if ( !SPIFFS.begin( false ) )
-  {
-    Serial.println( "No SPIFFS!" );
-  }
-  else
-  {
-    Serial.println( "SPIFFS started." );
-  }
+  xTaskCreatePinnedToCore(
+    spiffsTask,                     /* Function to implement the task */
+    "spiffsTask",                   /* Name of the task */
+    2000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    spiffsTaskPriority,             /* Priority of the task */
+    NULL,                           /* Task handle. */
+    1);                             /* Core where the task should run */
 }
-
-/*****************************************************************************************
-
-       loopTask start
-
-       http://www.iotsharing.com/2017/06/how-to-apply-freertos-in-arduino-esp32.html
-       http://www.iotsharing.com/2017/05/how-to-apply-finite-state-machine-to-arduino-esp32-avoid-blocking.html
-
-*****************************************************************************************/
 
 void loop()
 {

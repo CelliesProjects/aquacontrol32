@@ -33,12 +33,12 @@ void tftTask( void * pvParameters )
 
     ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
     tft.setRotation( tftOrientation );
+    while ( !x_dimmerTaskHandle )
+    {
+      vTaskDelay( 10 / portTICK_PERIOD_MS );
+    }
+    ledcWrite( TFT_BACKLIGHT_CHANNEL, 0 );
     xSemaphoreGive( x_SPI_Mutex );
-  }
-
-  while ( !x_dimmerTaskHandle )
-  {
-    vTaskDelay( 10 / portTICK_PERIOD_MS );
   }
 
   while (1)

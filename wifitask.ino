@@ -52,22 +52,23 @@ void wifiTask( void * pvParameters )
   Serial.println( "Local IP: " + WiFi.localIP().toString() );
   Serial.println( "MAC address: " + WiFi.macAddress() );
 
-  snprintf( hostName, sizeof( hostName ), "%s%c%c%c%c%c%c", DEFAULT_HOSTNAME_PREFIX,
-            WiFi.macAddress()[9], WiFi.macAddress()[10],
-            WiFi.macAddress()[12], WiFi.macAddress()[13],
-            WiFi.macAddress()[15], WiFi.macAddress()[16]
-          );
 
-  if ( !MDNS.begin( readStringNVS( "hostname", hostName ).c_str() ) )
+  strncpy( hostName, readStringNVS( "hostname", "" ).c_str(), sizeof( hostName ) );
+
+  if ( hostName[0] ==  0 )
+  {
+    snprintf( hostName, sizeof( hostName ), "%s%c%c%c%c%c%c", DEFAULT_HOSTNAME_PREFIX,
+              WiFi.macAddress()[9], WiFi.macAddress()[10],
+              WiFi.macAddress()[12], WiFi.macAddress()[13],
+              WiFi.macAddress()[15], WiFi.macAddress()[16]
+            );
+  }
+
+  if ( !setupMDNS( hostName ) )
   {
     Serial.println( "Error setting up mDNS." );
     memset( hostName, 0, sizeof( hostName ) );
   }
-  else
-  {
-    Serial.printf(  "MDNS name set to %s.\n", hostName );
-  }
-
 
   /* start network dependent tasks */
   xTaskCreatePinnedToCore(
@@ -75,7 +76,7 @@ void wifiTask( void * pvParameters )
     "ntpTask",                      /* Name of the task */
     2000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    1,                              /* Priority of the task */
+    ntpTaskPriority,                /* Priority of the task */
     NULL,                           /* Task handle. */
     1);
 
@@ -84,7 +85,7 @@ void wifiTask( void * pvParameters )
     "webServerTask",                /* Name of the task */
     1000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
-    6,                              /* Priority of the task */
+    webserverTaskPriority,          /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 

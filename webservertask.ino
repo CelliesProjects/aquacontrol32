@@ -291,7 +291,7 @@ void webServerTask ( void * pvParameters )
       {
         for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
         {
-          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%.1f\n", sensor[sensorNumber].name, sensor[sensorNumber].temp / 16 );
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%.3f\n", sensor[sensorNumber].name, sensor[sensorNumber].temp / 16 );
         }
       }
     }

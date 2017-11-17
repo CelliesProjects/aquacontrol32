@@ -701,11 +701,11 @@ void webServerTask ( void * pvParameters )
         }
         if ( filename == defaultTimerFile )
         {
-          newFile = SPIFFS.open( filename, "w" );
+          request->_tempFile = SPIFFS.open( filename, "w" );
         }
         else
         {
-          newFile = SD.open( filename, "w" );
+          request->_tempFile = SD.open( filename, "w" );
         }
         _authenticated = true;
       }
@@ -717,14 +717,17 @@ void webServerTask ( void * pvParameters )
       }
     }
 
-    if ( _authenticated )
+    if ( _authenticated && request->_tempFile && len )
     {
-      newFile.write( data, len );
+      request->_tempFile.write( data, len );
     }
 
     if ( _authenticated && final )
     {
-      newFile.close();
+      if ( request->_tempFile )
+      {
+        request->_tempFile.close();
+      }
       if ( filename == defaultTimerFile )
       {
         defaultTimersLoaded();

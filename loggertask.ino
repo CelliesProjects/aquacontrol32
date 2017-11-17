@@ -5,12 +5,6 @@ void loggerTask ( void * pvParameters )
 
   Serial.println( "Data logger task init." );
 
-  if ( !numberOfFoundSensors )
-  {
-    Serial.println( "No dallas sensors. Exiting task." );
-    vTaskDelete( NULL );
-  }
-
   if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
   {
     Serial.println( "Could not find sd card. SPI bus not available" );
@@ -28,6 +22,12 @@ void loggerTask ( void * pvParameters )
   uint64_t cardSize = SD.cardSize() / ( 1024 * 1024 );
   Serial.printf( "SD Card Size: %lluMB\n", cardSize );
   xSemaphoreGive( x_SPI_Mutex );
+
+  if ( !numberOfFoundSensors )
+  {
+    Serial.println( "No dallas sensors. Exiting task." );
+    vTaskDelete( NULL );
+  }
 
   while (1)
   {

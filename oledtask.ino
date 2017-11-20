@@ -2,8 +2,6 @@ void oledTask( void * pvParameters )
 {
   const uint32_t oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
 
-  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
-
   OLED.init();
   Serial.println( "OLED initialized." );
 
@@ -16,10 +14,10 @@ void oledTask( void * pvParameters )
   OLED.setTextAlignment( TEXT_ALIGN_CENTER );
   OLED.setFont( ArialMT_Plain_16 );
   OLED.drawString( 64, 10, F( "AquaControl32" ) );
-  OLED.drawString( 64, 30, F( "Booting..." ) );
+  OLED.drawString( 64, 30, F( "Starting WiFi..." ) );
   OLED.display();
 
-  while ( !x_dimmerTaskHandle )
+  while ( !xDimmerTaskHandle )
   {
     vTaskDelay( 10 / portTICK_PERIOD_MS );
   }

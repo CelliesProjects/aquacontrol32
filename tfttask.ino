@@ -33,7 +33,7 @@ void tftTask( void * pvParameters )
 
     ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
     tft.setRotation( tftOrientation );
-    while ( !x_dimmerTaskHandle )
+    while ( !xDimmerTaskHandle )
     {
       vTaskDelay( 10 / portTICK_PERIOD_MS );
     }

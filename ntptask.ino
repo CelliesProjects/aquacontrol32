@@ -29,7 +29,7 @@ void ntpTask( void * pvParameters )
     2500,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     dimmerTaskPriority,             /* Priority of the task */
-    &x_dimmerTaskHandle,            /* Task handle. */
+    &xDimmerTaskHandle,             /* Task handle. */
     1);                             /* Core where the task should run */
 
   xTaskCreatePinnedToCore(
@@ -38,7 +38,7 @@ void ntpTask( void * pvParameters )
     3000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     loggerTaskPriority,             /* Priority of the task */
-    &x_loggerTaskHandle,            /* Task handle. */
+    &xLoggerTaskHandle,             /* Task handle. */
     1);                             /* Core where the task should run */
 
   vTaskDelete( NULL );

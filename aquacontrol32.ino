@@ -6,16 +6,16 @@
 #include "apps/sntp/sntp.h"        //should be installed together with ESP32 Arduino install
 #include "Adafruit_GFX.h"          //Install via 'Manage Libraries' in Arduino IDE
 #include "Adafruit_ILI9341.h"      //Install via 'Manage Libraries' in Arduino IDE
-#include "OneWire.h"               //https://github.com/CelliesProjects/OneWire
+#include "OneWire.h"
 #include "SSD1306.h"               //https://github.com/squix78/esp8266-oled-ssd1306
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
 
 /**************************************************************************
-       1 = oled is enabled   0 = oled is disabled
+       OLED I2C address
 **************************************************************************/
-#define OLED_ENABLED                      1
+#define OLED_ADDRESS                      0x3C
 
 
 /**************************************************************************
@@ -29,12 +29,6 @@
 **************************************************************************/
 #define OLED_ORIENTATION_NORMAL           1
 #define OLED_ORIENTATION_UPSIDEDOWN       2
-
-
-/**************************************************************************
-       1 = tft is enabled   0 = tft is disabled
-**************************************************************************/
-#define TFT_ENABLED                      1
 
 
 /**************************************************************************
@@ -213,9 +207,10 @@ channelData_t           channel[NUMBER_OF_CHANNELS];
 
 sensorData_t            sensor[MAX_NUMBER_OF_SENSORS];
 
-TaskHandle_t            x_dimmerTaskHandle            = NULL;
-TaskHandle_t            x_tftTaskHandle               = NULL;
-TaskHandle_t            x_loggerTaskHandle            = NULL;
+TaskHandle_t            xDimmerTaskHandle            = NULL;
+TaskHandle_t            xTftTaskHandle               = NULL;
+TaskHandle_t            xOledTaskHandle              = NULL;
+TaskHandle_t            xLoggerTaskHandle            = NULL;
 
 //Boot time is saved
 timeval                 systemStart;
@@ -234,7 +229,6 @@ byte                    numberOfFoundSensors;
 String                  lightStatus;
 
 bool                    sdcardPresent                 = false;
-bool                    tftPresent                    = false;
 float                   tftBrightness                 = 80;                         /* in percent */
 uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
 
@@ -266,6 +260,27 @@ void setup()
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
 
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
+
+  Wire.beginTransmission( OLED_ADDRESS );
+  uint8_t err = Wire.endTransmission();
+  if ( err == 0 )
+  {
+    Serial.printf( "Found OLED device at address 0x%x\n", OLED_ADDRESS );
+    xTaskCreatePinnedToCore(
+      oledTask,                       /* Function to implement the task */
+      "oledTask",                     /* Name of the task */
+      2000,                           /* Stack size in words */
+      NULL,                           /* Task input parameter */
+      oledTaskPriority,               /* Priority of the task */
+      &xOledTaskHandle,               /* Task handle. */
+      1);                             /* Core where the task should run */
+  }
+  else
+  {
+    Serial.println( "No OLED found." );
+  }
+
   x_SPI_Mutex = xSemaphoreCreateMutex();
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
@@ -273,17 +288,16 @@ void setup()
 
   tft.begin( 40000000, SPI );
 
-  tftPresent = tft.readcommand8( ILI9341_RDSELFDIAG ) != 0x00;
-
-  if ( tftPresent )
+  if ( tft.readcommand8( ILI9341_RDSELFDIAG ) != 0x00 )
   {
+    Serial.println( "ILI9341 TFT display found" );
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
       "tftTask",                      /* Name of the task */
       3000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
       tftTaskPriority,                /* Priority of the task */
-      &x_tftTaskHandle,               /* Task handle. */
+      &xTftTaskHandle,                /* Task handle. */
       1);                             /* Core where the task should run */
   }
   else
@@ -308,18 +322,6 @@ void setup()
     tempTaskPriority,               /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
-
-  if ( OLED_ENABLED )
-  {
-    xTaskCreatePinnedToCore(
-      oledTask,                       /* Function to implement the task */
-      "oledTask",                     /* Name of the task */
-      2000,                           /* Stack size in words */
-      NULL,                           /* Task input parameter */
-      oledTaskPriority,               /* Priority of the task */
-      NULL,                           /* Task handle. */
-      1);                             /* Core where the task should run */
-  }
 
   xTaskCreatePinnedToCore(
     spiffsTask,                     /* Function to implement the task */

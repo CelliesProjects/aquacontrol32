@@ -200,7 +200,7 @@ void webServerTask ( void * pvParameters )
     }
     else if ( request->hasArg( "oledorientation" ) )
     {
-      if ( OLED_ENABLED )
+      if ( xOledTaskHandle )
       {
         snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
       }
@@ -220,7 +220,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "tftorientation" ) )
     {
-      if ( tftPresent )
+      if ( xTftTaskHandle )
       {
         snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
       }
@@ -298,7 +298,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "tftbrightness" ) )
     {
-      if ( tftPresent )
+      if ( xTftTaskHandle )
       {
         snprintf( content, sizeof( content ), "%.2f", tftBrightness );
       }
@@ -441,7 +441,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "lightsoff" ) )
     {
-      vTaskSuspend( x_dimmerTaskHandle );
+      vTaskSuspend( xDimmerTaskHandle );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         channel[channelNumber].currentPercentage = 0;
@@ -455,7 +455,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "lightson" ) )
     {
-      vTaskSuspend( x_dimmerTaskHandle );
+      vTaskSuspend( xDimmerTaskHandle );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         channel[channelNumber].currentPercentage = 100;
@@ -471,7 +471,7 @@ void webServerTask ( void * pvParameters )
     {
       lightStatus = "LIGHTS AUTO";
       snprintf( content, sizeof( content ), "%s", lightStatus.c_str() );
-      vTaskResume( x_dimmerTaskHandle );
+      vTaskResume( xDimmerTaskHandle );
     }
 
 

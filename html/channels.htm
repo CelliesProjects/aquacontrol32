@@ -135,6 +135,8 @@ $(document).ready( function() {
   getMinimumLevels();
 });
 
+/* functions */
+
 function getMinimumLevels(){
   $.get( "/api/getdevice?minimumlevels=" )
   .done( function( data ) {
@@ -154,7 +156,6 @@ function getMinimumLevels(){
   });
 }
 
-//functions
 function getChannelNames(){
   $.get( "/api/getdevice?channelnames=" )
   .done( function( data ) {
@@ -194,6 +195,11 @@ function getChannelColors(){
 
 //event handlers
 
+
+$('input').on( 'input', function() {
+  $('#statusBox').html('&nbsp;');
+});
+
 $( '.minLevel' ).on( 'input', function( ) {
   var thisChannel = $(this).parent().index();
   $('.minimumPercent').eq( thisChannel ).html( $(this).val() +'%' );
@@ -209,7 +215,8 @@ $( '.minLevel' ).on( 'change', function() {
     $('#statusBox').html( data );
   })
   .fail(function( data ) {
-    $('#statusBox').html( data.responseText );
+    $('#statusBox').html( data.statusText );
+    getMinimumLevels();
   });
 });
 
@@ -230,7 +237,7 @@ $( '.channelName' ).on( 'change', function( ) {
     getChannelNames();
   })
   .fail(function( data ) {
-    $('#statusBox').html( data.responseText );
+    $('#statusBox').html( data.statusText );
     $('.channelName').eq( thisChannel ).css({ 'background' : '#ff5e5e' } );
   });
 });
@@ -247,7 +254,8 @@ $( '.colorPicker' ).on( 'change', function() {
     $('#statusBox').html( "Channel " + ( thisChannel + 1 ) + " color set to <span style=\"color:#" + thisColor + ";\">#" + thisColor + "</span>" );
   })
   .fail(function( data ) {
-    $('#statusBox').html( data.responseText );
+    $('#statusBox').html( data.statusText );
+    getChannelColors();
   });
 });
 </script>

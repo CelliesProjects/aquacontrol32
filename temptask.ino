@@ -113,7 +113,7 @@ void tempTask( void * pvParameters )
           else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
           //// default is 12 bit resolution, 750 ms conversion time
         }
-        sensor[thisSensor].temp = raw;
+        sensor[thisSensor].tempCelcius = raw / 16.0;
       }
     }
   }

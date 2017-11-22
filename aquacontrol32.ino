@@ -181,7 +181,7 @@ struct channelData_t
 struct sensorData_t                    /* struct to keep track of Dallas DS18B20 sensors */
 {
   byte   addr[8];
-  float  temp;
+  float  tempCelcius;
   char   name[15];
 };
 

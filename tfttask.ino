@@ -126,7 +126,7 @@ void tftTask( void * pvParameters )
         for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
         {
           tft.setCursor( thisSensor * 90, BARS_BOTTOM + 15 );
-          tft.printf( " %.1f%cC", sensor[thisSensor].temp / 16.0, char(247) );
+          tft.printf( " %.1f%cC", sensor[thisSensor].tempCelcius, char(247) );
         }
       }
       else

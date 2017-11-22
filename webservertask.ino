@@ -252,7 +252,7 @@ void webServerTask ( void * pvParameters )
       uint8_t charCount = 0;
 
       charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", sensor[sensorNumber].name );
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%f\n", sensor[sensorNumber].temp / 16.0 );
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%f\n", sensor[sensorNumber].tempCelcius );
       charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%x\n", sensor[sensorNumber].addr );
     }
 
@@ -291,7 +291,7 @@ void webServerTask ( void * pvParameters )
       {
         for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
         {
-          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%.3f\n", sensor[sensorNumber].name, sensor[sensorNumber].temp / 16 );
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%.3f\n", sensor[sensorNumber].name, sensor[sensorNumber].tempCelcius );
         }
       }
     }

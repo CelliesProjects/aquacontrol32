@@ -153,7 +153,7 @@ Preferences preferences;
 
 OneWire  ds( ONEWIRE_PIN );  /* a 4.7K pull-up resistor is necessary */
 
-SSD1306  OLED( 0x3c, I2C_SDA_PIN, I2C_SCL_PIN );
+SSD1306  OLED( OLED_ADDRESS, I2C_SDA_PIN, I2C_SCL_PIN );
 
 AsyncWebServer server(80);
 

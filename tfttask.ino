@@ -11,13 +11,9 @@ void tftTask( void * pvParameters )
   const time_t tftTaskdelayTime         =   ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
   const time_t SPI_MutexMaxWaitTime     =                         100 / portTICK_PERIOD_MS;
 
+  uint16_t backlightMaxvalue;
+
   bool firstRun                         = true;
-
-  //setup backlight pwm
-  ledcAttachPin( TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_CHANNEL );
-  double backlightFrequency = ledcSetup( TFT_BACKLIGHT_CHANNEL , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
-
-  uint16_t backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
   if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
   {
@@ -27,6 +23,12 @@ void tftTask( void * pvParameters )
   else
   {
     tft.fillScreen( TFT_BACK_COLOR );
+
+    /* setup backlight pwm */
+    ledcAttachPin( TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_CHANNEL );
+    double backlightFrequency = ledcSetup( TFT_BACKLIGHT_CHANNEL , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
+
+    backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
     tftBrightness = readInt8NVS( "tftbrightness", tftBrightness );
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );

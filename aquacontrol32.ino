@@ -298,7 +298,7 @@ void setup()
       NULL,                           /* Task input parameter */
       tftTaskPriority,                /* Priority of the task */
       &xTftTaskHandle,                /* Task handle. */
-      1);                             /* Core where the task should run */
+      0);                             /* Core where the task should run */
   }
   else
   {

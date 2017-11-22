@@ -99,9 +99,6 @@ a {
   cursor:pointer;
 }
 
-#uploadBox{
-}
-
 input{
   margin:5px auto;
   vertical-align:middle;
@@ -111,7 +108,6 @@ input{
 
 input[type="text"], input[type="password"]{
     background: beige;
-//    width: 401px;
     height: 25px;
     margin: 0;
     vertical-align: middle;
@@ -157,15 +153,15 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a><a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div id="titleBox" class="shadowedBox">
   <h3 id="hostName">&nbsp;</h3>
-  <p>Control your lights and device.</p>
+  <p>Lights and device setup.</p>
 </div>
 <div class="shadowedBox">
-  <h3>LIGHT CONTROL</h3>
+  <h3>LIGHT SETUP</h3>
   <p class="item"><span id="lightStatus"></span></p>
   <p class="item"><input id="lightsOn" type="button" value="LIGHTS ON" disabled/><input id="lightsOff" type="button" value="LIGHTS OFF" disabled/><input id="lightsProgram" type="button" value="LIGHTS AUTO" disabled/></p>
 </div>
 <div class="shadowedBox">
-  <h3>DEVICE CONTROL</h3>
+  <h3>DEVICE SETUP</h3>
   <div class="settingsBox">
     <p class="item"><span id="deviceStatus">&nbsp;</span></p>
     <p class="item"><span class="itemName">TIME ZONE <a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneTextBox"></span></p>
@@ -201,7 +197,11 @@ function formatBytes( bytes, decimals ) {
   return parseFloat( ( bytes / Math.pow( k, i ) ).toFixed( dm ) ) + ' ' + sizes[i];
 }
 
+var getAllValues;
+
 $(document).ready( function() {
+
+  getAllValues = true;
 
   $.get( "/api/getdevice?hostname=" )
     .done(function( data ){
@@ -209,10 +209,13 @@ $(document).ready( function() {
       $( '#hostName' ).html( data );
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+      $( '#deviceStatus' ).html( data.statusText );
     })
     .always( function( data ){
-      getOledOrientation();
+      if ( getAllValues )
+      {
+        getOledOrientation();
+      }
     });
 });
 
@@ -226,12 +229,15 @@ function getOledOrientation(){
     })
     .fail( function( data ){
       if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( "Error getting oledorientation" + data.responseText );
+        $( '#deviceStatus' ).html( data.statusText );
         console.log( data );
       }
     })
     .always( function( data ){
-      getOledContrast();
+      if ( getAllValues )
+      {
+        getOledContrast();
+      }
     });
 }
 
@@ -242,10 +248,13 @@ function getOledContrast(){
       $('#oledContrastSlider').val( data );
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting oledcontrast" + data.responseText );
+      $( '#deviceStatus' ).html( data.statusText );
     })
     .always( function( data ){
-      getTftOrientation();
+      if ( getAllValues )
+      {
+        getTftOrientation();
+      }
     });
 }
 
@@ -263,12 +272,14 @@ function getTftOrientation(){
     })
     .fail( function( data ){
       if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( "Error getting tftorientation" + data.responseText );
-        console.log( data );
+        $( '#deviceStatus' ).html( "Errot getting tft orientation: " + data.statusText );
       }
     })
     .always( function( data ){
-      getTftMaxBrightness();
+      if ( getAllValues )
+      {
+        getTftMaxBrightness();
+      }
     });
 }
 
@@ -280,12 +291,15 @@ function getTftMaxBrightness(){
     })
     .fail( function( data ){
       if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( "Error getting tftmaxbrightness" + data );
+        $( '#deviceStatus' ).html( "Errot getting tft brightness: " + data.statusText );
         console.log( data );
       }
     })
     .always( function( data ){
-      getTimeZone();
+      if ( getAllValues )
+      {
+        getTimeZone();
+      }
     });
 }
 
@@ -295,10 +309,13 @@ function getTimeZone(){
       $('#timeZoneTextBox').val( data );
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting timezone" + data );
+      $( '#deviceStatus' ).html( data.statusText );
     })
     .always( function( data ){
-      getLightStatus();
+      if ( getAllValues )
+      {
+        getLightStatus();
+      }
     });
 }
 
@@ -317,10 +334,13 @@ function getLightStatus(){
       }
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting lightstatus" + data );
+      $( '#deviceStatus' ).html( "Error getting lightstatus: " + data.statusText );
     })
     .always( function( data ){
-      getBootTime();
+      if ( getAllValues )
+      {
+        getBootTime();
+      }
     });
 }
 
@@ -330,10 +350,13 @@ function getBootTime(){
       $('#bootTime').html( data );
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting boottime" + data );
+      $( '#deviceStatus' ).html( "Error getting boottime: " + data.statusText );
     })
     .always( function( data ){
-      getDiskSpace();
+      if ( getAllValues )
+      {
+        getDiskSpace();
+      }
     });
 }
 
@@ -349,7 +372,10 @@ function getDiskSpace(){
       }
     })
     .always( function( data ){
-      getPwmDepth();
+      if ( getAllValues )
+      {
+        getPwmDepth();
+      }
     });
 }
 
@@ -362,7 +388,10 @@ function getPwmDepth(){
       $( '#deviceStatus' ).html( "Error getting pwmdepth" + data.responseText );
     })
     .always( function( data ){
-      getPwmFrequency();
+      if ( getAllValues )
+      {
+        getPwmFrequency();
+      }
     });
 }
 
@@ -375,12 +404,25 @@ function getPwmFrequency(){
       $( '#deviceStatus' ).html( "Error getting pwmfrequency" + data.responseText );
     })
     .always( function( data ){
+      getAllValues = false;
       $('input').prop('disabled', false); /* and finally enable the inputs again */
       $('body').css('opacity','1');       /* and show the page */
     });
 }
 
   /* event handlers */
+
+$('#timeZoneTextBox, #hostNameInput, #passwordInput, .sensorNameInput').on('input', function() {
+  $( this ).css({'background':'yellow'});
+});
+
+$('input').on( 'input', function() {
+  $('#deviceStatus').html('');
+});
+
+$('input[type="button"]').on( 'click', function() {
+  $('#deviceStatus').html('');
+});
 
 $('#passwordInput').on('change', function( event ) {
   if (!confirm("You are about to change the admin password.\nAre you sure?") ) {
@@ -395,6 +437,7 @@ $('#passwordInput').on('change', function( event ) {
   })
   .fail(function( data ){
     $( '#deviceStatus' ).html( data.statusText );
+    $('#passwordInput').css({'background':'red'});
   });
 });
 
@@ -409,7 +452,8 @@ $('#oledOrientationSlider').on('change', function( event ) {
     $('#oledOrientationValue').html( data )
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+    $( '#deviceStatus' ).html( data.statusText  );
+    getOledOrientation();
   });
 });
 
@@ -424,7 +468,8 @@ $('#tftOrientationSlider').on('change', function( event ) {
     $('#tftOrientation').html( data )
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+    $( '#deviceStatus' ).html( data.statusText );
+    getTftOrientation();
   });
 });
 
@@ -437,7 +482,7 @@ $('#lightsOn').on('click', function() {
     $('#lightStatus').html( data );
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+    $( '#deviceStatus' ).html( data.statusText  );
   });
 });
 
@@ -450,7 +495,7 @@ $('#lightsOff').on('click', function() {
     $('#lightStatus').html( data );
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+    $( '#deviceStatus' ).html( data.statusText  );
   });
 });
 
@@ -463,12 +508,8 @@ $('#lightsProgram').on('click', function() {
     $('#lightStatus').html( data );
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+    $( '#deviceStatus' ).html( data.statusText  );
   });
-});
-
-$('#hostNameInput, .sensorNameInput').on('input', function() {
-  $( this ).css({'background':'yellow'});
 });
 
 $('#hostNameInput').on('change', function( data ) {
@@ -482,7 +523,7 @@ $('#hostNameInput').on('change', function( data ) {
       $( '#hostNameInput' ).css({'background':'lightgreen'});
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+      $( '#deviceStatus' ).html( data.statusText );
       $( '#hostNameInput' ).css({'background':'red'});
     });
 });
@@ -501,7 +542,8 @@ $('#oledContrastSlider').on('change', function() {
       $('#oledContrastSlider').val( data );
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+      $( '#deviceStatus' ).html( data.statusText  );
+      getOledContrast();
     });
 });
 
@@ -518,12 +560,9 @@ $('#tftBrightnessSlider').on('change', function() {
       $('#tftBrightnessSlider').val( data );
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+      $( '#deviceStatus' ).html( data.statusText  );
+      getTftMaxBrightness();
     });
-});
-
-$('#timeZoneTextBox').on('input', function() {
-  $( '#timeZoneTextBox' ).css({'background':'yellow'});
 });
 
 $('#timeZoneTextBox').on('change', function( data ) {
@@ -536,7 +575,7 @@ $('#timeZoneTextBox').on('change', function( data ) {
       $('#deviceStatus').html( 'Timezone set to ' + data );
     })
     .fail(function( data ) {
-      $('#deviceStatus').html( 'ERROR: ' + data.responseText );
+      $('#deviceStatus').html( data.statusText );
       $('#timeZoneTextBox').css( {'background':'red'} );
     });
 }); /* last in chain setup */
@@ -553,7 +592,7 @@ $('.sensorNameInput').on('change', function( data ) {
       $( '.sensorNameInput' ).eq( sensor ).css({'background':'lightgreen'});
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( "ERROR: " + data.responseText  );
+      $( '#deviceStatus' ).html( data.statusText );
       $( '.sensorNameInput' ).eq( sensor ).css({'background':'red'});
     });
 });

@@ -19,7 +19,7 @@ void tempTask( void * pvParameters )
     char buff[15];
     snprintf( buff, sizeof( buff ), "sensorname%i", numberOfFoundSensors );
 
-    /* and read value from NVS or use default name */ 
+    /* and read value from NVS or use default name */
     snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), readStringNVS( buff, "temp sensor" ).c_str(), numberOfFoundSensors  );
     numberOfFoundSensors++;
   }
@@ -34,15 +34,19 @@ void tempTask( void * pvParameters )
 
   while (1)
   {
-    for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
-    {
+    /*
+      for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
+      {
       ds.reset();
       ds.select( sensor[thisSensor].addr );
       ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
-    }
+      }
+    */
+    ds.reset();
+    ds.write( 0xCC, 0); /* Skip ROM - All sensors */
+    ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
 
     vTaskDelay( 750 / portTICK_PERIOD_MS); //wait for conversion ready
-
     for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
     {
       byte data[12];
@@ -55,12 +59,14 @@ void tempTask( void * pvParameters )
       //Serial.print(" ");
       for ( byte i = 0; i < 9; i++)
       { // we need 9 bytes
+
         data[i] = ds.read(  );
+
+
         //Serial.print(data[i], HEX);
         //Serial.print(" ");
       }
       //Serial.println();
-
       byte type_s;
       // the first ROM byte indicates which chip
       switch ( sensor[thisSensor].addr[0] )

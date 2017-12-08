@@ -11,6 +11,8 @@ These are the pin connections between the `MH-ET ESP32 D1 minikit` and the board
 | 6      | SD CS           |  0                 |
 | 7      | TFT LED         |  2                 |
 | 8      | MISO            | 39                 |
+| 9      | TOUCH CS        | 33                 |
+| 10     | TOUCH IRQ       | 35                 |
 
 10k pull-up resistors are needed for high speed operation on MOSI and CS lines.<br>
 See https://github.com/espressif/esp-idf/tree/master/examples/storage/sd_card

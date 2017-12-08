@@ -9,7 +9,7 @@ void spiffsTask( void * pvParameters )
   else
   {
     Serial.println( "SPIFFS started." );
-  }  
+  }
   vTaskDelete( NULL );
 }
 

@@ -39,7 +39,7 @@ void dimmerTask ( void * pvParameters )
   setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_MAXIMUM_FREQ ),
                            readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
 
-  lightStatus = "LIGHTS AUTO";
+  lightStatus = LIGHTS_AUTO;
 
   xLastWakeTime = xTaskGetTickCount();
 
@@ -125,4 +125,32 @@ void setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits
 static inline __attribute__((always_inline)) float mapFloat( float x, const float in_min, const float in_max, const float out_min, const float out_max)
 {
   return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
+}
+
+static inline __attribute__((always_inline)) void lightsOn()
+{
+  vTaskSuspend( xDimmerTaskHandle );
+  for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+  {
+    channel[channelNumber].currentPercentage = 100;
+    ledcWrite( channelNumber, ledcMaxValue );
+  }
+  lightStatus = LIGHTS_ON;
+}
+
+static inline __attribute__((always_inline)) void lightsOff()
+{
+  vTaskSuspend( xDimmerTaskHandle );
+  for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
+  {
+    channel[channelNumber].currentPercentage = 0;
+    ledcWrite( channelNumber, 0 );
+  }
+  lightStatus = LIGHTS_OFF;
+}
+
+static inline __attribute__((always_inline)) void lightsAuto()
+{
+  lightStatus = LIGHTS_AUTO;
+  vTaskResume( xDimmerTaskHandle );
 }

@@ -20,8 +20,6 @@ const char* textHtmlHeader   = "text/html";
 
 void webServerTask ( void * pvParameters )
 {
-  const uint64_t SPI_MutexMaxWaitTime = 500 / portTICK_PERIOD_MS;   /* 500 ms */
-
   Serial.println( "Starting webserver setup. " );
 
   server.serveStatic( defaultTimerFile, SPIFFS, defaultTimerFile );
@@ -75,15 +73,8 @@ void webServerTask ( void * pvParameters )
     {
       return request->requestAuthentication();
     }
-
-    if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
-    {
-      return request->send( 501, textPlainHeader, "SPI Bus not available" );
-    }
-
     if ( !request->hasArg( "filename" ) )
     {
-      xSemaphoreGive( x_SPI_Mutex );
       return request->send( 400, textPlainHeader, "Invalid filename." );
     }
 
@@ -98,15 +89,13 @@ void webServerTask ( void * pvParameters )
       path = request->arg( "filename" );
     }
 
-    if ( !SD.exists( path ) )
+    if ( !SPIFFS.exists( path ) )
     {
       path = request->arg( "filename" ) + " not found.";
-      xSemaphoreGive( x_SPI_Mutex );
       return request->send( 404, textPlainHeader, path );
     }
-    SD.remove( path );
+    SPIFFS.remove( path );
     path = request->arg( "filename" ) + " deleted.";
-    xSemaphoreGive( x_SPI_Mutex );
     request->send( 200, textPlainHeader, path );
   });
 
@@ -136,36 +125,17 @@ void webServerTask ( void * pvParameters )
     }
     else if ( request->hasArg( "diskspace" ) )
     {
-      if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime  ) )
-      {
-        return request->send( 501, textPlainHeader, "SPI bus not available" );
-      }
-      if ( sdcardPresent )
-      {
-        snprintf( content, sizeof( content ), "%llu" , SD.totalBytes() - SD.usedBytes() );
-      }
-      else
-      {
-        xSemaphoreGive( x_SPI_Mutex );
-        return request->send( 501, textPlainHeader, "SD card not available" );
-      }
-      xSemaphoreGive( x_SPI_Mutex );
+      snprintf( content, sizeof( content ), "%i" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
     }
     else if ( request->hasArg( "files" ) )
     {
-      if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
-      {
-        return request->send( 501, textPlainHeader, "SPI bus not available" );
-      }
-      File root = SD.open( "/" );
+      File root = SPIFFS.open( "/" );
       if ( !root )
       {
-        xSemaphoreGive( x_SPI_Mutex );
         return request->send( 503, textPlainHeader, "SD card not available." );
       }
       if ( !root.isDirectory() )
       {
-        xSemaphoreGive( x_SPI_Mutex );
         return request->send( 400, textPlainHeader, "Not a directory");
       }
       File file = root.openNextFile();
@@ -180,7 +150,6 @@ void webServerTask ( void * pvParameters )
         }
         file = root.openNextFile();
       }
-      xSemaphoreGive( x_SPI_Mutex );
     }
     else if ( request->hasArg( "hostname" ) )
     {
@@ -286,7 +255,7 @@ void webServerTask ( void * pvParameters )
       }
       time_t now = time(0);
       charCount += strftime( content + charCount, sizeof( content ) - charCount, "%T\n", localtime( &now ) );
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", lightStatus.c_str() );
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s\n", ToString( lightStatus ) );
       if ( numberOfFoundSensors )
       {
         for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
@@ -441,37 +410,24 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "lightsoff" ) )
     {
-      vTaskSuspend( xDimmerTaskHandle );
-      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-      {
-        channel[channelNumber].currentPercentage = 0;
-        ledcWrite( channelNumber, 0 );
-      }
-      lightStatus = "LIGHTS OFF ";
-      snprintf( content, sizeof( content ), "%s", lightStatus.c_str() );
+      lightsOff();
+      snprintf( content, sizeof( content ), "%s", ToString( lightStatus ) );
     }
 
 
 
     else if ( request->hasArg( "lightson" ) )
     {
-      vTaskSuspend( xDimmerTaskHandle );
-      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-      {
-        channel[channelNumber].currentPercentage = 100;
-        ledcWrite( channelNumber, ledcMaxValue );
-      }
-      lightStatus = " LIGHTS ON ";
-      snprintf( content, sizeof( content ), "%s", lightStatus.c_str() );
+      lightsOn();
+      snprintf( content, sizeof( content ), "%s", ToString( lightStatus ) );
     }
 
 
 
     else if ( request->hasArg( "lightsprogram" ) )
     {
-      lightStatus = "LIGHTS AUTO";
-      snprintf( content, sizeof( content ), "%s", lightStatus.c_str() );
-      vTaskResume( xDimmerTaskHandle );
+      lightsAuto();
+      snprintf( content, sizeof( content ), "%s", ToString( lightStatus ) );
     }
 
 
@@ -603,11 +559,6 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "tftorientation" ) )
     {
-      if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
-      {
-        return request->send( 501, textPlainHeader, "SPI bus not available" );
-      }
-
       if (  request->arg( "tftorientation" ) == "normal" )
       {
         tftOrientation = TFT_ORIENTATION_NORMAL;
@@ -622,10 +573,9 @@ void webServerTask ( void * pvParameters )
       }
       tft.setRotation( tftOrientation );
       tft.fillScreen( ILI9341_BLACK );
+      clearScreen = true;
       saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
       snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
-
-      xSemaphoreGive( x_SPI_Mutex );
     }
 
 
@@ -679,11 +629,6 @@ void webServerTask ( void * pvParameters )
   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
-    if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
-    {
-      return request->send( 503, textPlainHeader, "SPI bus not available." );
-    }
-
     static File   newFile;
     static bool   _authenticated;
     static time_t startTimer;
@@ -699,20 +644,12 @@ void webServerTask ( void * pvParameters )
         {
           filename = "/" + filename;
         }
-        if ( filename == defaultTimerFile )
-        {
-          request->_tempFile = SPIFFS.open( filename, "w" );
-        }
-        else
-        {
-          request->_tempFile = SD.open( filename, "w" );
-        }
+        request->_tempFile = SPIFFS.open( filename, "w" );
         _authenticated = true;
       }
       else
       {
         Serial.println( "Unauthorized access." );
-        xSemaphoreGive( x_SPI_Mutex );
         return request->send( 401, "text/plain", "Not logged in." );
       }
     }
@@ -734,7 +671,6 @@ void webServerTask ( void * pvParameters )
       }
       Serial.printf( "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
     }
-    xSemaphoreGive( x_SPI_Mutex );
   });
 
   server.onNotFound( []( AsyncWebServerRequest * request )
@@ -743,18 +679,11 @@ void webServerTask ( void * pvParameters )
 
     if ( request->method() == HTTP_GET )
     {
-      if ( !xSemaphoreTake( x_SPI_Mutex, SPI_MutexMaxWaitTime ) )
+      if ( SPIFFS.exists( request->url() ) )
       {
-        return request->send( 501, textPlainHeader, "SPI bus not available" );
-      }
-
-      if ( SD.exists( request->url() ) )
-      {
-        request->send( SD, request->url() );
-        xSemaphoreGive( x_SPI_Mutex );
+        request->send( SPIFFS, request->url() );
         return;
       }
-      xSemaphoreGive( x_SPI_Mutex );
       Serial.printf( "%s GET", notFound );
     }
     else if (request->method() == HTTP_POST)

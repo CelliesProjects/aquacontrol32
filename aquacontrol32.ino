@@ -1,15 +1,14 @@
 #include "SPI.h"                   //should be installed together with ESP32 Arduino install
-#include "SD.h"
 #include "SPIFFS.h"
 #include <ESPmDNS.h>               //should be installed together with ESP32 Arduino install
 #include <Preferences.h>           //should be installed together with ESP32 Arduino install
-#include "apps/sntp/sntp.h"        //should be installed together with ESP32 Arduino install
 #include "Adafruit_GFX.h"          //Install via 'Manage Libraries' in Arduino IDE
 #include "Adafruit_ILI9341.h"      //Install via 'Manage Libraries' in Arduino IDE
 #include "OneWire.h"
 #include "SSD1306.h"               //https://github.com/squix78/esp8266-oled-ssd1306
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <XPT2046_Touchscreen.h> /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
 
 
 /**************************************************************************
@@ -29,6 +28,14 @@
 **************************************************************************/
 #define OLED_ORIENTATION_NORMAL           1
 #define OLED_ORIENTATION_UPSIDEDOWN       2
+
+
+/**************************************************************************
+       Some tft/sdcard breakout boards from China have their TFT MISO pin unconnected.
+       These displays will not be detected by aquacontrol.
+       Set TFT_HAS_NO_MISO to 1 to override detection and use these tft boards.
+**************************************************************************/
+#define TFT_HAS_NO_MISO                  1
 
 
 /**************************************************************************
@@ -54,7 +61,7 @@
 /**************************************************************************
        update frequency for TFT display in Hz
 **************************************************************************/
-#define UPDATE_FREQ_TFT       10
+#define UPDATE_FREQ_TFT       5
 
 
 /**************************************************************************
@@ -108,6 +115,8 @@
 #define SPI_TFT_CS_PIN             4  // Goes to TFT CS
 #define SPI_SD_CS_PIN              0  // Goes to SD CS
 #define SPI_MISO_PIN              39  // Goes to TFT MISO
+#define TOUCH_CS_PIN              33  // Goes to TFT T_CS
+#define TOUCH_IRQ_PIN             35  // Goes to TFT T_IRQ
 
 //       5v                       // Goes to TFT Vcc-
 //       Gnd                      // Goes to TFT Gnd
@@ -147,6 +156,9 @@
 /**************************************************************************
       Setup included libraries
  *************************************************************************/
+XPT2046_Touchscreen touch( TOUCH_CS_PIN, TOUCH_IRQ_PIN );
+//XPT2046_Touchscreen touch( TOUCH_CS_PIN );
+
 Adafruit_ILI9341 tft = Adafruit_ILI9341( SPI_TFT_CS_PIN, SPI_TFT_DC_PIN, SPI_TFT_RST_PIN );
 
 Preferences preferences;
@@ -160,6 +172,22 @@ AsyncWebServer server(80);
 /**************************************************************************
        type definitions
 **************************************************************************/
+enum lightStatus_t
+{
+  LIGHTS_OFF, LIGHTS_ON, LIGHTS_AUTO
+};
+
+inline const char* ToString( lightStatus_t status )
+{
+  switch ( status )
+  {
+    case LIGHTS_OFF:   return " LIGHTS OFF";
+    case LIGHTS_ON:    return " LIGHTS ON ";
+    case LIGHTS_AUTO:  return "LIGHTS AUTO";
+    default:           return " UNDEFINED ";
+  }
+}
+
 struct lightTimerArr_t
 {
   time_t      time;                    /* time in seconds since midnight so range is 0-86400 */
@@ -190,8 +218,8 @@ const char* defaultTimerFile   = "/default.aqu";
 
 /* task priorities */
 const uint8_t dimmerTaskPriority       = 7;
-const uint8_t webserverTaskPriority    = 6;
-const uint8_t tempTaskPriority         = 5;
+const uint8_t webserverTaskPriority    = 5;
+const uint8_t tempTaskPriority         = 6;
 const uint8_t tftTaskPriority          = 2;
 const uint8_t ntpTaskPriority          = 1;
 const uint8_t oledTaskPriority         = 1;
@@ -207,6 +235,8 @@ channelData_t           channel[NUMBER_OF_CHANNELS];
 
 sensorData_t            sensor[MAX_NUMBER_OF_SENSORS];
 
+lightStatus_t           lightStatus;
+
 TaskHandle_t            xDimmerTaskHandle            = NULL;
 TaskHandle_t            xTftTaskHandle               = NULL;
 TaskHandle_t            xOledTaskHandle              = NULL;
@@ -214,9 +244,6 @@ TaskHandle_t            xLoggerTaskHandle            = NULL;
 
 //Boot time is saved
 timeval                 systemStart;
-
-//take turns using the SPI bus.
-xSemaphoreHandle        x_SPI_Mutex                   = NULL;
 
 char                    hostName[30];
 
@@ -226,9 +253,6 @@ uint8_t                 ledcNumberOfBits;
 
 byte                    numberOfFoundSensors;
 
-String                  lightStatus;
-
-bool                    sdcardPresent                 = false;
 float                   tftBrightness                 = 80;                         /* in percent */
 uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
 
@@ -251,6 +275,9 @@ void setup()
   pinMode( LED4_PIN, OUTPUT );
   pinMode( TFT_BACKLIGHT_PIN, OUTPUT );
 
+  pinMode( I2C_SCL_PIN, INPUT_PULLUP );
+  pinMode( I2C_SDA_PIN, INPUT_PULLUP );
+
   btStop();
 
   Serial.begin( 115200 );
@@ -260,13 +287,36 @@ void setup()
   Serial.println( ESP.getSdkVersion() );
   Serial.println();
 
-  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
+  SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
+  //SPI.setFrequency( 40000000 );
+
+  tft.begin( 20000000, SPI );
+
+  if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
+  {
+    touch.begin();
+    Serial.println( TFT_HAS_NO_MISO ? "Forced ILI9341 start." : "ILI9341 display found." );
+    xTaskCreatePinnedToCore(
+      tftTask,                        /* Function to implement the task */
+      "tftTask",                      /* Name of the task */
+      3000,                           /* Stack size in words */
+      NULL,                           /* Task input parameter */
+      tftTaskPriority,                /* Priority of the task */
+      &xTftTaskHandle,                /* Task handle. */
+      1);                             /* Core where the task should run */
+  }
+  else
+  {
+    Serial.println( "No ILI9341 found" );
+  }
+
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN );
 
   Wire.beginTransmission( OLED_ADDRESS );
   uint8_t err = Wire.endTransmission();
   if ( err == 0 )
   {
-    Serial.printf( "Found OLED device at address 0x%x\n", OLED_ADDRESS );
+    Serial.printf( "Found I2C device at address 0x%x.\n", OLED_ADDRESS );
     xTaskCreatePinnedToCore(
       oledTask,                       /* Function to implement the task */
       "oledTask",                     /* Name of the task */
@@ -278,31 +328,7 @@ void setup()
   }
   else
   {
-    Serial.println( "No OLED found." );
-  }
-
-  x_SPI_Mutex = xSemaphoreCreateMutex();
-
-  SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
-  SPI.setFrequency( 60000000 );
-
-  tft.begin( 40000000, SPI );
-
-  if ( tft.readcommand8( ILI9341_RDSELFDIAG ) != 0x00 )
-  {
-    Serial.println( "ILI9341 TFT display found" );
-    xTaskCreatePinnedToCore(
-      tftTask,                        /* Function to implement the task */
-      "tftTask",                      /* Name of the task */
-      3000,                           /* Stack size in words */
-      NULL,                           /* Task input parameter */
-      tftTaskPriority,                /* Priority of the task */
-      &xTftTaskHandle,                /* Task handle. */
-      0);                             /* Core where the task should run */
-  }
-  else
-  {
-    Serial.println( "No tft present" );
+    Serial.println( "No I2C device found." );
   }
 
   xTaskCreatePinnedToCore(

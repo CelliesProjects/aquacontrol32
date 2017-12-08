@@ -12,6 +12,8 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - Web interface to control the device.
 
+- XPT2046 touchscreen support.
+
 - Automatic NTP timekeeping.
 
 - 1-Wire Maxim ( Dallas ) DS18B20 sensor support.
@@ -20,11 +22,12 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - SPI 320x240 ILI9341 TFT support.
 
-- SPI SD card support.
+- SPIFFS storage support.
 
-- Temperature logging on SD card.
+- Temperature logging on SPIFFS.
 
-- Connect to WiFi using the Espressif ESPNOW Android app.
+- Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
+
 
 #### You will need:
 

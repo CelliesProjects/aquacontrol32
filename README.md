@@ -3,6 +3,8 @@
 Aquacontrol32 is software used to program and control 5 led strips to create more natural sunrises and sunsets in your aquarium.
 
 Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32).
+<br>You can connect a cheap 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s). 
+<br>The ILI9341 displays optionally come with a XPT2046 touch controller which is supported.
 
 #### The hardware:
 
@@ -10,7 +12,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 #### Features:
 
-- 5 channels led dimming at 1.22kHz with 16 bit ( 65535 steps ) resolution.
+- 5 channels led dimming ( common anode ) at 1.22kHz with 16 bit ( 65535 steps ) resolution.
 
 - 50 timers per channel.
 

@@ -44,3 +44,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 To compile or install Aquacontrol32, you will need the latest version [Arduino IDE](https://arduino.cc/), with the latest [ESP32 Arduino Core](https://github.com/espressif/arduino-esp32) installed.
 
 Aquacontrol32 can run happily with or without OLED or TFT display.
+
+#### Compile note:
+
+Core debug level (in 'Tools' menu) should be set to 'None' in the Arduino IDE.

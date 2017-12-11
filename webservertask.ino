@@ -22,8 +22,6 @@ void webServerTask ( void * pvParameters )
 {
   Serial.println( "Starting webserver setup. " );
 
-  server.serveStatic( defaultTimerFile, SPIFFS, defaultTimerFile );
-
   server.on( "/api/login", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
@@ -573,7 +571,7 @@ void webServerTask ( void * pvParameters )
       }
       tft.setRotation( tftOrientation );
       tft.fillScreen( ILI9341_BLACK );
-      clearScreen = true;
+      tftClearScreen = true;
       saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
       snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
     }
@@ -673,19 +671,14 @@ void webServerTask ( void * pvParameters )
     }
   });
 
+  server.serveStatic( "/", SPIFFS, "/" );
+
   server.onNotFound( []( AsyncWebServerRequest * request )
   {
     const char* notFound = "NOT_FOUND: ";
 
     if ( request->method() == HTTP_GET )
-    {
-      if ( SPIFFS.exists( request->url() ) )
-      {
-        request->send( SPIFFS, request->url() );
-        return;
-      }
       Serial.printf( "%s GET", notFound );
-    }
     else if (request->method() == HTTP_POST)
       Serial.printf("%s POST", notFound );
     else if (request->method() == HTTP_DELETE)

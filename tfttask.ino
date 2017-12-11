@@ -1,54 +1,72 @@
 const uint16_t TFT_BACK_COLOR         = ILI9341_BLACK;
 const bool     TFT_SHOW_RAW           = false;            /* show raw PWM values */
-
 const uint16_t TFT_TEXT_COLOR         = ILI9341_YELLOW;
 const uint16_t TFT_DATE_COLOR         = ILI9341_WHITE;
 const uint16_t TFT_TEMP_COLOR         = ILI9341_WHITE;
 const uint8_t  TFT_BACKLIGHT_BITDEPTH = 16;               /*min 11 bits, max 16 bits */
 const uint8_t  TFT_BACKLIGHT_CHANNEL  = NUMBER_OF_CHANNELS;
+const uint16_t TFT_BUTTON_WIDTH       = 100;
+const uint16_t TFT_BUTTON_HEIGHT      =  40;
 
 enum displayState {
   normal, menu
+};
+
+struct tftPoint_t
+{
+  uint16_t x;
+  uint16_t y;
 };
 
 struct button_t
 {
   uint16_t x;
   uint16_t y;
-  int16_t w;
-  int16_t h;
-  char text[10];
+  int16_t  w;
+  int16_t  h;
+  char     text[10];
 };
 
-const uint16_t BUTTON_WIDTH  = 100;
-const uint16_t BUTTON_HEIGHT =  40;
-
+/* buttons used in menu*/
 const button_t LIGHTON_BUTTON
 {
-  10, 10, BUTTON_WIDTH, BUTTON_HEIGHT, "ON"
+  10, 10, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "ON"
 };
 
 const button_t LIGHTOFF_BUTTON
 {
-  10, 90, BUTTON_WIDTH, BUTTON_HEIGHT, "OFF"
+  10, 90, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "OFF"
 };
 
 const button_t LIGHTAUTO_BUTTON
 {
-  10, 170, BUTTON_WIDTH, BUTTON_HEIGHT, "AUTO"
+  10, 170, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "AUTO"
 };
 
 const button_t EXIT_BUTTON
 {
-  210, 170, BUTTON_WIDTH, BUTTON_HEIGHT, "EXIT"
+  210, 170, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "EXIT"
 };
 
+/* button used on main screen */
 const button_t MENU_BUTTON
 {
-  210, 10, BUTTON_WIDTH, BUTTON_HEIGHT, "MENU"
+  210, 10, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "MENU"
 };
 
-bool clearScreen                       = true;
+/* slider for backlight control - note: XPOS is center of slider*/
+const uint16_t SLIDER_XPOS = 160;
+const uint16_t SLIDER_YPOS = 40;
+const uint16_t SLIDER_WIDTH = 60;
+const uint16_t SLIDER_HEIGHT = 180;
+
+/* area to check for touch to control backlight */
+const button_t sliderArea
+{
+  SLIDER_XPOS - SLIDER_WIDTH / 2, SLIDER_YPOS, SLIDER_WIDTH, SLIDER_HEIGHT
+};
+
+bool tftClearScreen = true;
 
 uint16_t backlightMaxvalue;
 
@@ -91,23 +109,16 @@ void tftTask( void * pvParameters )
   }
 }
 
-void drawMenuButtons()
-{
-  drawButton( LIGHTON_BUTTON,     lightStatus == LIGHTS_ON  ? ILI9341_RED : ILI9341_BLUE );
-  drawButton( LIGHTOFF_BUTTON,    lightStatus == LIGHTS_OFF ? ILI9341_RED : ILI9341_BLUE );
-  drawButton( LIGHTAUTO_BUTTON,   lightStatus == LIGHTS_AUTO ? ILI9341_RED : ILI9341_BLUE );
-  drawButton( EXIT_BUTTON, ILI9341_BLUE );
-}
-
 void showMenu()
 {
-  if ( clearScreen )
+  if ( tftClearScreen )
   {
     ledcWrite( TFT_BACKLIGHT_CHANNEL, 0 );
     tft.fillScreen( ILI9341_BLACK );
     drawMenuButtons();
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
-    clearScreen = false;
+    drawBacklightSlider();
+    tftClearScreen = false;
   }
 
   if ( touch.touched() )
@@ -129,10 +140,17 @@ void showMenu()
       lightsAuto();
       drawMenuButtons();
     }
+    else if ( buttonPressed( sliderArea , p ) )
+    {
+      struct tftPoint_t touchedLocation;
+      touchedLocation = location(  p  );
+      tftBrightness = map( touchedLocation.y , SLIDER_YPOS, SLIDER_HEIGHT + SLIDER_YPOS, 100, 0 );
+      drawBacklightSlider();
+    }
     else if ( buttonPressed( EXIT_BUTTON , p ) )
     {
       ledcWrite( TFT_BACKLIGHT_CHANNEL, 0 );
-      clearScreen = true;
+      tftClearScreen = true;
       tftState = normal;
     }
   }
@@ -140,7 +158,7 @@ void showMenu()
 
 void showStatus()
 {
-  const uint16_t BARS_BOTTOM      = 205;
+  const uint16_t BARS_BOTTOM      = 190;
   const uint16_t BARS_HEIGHT      = BARS_BOTTOM;
   const uint16_t BARS_BORDER      = 10;
   const uint16_t BARS_WIDTH       = 200 / 5;
@@ -148,11 +166,11 @@ void showStatus()
 
   uint16_t channelColor565[NUMBER_OF_CHANNELS];
 
-  if ( clearScreen )
+  if ( tftClearScreen )
   {
     tft.fillScreen( ILI9341_BLACK );
-    clearScreen = false;
-    drawButton( MENU_BUTTON, ILI9341_BLUE );
+    tftClearScreen = false;
+    drawButton( MENU_BUTTON, ILI9341_BLUE, 0 );
   }
 
   tft.startWrite();
@@ -218,17 +236,14 @@ void showStatus()
     for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
     {
       tft.setCursor( 200, 40 + thisSensor * 30 );
-      //char content[10];
-      //snprintf( content, sizeof( content ), "%.1f%cC", sensor[thisSensor].tempCelcius, char(247) );
-      //tft.printf( " %.1f%cC", sensor[thisSensor].tempCelcius, char(247) );
       button_t tempArea;
-      tempArea.x = 210;
-      tempArea.y = 90 + thisSensor * 30;
-      tempArea.w = BUTTON_WIDTH;
-      tempArea.h = 20;
+      tempArea.x = 220;
+      tempArea.y = 60 + thisSensor * 50;
+      tempArea.w = TFT_BUTTON_WIDTH - 20;
+      tempArea.h = 40;
       snprintf( tempArea.text, sizeof( tempArea.text ), "%.1f%c", sensor[thisSensor].tempCelcius, char(247) );
 
-      drawButton( tempArea, 0 );
+      drawButton( tempArea, 0, ILI9341_GREEN );
     }
   }
 
@@ -238,25 +253,27 @@ void showStatus()
   tft.setTextColor( TFT_DATE_COLOR , TFT_BACK_COLOR );
   tft.print( asctime( &timeinfo ) );
 
-
   if ( touch.touched() )
   {
     TS_Point p = touch.getPoint();
     if ( buttonPressed( MENU_BUTTON , p ) )
     {
       tftState = menu;
-      clearScreen = true;
+      tftClearScreen = true;
     }
-
   }
 }
 
-static inline __attribute__((always_inline)) void drawButton( struct button_t button, uint16_t color )
+static inline __attribute__((always_inline)) void drawButton( struct button_t button, uint16_t color, uint16_t bordercolor )
 {
   tft.setTextColor( ILI9341_YELLOW, color );
   if ( color )
   {
     tft.fillRect( button.x, button.y, button.w, button.h, color );
+  }
+  if ( bordercolor )
+  {
+    tft.drawRect( button.x, button.y, button.w, button.h, bordercolor );
   }
   int16_t x, y;
   uint16_t w, h;
@@ -266,20 +283,60 @@ static inline __attribute__((always_inline)) void drawButton( struct button_t bu
   tft.print( button.text );
 }
 
+static inline __attribute__((always_inline)) void drawMenuButtons()
+{
+  drawButton( LIGHTON_BUTTON,     lightStatus == LIGHTS_ON  ? ILI9341_RED : ILI9341_BLUE, 0 );
+  drawButton( LIGHTOFF_BUTTON,    lightStatus == LIGHTS_OFF ? ILI9341_RED : ILI9341_BLUE, 0 );
+  drawButton( LIGHTAUTO_BUTTON,   lightStatus == LIGHTS_AUTO ? ILI9341_RED : ILI9341_BLUE, 0 );
+  drawButton( EXIT_BUTTON, ILI9341_BLUE, 0 );
+}
+
 static inline __attribute__((always_inline)) bool buttonPressed( struct button_t button, const TS_Point p )
+{
+  tftPoint_t clickedLocation;
+  clickedLocation = mapToTft( p.x, p.y);
+  return ( clickedLocation.x > button.x && clickedLocation.x < button.x + button.w ) && ( clickedLocation.y > button.y && clickedLocation.y < button.y + button.h );
+}
+
+static inline __attribute__((always_inline)) struct tftPoint_t location( const TS_Point p )
+{
+  return mapToTft( p.x , p.y );
+}
+
+static inline __attribute__((always_inline)) tftPoint_t mapToTft( uint16_t touchX, uint16_t touchY )
 {
   uint16_t x, y;
 
   if ( tftOrientation == TFT_ORIENTATION_UPSIDEDOWN )
   {
-    x = mapFloat( p.x, 340, 3900, 0, 320 );
-    y = mapFloat( p.y, 200, 3850, 0, 240 );
+    x = mapFloat( touchX, 340, 3900, 0, 320 );
+    y = mapFloat( touchY, 200, 3850, 0, 240 );
   }
   else if ( tftOrientation == TFT_ORIENTATION_NORMAL )
   {
-    x = mapFloat( p.x, 340, 3900, 320, 0 );
-    y = mapFloat( p.y, 200, 3850, 240, 0 );
+    x = mapFloat( touchX, 340, 3900, 320, 0 );
+    y = mapFloat( touchY, 200, 3850, 240, 0 );
   }
-  //tft.drawPixel( x, y, ILI9341_GREEN );  //debug
-  return ( x > button.x && x < button.x + button.w ) && ( y > button.y && y < button.y + button.h );
+  return { x, y };
+}
+
+static inline __attribute__((always_inline)) void drawBacklightSlider()
+{
+  //TODO: only erase the button, not the slider
+  button_t sliderButton;
+
+  tft.startWrite();
+  tft.writeFillRect( sliderArea.x, sliderArea.y, sliderArea.w, sliderArea.h, ILI9341_BLACK);
+  tft.endWrite();
+  tft.drawRect( SLIDER_XPOS - 2, SLIDER_YPOS, 4, SLIDER_HEIGHT, ILI9341_YELLOW );
+
+  //drawButton( sliderArea, 0, ILI9341_GREEN ); //debug
+
+  uint16_t ypos = map( tftBrightness, 0, 100, SLIDER_HEIGHT, SLIDER_YPOS );
+  sliderButton = { SLIDER_XPOS - ( SLIDER_WIDTH / 2 ), ypos, SLIDER_WIDTH, 30 };
+
+  snprintf( sliderButton.text, sizeof( sliderButton.text ), "%.0f%%", tftBrightness );
+  drawButton( sliderButton, ILI9341_BLUE, ILI9341_RED );
+  //set backlight
+  ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
 }

@@ -157,7 +157,6 @@
       Setup included libraries
  *************************************************************************/
 XPT2046_Touchscreen touch( TOUCH_CS_PIN, TOUCH_IRQ_PIN );
-//XPT2046_Touchscreen touch( TOUCH_CS_PIN );
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341( SPI_TFT_CS_PIN, SPI_TFT_DC_PIN, SPI_TFT_RST_PIN );
 
@@ -288,9 +287,9 @@ void setup()
   Serial.println();
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
-  //SPI.setFrequency( 40000000 );
+  SPI.setFrequency( 80000000 );
 
-  tft.begin( 20000000, SPI );
+  tft.begin( 30000000, SPI );
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
   {

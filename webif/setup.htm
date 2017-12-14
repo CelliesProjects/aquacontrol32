@@ -328,7 +328,7 @@ function getLightStatus(){
       while ( item[7 + sensor] ){
         $('.sensorBar').eq( sensor ).show();
         var temp = item[7 + sensor].split(',');
-        $('.sensorBar .itemName').eq( sensor ).prepend( temp[1] + "°C - " );
+        $('.sensorBar .itemName').eq( sensor ).prepend( temp[1].substring( 0,  temp[1].indexOf( "." ) + 2 ) + "°C - " );
         $('.sensorNameInput').eq( sensor ).val( temp[0] );
         sensor++;
       }

@@ -111,22 +111,30 @@ void tftTask( void * pvParameters )
 
 void showMenu()
 {
+  static lightStatus_t lastStatus;
+
   if ( tftClearScreen )
   {
-    ledcWrite( TFT_BACKLIGHT_CHANNEL, 0 );
     tft.fillScreen( ILI9341_BLACK );
     drawMenuButtons();
     drawBacklightSlider();
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
     tftClearScreen = false;
+    lastStatus = lightStatus;
   }
 
   /* check if tftBrightness has changed */
   if ( map( tftBrightness, 0, 100, 0, backlightMaxvalue ) != ledcRead( TFT_BACKLIGHT_CHANNEL ) )
-  {
-    //set new backlight value
+  { /* set new backlight value */
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
     drawBacklightSlider();
+  }
+
+  /* check if light status has changed */
+  if ( lastStatus != lightStatus )
+  {
+    drawMenuButtons();
+    lastStatus = lightStatus;
   }
 
   if ( touch.touched() )
@@ -136,17 +144,14 @@ void showMenu()
     if ( buttonPressed( LIGHTSON_BUTTON , p ) )
     {
       lightsOn();
-      drawMenuButtons();
     }
     else if ( buttonPressed( LIGHTSOFF_BUTTON , p ) )
     {
       lightsOff();
-      drawMenuButtons();
     }
     else if ( buttonPressed( LIGHTSAUTO_BUTTON , p ) )
     {
       lightsAuto();
-      drawMenuButtons();
     }
     else if ( buttonPressed( sliderArea , p ) )
     {
@@ -154,7 +159,6 @@ void showMenu()
 
       touchedLocation = mapToTft( p.x, p.y );
       tftBrightness = map( touchedLocation.y , SLIDER_YPOS, SLIDER_HEIGHT + SLIDER_YPOS, 100, 0 );
-      drawBacklightSlider();
     }
     else if ( buttonPressed( EXIT_BUTTON , p ) )
     {

@@ -289,7 +289,7 @@ void setup()
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 80000000 );
 
-  tft.begin( 30000000, SPI );
+  tft.begin( 40000000, SPI );
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
   {

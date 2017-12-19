@@ -121,6 +121,14 @@ void showMenu()
     tftClearScreen = false;
   }
 
+  /* check if tftBrightness has changed */
+  if ( map( tftBrightness, 0, 100, 0, backlightMaxvalue ) != ledcRead( TFT_BACKLIGHT_CHANNEL ) )
+  {
+    //set new backlight value
+    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
+    drawBacklightSlider();
+  }
+
   if ( touch.touched() )
   {
     TS_Point p = touch.getPoint();

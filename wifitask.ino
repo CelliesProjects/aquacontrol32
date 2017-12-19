@@ -106,7 +106,6 @@ void connectWiFi()
 
   while ( WiFi.status() != WL_CONNECTED && millis() < endTime )
   {
-    Serial.print( "." );
     tft.print( "." );
     vTaskDelay( 500 / portTICK_PERIOD_MS );
   }

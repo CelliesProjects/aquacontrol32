@@ -1,6 +1,6 @@
 void dimmerTask ( void * pvParameters )
 {
-  const uint32_t dimmerTaskdelayTime = 1000U / UPDATE_FREQ_LEDS;
+  const uint64_t dimmerTaskdelayTime = 1000U / UPDATE_FREQ_LEDS;
 
   TickType_t xLastWakeTime;
 

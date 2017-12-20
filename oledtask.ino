@@ -1,6 +1,6 @@
 void oledTask( void * pvParameters )
 {
-  const uint32_t oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
+  const uint64_t oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
 
   OLED.init();
   Serial.println( "OLED initialized." );

@@ -74,7 +74,7 @@ bool tftClearScreen = true;
 
 void tftTask( void * pvParameters )
 {
-  const time_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
+  const uint64_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
 
   tft.fillScreen( TFT_BACK_COLOR );
 
@@ -355,8 +355,9 @@ static inline __attribute__((always_inline)) void drawBacklightSlider()
 
   tft.startWrite();
   tft.writeFillRect( sliderArea.x, sliderArea.y, sliderArea.w, sliderArea.h, ILI9341_BLACK);
+  tft.writeFillRect( SLIDER_XPOS - 2, SLIDER_YPOS, 4, SLIDER_HEIGHT, ILI9341_YELLOW );
   tft.endWrite();
-  tft.drawRect( SLIDER_XPOS - 2, SLIDER_YPOS, 4, SLIDER_HEIGHT, ILI9341_YELLOW );
+//  tft.drawRect( SLIDER_XPOS - 2, SLIDER_YPOS, 4, SLIDER_HEIGHT, ILI9341_YELLOW );
 
   //drawButton( sliderArea, 0, ILI9341_GREEN ); //debug
 

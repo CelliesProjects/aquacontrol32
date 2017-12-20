@@ -117,9 +117,9 @@ void setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits
   }
   ledcMaxValue = ( 0x00000001 << numberOfBits ) - 1;
   ledcNumberOfBits = numberOfBits;
-  Serial.printf( "\nPWM frequency set to %.2f kHz\n", ledcActualFrequency / 1000);
-  Serial.printf( "PWM bit depth set to %i bits\n", ledcNumberOfBits);
-  Serial.printf( "Maximum raw value set to 0x%x or %i decimal\n\n", ledcMaxValue, ledcMaxValue);
+  //Serial.printf( "\nPWM frequency set to %.2f kHz\n", ledcActualFrequency / 1000);
+  //Serial.printf( "PWM bit depth set to %i bits\n", ledcNumberOfBits);
+  //Serial.printf( "Maximum raw value set to 0x%x or %i decimal\n\n", ledcMaxValue, ledcMaxValue);
 }
 
 static inline __attribute__((always_inline)) float mapFloat( float x, const float in_min, const float in_max, const float out_min, const float out_max)

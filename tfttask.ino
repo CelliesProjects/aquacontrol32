@@ -187,14 +187,38 @@ void showStatus()
     140, 205, 170, 30
   };
 
+  button_t tempArea[numberOfFoundSensors];
+
   uint16_t channelColor565[NUMBER_OF_CHANNELS];
 
   if ( tftClearScreen )
   {
     tft.fillScreen( ILI9341_BLACK );
     drawButton( MENU_BUTTON, ILI9341_BLUE, 0 );
-    //tft.drawRect( TFT_CLOCK_AREA.x, TFT_CLOCK_AREA.y, TFT_CLOCK_AREA.w, TFT_CLOCK_AREA.h, ILI9341_WHITE );
-    //tft.drawRect( TFT_NETWORK_AREA.x, TFT_NETWORK_AREA.y, TFT_NETWORK_AREA.w, TFT_NETWORK_AREA.h, ILI9341_WHITE );
+    tft.setTextColor( ILI9341_YELLOW, ILI9341_BLACK );
+    tft.startWrite();
+    for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
+    {
+      tempArea[thisSensor].x = 220;
+      tempArea[thisSensor].y = 70 + thisSensor * 50;
+      tempArea[thisSensor].w = TFT_BUTTON_WIDTH - 20;
+      tempArea[thisSensor].h = 30;
+      tft.writeFastHLine( tempArea[thisSensor].x, tempArea[thisSensor].y, tempArea[thisSensor].w, ILI9341_GREEN );
+      tft.writeFastHLine( tempArea[thisSensor].x, tempArea[thisSensor].y + tempArea[thisSensor].h, tempArea[thisSensor].w, ILI9341_GREEN );
+      tft.writeFastVLine( tempArea[thisSensor].x, tempArea[thisSensor].y, tempArea[thisSensor].h, ILI9341_GREEN );
+      tft.writeFastVLine( tempArea[thisSensor].x + tempArea[thisSensor].w, tempArea[thisSensor].y, tempArea[thisSensor].h, ILI9341_GREEN );
+    }
+    tft.endWrite();
+    for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
+    {
+      int16_t x, y;
+      uint16_t w, h;
+      tft.setTextSize( 0 );
+      tft.getTextBounds( sensor[thisSensor].name, 0, 0, &x, &y, &w, &h);
+      tft.setCursor( ( tempArea[thisSensor].x + tempArea[thisSensor].w / 2 ) - w / 2,
+                     ( tempArea[thisSensor].y - 10 ) );
+      tft.print( sensor[thisSensor].name );
+    }
     tftClearScreen = false;
   }
 
@@ -253,21 +277,12 @@ void showStatus()
 
   ledcWrite( TFT_BACKLIGHT_CHANNEL, ( averageLedBrightness > rawBrightness ) ? rawBrightness : averageLedBrightness );
 
-  //draw temps under the menu button
-  tft.setTextSize( 2 );
   if ( numberOfFoundSensors )
   {
-    tft.setTextColor( TFT_TEMP_COLOR , TFT_BACK_COLOR );
     for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
     {
-      button_t tempArea;
-
-      tempArea.x = 220;
-      tempArea.y = 80 + thisSensor * 40;
-      tempArea.w = TFT_BUTTON_WIDTH - 20;
-      tempArea.h = 30;
-      snprintf( tempArea.text, sizeof( tempArea.text ), "%.1f%c", sensor[thisSensor].tempCelcius, char(247) );
-      drawButton( tempArea, 0, ILI9341_GREEN );
+      snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), "%.1f%c", sensor[thisSensor].tempCelcius, char(247) );
+      drawButton( tempArea[thisSensor], 0, 0 );
     }
   }
 
@@ -358,11 +373,10 @@ static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( uint16_
 
 static inline __attribute__((always_inline)) void drawBacklightSlider()
 {
-  //TODO: only erase the button, not the slider
-  button_t sliderButton;
+  static button_t sliderButton;
 
   tft.startWrite();
-  tft.writeFillRect( sliderArea.x, sliderArea.y, sliderArea.w, sliderArea.h, ILI9341_BLACK);
+  tft.writeFillRect( sliderButton.x, sliderButton.y, sliderButton.w, sliderButton.h, ILI9341_BLACK);
   tft.writeFillRect( SLIDER_XPOS - 2, SLIDER_YPOS, 4, SLIDER_HEIGHT, ILI9341_YELLOW );
   tft.endWrite();
 
@@ -373,6 +387,4 @@ static inline __attribute__((always_inline)) void drawBacklightSlider()
 
   snprintf( sliderButton.text, sizeof( sliderButton.text ), "%.0f%%", tftBrightness );
   drawButton( sliderButton, ILI9341_BLUE, 0 );
-  //set backlight
-  ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
 }

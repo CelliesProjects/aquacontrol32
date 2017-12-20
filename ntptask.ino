@@ -1,13 +1,20 @@
 void ntpTask( void * pvParameters )
 {
-  String NTPpoolAdress = COUNTRY_CODE_ISO_3166;
+  const char * NTPpool         = "pool.ntp.org";
+  const char * defaultTimezone = "CET-1CEST,M3.5.0/2,M10.5.0/3";
+  char NTPpoolAdress[20];
 
-  NTPpoolAdress += ".pool.ntp.org";
+  if ( COUNTRY_CODE_ISO_3166 )
+  {
+    snprintf( NTPpoolAdress, sizeof( NTPpoolAdress ), "%s.%s", COUNTRY_CODE_ISO_3166, NTPpool );
+  }
+  else
+  {
+    snprintf( NTPpoolAdress, sizeof( NTPpoolAdress ), "0.%s", NTPpool );
+  }
 
-  Serial.println( "Getting time from " + NTPpoolAdress );
-
-  configTzTime( readStringNVS( "timezone", "CET-1CEST,M3.5.0/2,M10.5.0/3" ).c_str(),
-                NTPpoolAdress.c_str(), "0.pool.ntp.org", "1.pool.ntp.org" );
+  configTzTime( readStringNVS( "timezone", defaultTimezone ).c_str(),
+                NTPpoolAdress );
 
   time_t now;
   struct tm timeinfo;

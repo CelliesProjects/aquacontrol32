@@ -2,23 +2,26 @@ void loggerTask ( void * pvParameters )
 {
   const uint64_t loggerTaskdelayTime  = ( 1000 * 60 ) / portTICK_PERIOD_MS;
 
-  Serial.println( "Data logger task init." );
-
-  Serial.printf( "Free space left on SPIFFS: %.2f MB.\n", ( SPIFFS.totalBytes() - SPIFFS.usedBytes() ) / ( 1024.0 * 1024 ) );
-
   if ( !numberOfFoundSensors )
   {
-    Serial.println( "No dallas sensors. Exiting task." );
     vTaskDelete( NULL );
   }
 
+  TickType_t xLastWakeTime;
+
+  xLastWakeTime = xTaskGetTickCount();
+
   while (1)
   {
+    char            content[40];
+    uint8_t           charCount = 0;
+    static bool systemHasBooted = true;
+    time_t                  now;
+    struct tm          timeinfo;
 
-    char content[40];
-    uint8_t charCount = 0;
+    time( &now );
 
-    charCount += snprintf( content, sizeof( content ), "%i,", time( NULL ) );
+    charCount += snprintf( content, sizeof( content ), "%i,", now );
 
     if ( numberOfFoundSensors )
     {
@@ -34,75 +37,45 @@ void loggerTask ( void * pvParameters )
       charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%s", "No sensors." );
     }
 
-    struct tm timeinfo;
-    getLocalTime( &timeinfo );
-
     char fileName[17];
+
+    localtime_r( &now, &timeinfo );
     strftime( fileName , sizeof( fileName ), "/%F.log", &timeinfo );
+
+    const char * appendError = "Failed to open log file.";
+
+    if ( systemHasBooted )
+    {
+      char buffer[40];
+
+      snprintf( buffer, sizeof( buffer ), "#%i Aquacontrol32 start", now );
+      if ( !writelnFile( SPIFFS, fileName, buffer ) )
+      {
+        Serial.println( appendError );
+      }
+      systemHasBooted = false;
+    }
 
     if ( !writelnFile( SPIFFS, fileName, content ) )
     {
-      Serial.println("Failed to open file for appending");
+      Serial.println( appendError );
     }
-    else
-    {
-      Serial.printf( "Written '%s' to '%s'.\n", content, fileName );
-    }
-    vTaskDelay( loggerTaskdelayTime );
+    vTaskDelayUntil( &xLastWakeTime, loggerTaskdelayTime / portTICK_PERIOD_MS );
   }
 }
 
-bool writelnFile( fs::FS &fs, const char * path, const char * message )
+static inline __attribute__((always_inline)) bool writelnFile( fs::FS &fs, const char * path, const char * message )
 {
   File file = fs.open( path, FILE_APPEND );
   if ( !file )
   {
-    Serial.println("Failed to open file for writing");
     return false;
   }
   if ( !file.println( message ) )
   {
-    Serial.println("File write failed");
     file.close();
     return false;
   }
   file.close();
   return true;
 }
-/*
-  void listDir( fs::FS &fs, const char * dirname, uint8_t levels )
-  {
-    Serial.printf( "Listing directory: %s\n", dirname );
-
-    File root = fs.open( dirname );
-    if( !root ){
-        Serial.println( "Failed to open directory" );
-        return;
-    }
-    if( !root.isDirectory() ){
-        Serial.println( "Not a directory" );
-        return;
-    }
-
-    File file = root.openNextFile();
-    while(file)
-    {
-        if(file.isDirectory())
-        {
-            Serial.print("  DIR : ");
-            Serial.println(file.name());
-            if(levels){
-                listDir(fs, file.name(), levels -1);
-            }
-        }
-        else
-        {
-            Serial.print("  FILE: ");
-            Serial.print(file.name());
-            Serial.print("  SIZE: ");
-            Serial.println(file.size());
-        }
-        file = root.openNextFile();
-    }
-  }
-*/

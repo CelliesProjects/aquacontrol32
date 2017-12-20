@@ -137,7 +137,7 @@ void showMenu()
     lastStatus = lightStatus;
   }
 
-  if ( touch.touched() )
+  if ( touch.tirqTouched() )
   {
     TS_Point p = touch.getPoint();
 

@@ -284,11 +284,9 @@ void showStatus()
   snprintf( TFT_NETWORK_AREA.text, sizeof( TFT_NETWORK_AREA.text ), "%s", ip4addr_ntoa( &ip_info.ip ) );
   drawButton( TFT_NETWORK_AREA, 0, 0 );
 
-
-  if ( touch.touched() )
+  if ( touch.tirqTouched() )
   {
-    TS_Point p = touch.getPoint();
-    if ( buttonPressed( MENU_BUTTON , p ) )
+    if ( buttonPressed( MENU_BUTTON , touch.getPoint() ) )
     {
       tftState = menu;
       tftClearScreen = true;
@@ -300,14 +298,24 @@ static inline __attribute__((always_inline)) void drawButton( struct button_t bu
 {
   tft.setTextSize( 2 );
   tft.setTextColor( ILI9341_YELLOW, color );
-  if ( color )
+
+  if ( color || bordercolor )
   {
-    tft.fillRect( button.x, button.y, button.w, button.h, color );
+    tft.startWrite();
+    if ( color )
+    {
+      tft.writeFillRect( button.x, button.y, button.w, button.h, color );
+    }
+    if ( bordercolor )
+    {
+      tft.writeFastHLine( button.x, button.y, button.w, bordercolor );
+      tft.writeFastHLine( button.x, button.y + button.h, button.w, bordercolor );
+      tft.writeFastVLine( button.x, button.y, button.h, bordercolor );
+      tft.writeFastVLine( button.x + button.w, button.y, button.h, bordercolor );
+    }
+    tft.endWrite();
   }
-  if ( bordercolor )
-  {
-    tft.drawRect( button.x, button.y, button.w, button.h, bordercolor );
-  }
+
   int16_t x, y;
   uint16_t w, h;
   tft.getTextBounds( button.text, 0, 0, &x, &y, &w, &h);
@@ -357,7 +365,6 @@ static inline __attribute__((always_inline)) void drawBacklightSlider()
   tft.writeFillRect( sliderArea.x, sliderArea.y, sliderArea.w, sliderArea.h, ILI9341_BLACK);
   tft.writeFillRect( SLIDER_XPOS - 2, SLIDER_YPOS, 4, SLIDER_HEIGHT, ILI9341_YELLOW );
   tft.endWrite();
-//  tft.drawRect( SLIDER_XPOS - 2, SLIDER_YPOS, 4, SLIDER_HEIGHT, ILI9341_YELLOW );
 
   //drawButton( sliderArea, 0, ILI9341_GREEN ); //debug
 

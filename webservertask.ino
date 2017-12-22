@@ -697,7 +697,8 @@ void webServerTask ( void * pvParameters )
     request->send( 404 );
   });
 
-  //start the web server
+  DefaultHeaders::Instance().addHeader( "Access-Control-Allow-Origin", "*" );
+
   server.begin();
   Serial.println("HTTP server setup done.");
 

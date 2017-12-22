@@ -49,15 +49,15 @@ const button_t EXIT_BUTTON
 };
 
 /* slider for backlight control - note: XPOS is center of slider*/
-const uint16_t SLIDER_XPOS = 160;
-const uint16_t SLIDER_YPOS = 40;
-const uint16_t SLIDER_WIDTH = 60;
-const uint16_t SLIDER_HEIGHT = 180;
+const uint16_t BL_SLIDER_XPOS = 160;
+const uint16_t BL_SLIDER_YPOS = 40;
+const uint16_t BL_SLIDER_WIDTH = 60;
+const uint16_t BL_SLIDER_HEIGHT = 180;
 
 /* area to check for touch to control backlight */
-const button_t sliderArea
+const button_t BL_SLIDER_AREA
 {
-  SLIDER_XPOS - SLIDER_WIDTH / 2, SLIDER_YPOS, SLIDER_WIDTH, SLIDER_HEIGHT
+  BL_SLIDER_XPOS - BL_SLIDER_WIDTH / 2, BL_SLIDER_YPOS, BL_SLIDER_WIDTH, BL_SLIDER_HEIGHT
 };
 
 /* buttons used on main screen */
@@ -109,38 +109,39 @@ void tftTask( void * pvParameters )
         showMenu();
         break;
 
-      default:     break;
+      default:
+        break;
     }
-    vTaskDelay( tftTaskdelayTime / portTICK_PERIOD_MS );
+    vTaskDelay( tftTaskdelayTime );
   }
 }
 
-void showMenu()
+static inline __attribute__((always_inline)) void showMenu()
 {
-  static lightStatus_t currentLightStatus;
+  static lightStatus_t tftLightStatus;
 
   if ( tftClearScreen )
   {
     tft.fillScreen( ILI9341_BLACK );
     drawMenuButtons();
-    drawBacklightSlider();
+    drawBacklightSlider( BL_SLIDER_AREA, "backlight" );
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
     tftClearScreen = false;
-    currentLightStatus = lightStatus;
+    tftLightStatus = lightStatus;
   }
 
   /* check if tftBrightness has changed */
   if ( map( tftBrightness, 0, 100, 0, backlightMaxvalue ) != ledcRead( TFT_BACKLIGHT_CHANNEL ) )
   { /* set new backlight value */
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
-    drawBacklightSlider();
+    drawBacklightSlider( BL_SLIDER_AREA, "" );
   }
 
   /* check if light status has changed */
-  if ( currentLightStatus != lightStatus )
+  if ( tftLightStatus != lightStatus )
   {
     drawMenuButtons();
-    currentLightStatus = lightStatus;
+    tftLightStatus = lightStatus;
   }
 
   if ( touch.tirqTouched() )
@@ -159,12 +160,12 @@ void showMenu()
     {
       lightsAuto();
     }
-    else if ( buttonPressed( sliderArea , p ) )
+    else if ( buttonPressed( BL_SLIDER_AREA , p ) )
     {
       tftPoint_t touchedLocation;
 
       touchedLocation = mapToTft( p.x, p.y );
-      tftBrightness = map( touchedLocation.y , SLIDER_YPOS, SLIDER_HEIGHT + SLIDER_YPOS, 100, 0 );
+      tftBrightness = map( touchedLocation.y , BL_SLIDER_YPOS, BL_SLIDER_HEIGHT + BL_SLIDER_YPOS, 100, 0 );
     }
     else if ( buttonPressed( EXIT_BUTTON , p ) )
     {
@@ -174,7 +175,7 @@ void showMenu()
   }
 }
 
-void showStatus()
+static inline __attribute__((always_inline)) void showStatus()
 {
   const uint16_t BARS_BOTTOM      = 190;
   const uint16_t BARS_HEIGHT      = BARS_BOTTOM;
@@ -183,7 +184,7 @@ void showStatus()
   const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
 
   static wl_status_t   currentWiFiStatus;
-  static lightStatus_t currentLightStatus;
+  static lightStatus_t tftLightStatus;
 
   button_t networkArea
   {
@@ -201,7 +202,6 @@ void showStatus()
   {
     tft.fillScreen( ILI9341_BLACK );
     drawButton( MENU_BUTTON, ILI9341_YELLOW, ILI9341_BLUE, 0, 1 );
-    tft.setTextColor( ILI9341_YELLOW, ILI9341_BLACK );
 
     showIPAddress( networkArea );
     currentWiFiStatus = WiFi.status();
@@ -220,7 +220,7 @@ void showStatus()
     }
     //tft.endWrite();
 
-    /* draw temp sensors */
+    /* draw temp sensor names */
     tft.setTextSize( 0 );
     for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
     {
@@ -279,8 +279,6 @@ void showStatus()
     if ( tftClearScreen || channel[channelNumber].currentPercentage != oldPercentage[channelNumber] )
     {
       button_t label;
-
-      char content[8];
 
       if ( TFT_SHOW_RAW )
       {
@@ -402,29 +400,37 @@ static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( uint16_
   return { x, y };
 }
 
-static inline __attribute__((always_inline)) void drawBacklightSlider()
+static inline __attribute__((always_inline)) void drawBacklightSlider( const button_t area, const char * label )
 {
-  const uint8_t SLIDER_BUTTON_HEIGHT = 10;
+  const uint8_t SLIDER_KNOB_HEIGHT = 10;
 
-  static button_t sliderButton = { SLIDER_XPOS - ( SLIDER_WIDTH / 2 ), 0, SLIDER_WIDTH, SLIDER_BUTTON_HEIGHT };
+  static button_t sliderKnob = { area.x, area.y, area.w, SLIDER_KNOB_HEIGHT };
 
   tft.startWrite();
-  tft.writeFillRect( sliderButton.x, sliderButton.y, sliderButton.w, sliderButton.h, ILI9341_BLACK);
-  tft.writeFillRect( SLIDER_XPOS - 2, SLIDER_YPOS, 4, SLIDER_HEIGHT, ILI9341_YELLOW );
+  tft.writeFillRect( sliderKnob.x, sliderKnob.y, sliderKnob.w, sliderKnob.h, ILI9341_BLACK);
+  tft.writeFillRect( area.x + area.w / 2  - 1, area.y, 2, area.h, ILI9341_YELLOW );
   tft.endWrite();
 
-  //drawButton( sliderArea, 0, ILI9341_GREEN ); //debug
+  //drawButton( area, 0, 0, ILI9341_GREEN, 0 ); //debug
+
+  if ( label )
+  {
+    //print label under the slider
+    sliderKnob.y = area.y + area.h + 4;
+    snprintf( sliderKnob.text, sizeof( sliderKnob.text ), "%s", label );
+    drawButton( sliderKnob, ILI9341_YELLOW, 0, 0, 0 );
+  }
 
   //print percentage above the slider
-  sliderButton.y = SLIDER_YPOS - 15;
-  snprintf( sliderButton.text, sizeof( sliderButton.text ), " %.0f%% ", tftBrightness ); /* extra spaces to overwrite old value */
-  drawButton( sliderButton, ILI9341_YELLOW, 0, 0, 2 );
+  sliderKnob.y = area.y - 17;
+  snprintf( sliderKnob.text, sizeof( sliderKnob.text ), " %.0f%% ", tftBrightness ); /* extra spaces to overwrite old value */
+  drawButton( sliderKnob, ILI9341_YELLOW, 0, 0, 2 );
 
   //draw the slider knob
-  uint16_t ypos = map( tftBrightness, 0, 100, SLIDER_HEIGHT + SLIDER_YPOS, SLIDER_YPOS );
-  sliderButton.y = ypos;
-  sliderButton.text[0] = 0;
-  drawButton( sliderButton, 0, ILI9341_BLUE, 0, 0 );
+  uint16_t ypos = map( tftBrightness, 0, 100, area.h + area.y, area.y );
+  sliderKnob.y = ypos;
+  sliderKnob.text[0] = 0;
+  drawButton( sliderKnob, 0, ILI9341_BLUE, 0, 0 );
 }
 
 static inline __attribute__((always_inline)) void showIPAddress( button_t area )

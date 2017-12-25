@@ -1,10 +1,11 @@
 //include all web interface header files
 //https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
 #include "webif/index_htm.h"
-#include "webif/editor_htm.h"
-#include "webif/setup_htm.h"
-#include "webif/fileman_htm.h"
 #include "webif/channels_htm.h"
+#include "webif/setup_htm.h"
+#include "webif/editor_htm.h"
+#include "webif/logs_htm.h"
+#include "webif/fileman_htm.h"
 
 /**************************************************************************
        Username and password for web interface
@@ -47,6 +48,12 @@ void webServerTask ( void * pvParameters )
   server.on( "/editor", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
     request->send_P( 200, textHtmlHeader, editor_htm );
+  });
+
+  //  /logs or 'logs.htm'
+  server.on( "/logs", HTTP_GET, [] ( AsyncWebServerRequest * request )
+  {
+    request->send_P( 200, textHtmlHeader, logs_htm );
   });
 
   //  /setup or 'setup.htm'

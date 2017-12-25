@@ -12,11 +12,12 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 #### Features:
 
-- 5 channels led dimming ( common anode ) at 1.22kHz with 16 bit ( 65535 steps ) resolution.
+- 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
 
 - 50 timers per channel.
 
-- Web interface to control the device.
+- Password protected web interface to control the device.
+<br>See it in action at my [fish](http://thuis.wasietsmet.nl:99/) and my [salamanders](http://thuis.wasietsmet.nl:88/) tank.
 
 - Automatic NTP timekeeping.
 

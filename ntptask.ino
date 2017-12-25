@@ -39,17 +39,15 @@ void ntpTask( void * pvParameters )
     &xDimmerTaskHandle,             /* Task handle. */
     1);                             /* Core where the task should run */
 
-  if ( numberOfFoundSensors )
-  {
-    xTaskCreatePinnedToCore(
-      loggerTask,                     /* Function to implement the task */
-      "loggerTask",                   /* Name of the task */
-      3000,                           /* Stack size in words */
-      NULL,                           /* Task input parameter */
-      loggerTaskPriority,             /* Priority of the task */
-      &xLoggerTaskHandle,             /* Task handle. */
-      1);                             /* Core where the task should run */
-  }
+  xTaskCreatePinnedToCore(
+    loggerTask,                     /* Function to implement the task */
+    "loggerTask",                   /* Name of the task */
+    3000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    loggerTaskPriority,             /* Priority of the task */
+    &xLoggerTaskHandle,             /* Task handle. */
+    1);                             /* Core where the task should run */
+
   vTaskDelete( NULL );
 
   //https://www.ibm.com/developerworks/aix/library/au-aix-posix/index.html#artdownload

@@ -1,66 +1,50 @@
 void loggerTask ( void * pvParameters )
 {
-  const uint64_t loggerTaskdelayTime  = ( 1000 * 60 ) / portTICK_PERIOD_MS;
-
-  if ( !numberOfFoundSensors )
-  {
-    vTaskDelete( NULL );
-  }
-
-  TickType_t xLastWakeTime;
-
-  xLastWakeTime = xTaskGetTickCount();
+  const uint64_t loggerTaskdelayTime  = ( 1000 * 119 ) / portTICK_PERIOD_MS;
 
   while (1)
   {
+    const char *    appendError = "Failed to write to log file.";
     char            content[40];
     uint8_t           charCount = 0;
     static bool systemHasBooted = true;
     time_t                  now;
     struct tm          timeinfo;
+    char           fileName[17];
 
     time( &now );
-
-    charCount += snprintf( content, sizeof( content ), "%i,", now );
-
-    if ( numberOfFoundSensors )
-    {
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%3.2f", sensor[ 0 ].tempCelcius);
-
-      for  ( uint8_t sensorNumber = 1; sensorNumber < numberOfFoundSensors; sensorNumber++ )
-      {
-        charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%3.2f", sensor[ sensorNumber ].tempCelcius );
-      }
-    }
-    else
-    {
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%s", "No sensors." );
-    }
-
-    char fileName[17];
-
     localtime_r( &now, &timeinfo );
     strftime( fileName , sizeof( fileName ), "/%F.log", &timeinfo );
 
-    const char * appendError = "Failed to open log file.";
-
     if ( systemHasBooted )
     {
-      char buffer[40];
-
-      snprintf( buffer, sizeof( buffer ), "#%i Aquacontrol32 start", now );
-      if ( !writelnFile( SPIFFS, fileName, buffer ) )
+      snprintf( content, sizeof( content ), "#%i Aquacontrol32 start", now );
+      if ( !writelnFile( SPIFFS, fileName, content ) )
       {
         Serial.println( appendError );
       }
       systemHasBooted = false;
     }
 
-    if ( !writelnFile( SPIFFS, fileName, content ) )
+    if ( numberOfFoundSensors )
     {
-      Serial.println( appendError );
+      charCount += snprintf( content, sizeof( content ), "%i,", now );
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%3.2f", sensor[ 0 ].tempCelcius);
+
+      for  ( uint8_t sensorNumber = 1; sensorNumber < numberOfFoundSensors; sensorNumber++ )
+      {
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%3.2f", sensor[ sensorNumber ].tempCelcius );
+      }
+      if ( !writelnFile( SPIFFS, fileName, content ) )
+      {
+        Serial.println( appendError );
+      }
     }
-    vTaskDelayUntil( &xLastWakeTime, loggerTaskdelayTime / portTICK_PERIOD_MS );
+    else
+    {
+      vTaskDelete( NULL );
+    }
+    vTaskDelay( loggerTaskdelayTime );
   }
 }
 

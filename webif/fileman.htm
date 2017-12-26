@@ -73,14 +73,15 @@ a {
   float:left;
 }
 .fileName{
-  width:60%
+  width:60%;
 }
 
 .fileSize{
-  width:20%
+  width:20%;
+  text-align:right;
 }
 .deleteButton{
-  width:20%
+  width:20%;
 }
 .deleteButton:hover{
   background:red;
@@ -210,6 +211,7 @@ function readFiles(){
   })
   .done( function( data ) {
     var files = data.split( "\n" );
+    files.sort();
     files.forEach( function( item ) {
       if ( item == "" ) { return; }
       thisFile = item.split( "," );

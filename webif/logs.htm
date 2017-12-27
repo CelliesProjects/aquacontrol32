@@ -129,7 +129,7 @@ p{
   background-color: yellow;
 }
 
-.testButton{
+.rangeButton, .baseButton{
   width:50%;
   height:30px;
 }
@@ -144,22 +144,46 @@ p{
 <canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
   <div id="sideBox" class="shadowedBox">
     <p id="rangeStatus">range</p>
-    <p><button class="testButton rangeButton">RANGE-</button><button class="testButton rangeButton">RANGE+</button></p>
+    <p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button></p>
     <p id="baseStatus">base</p>
-    <p><button class="testButton baseButton">CENTER-</button><button class="testButton baseButton">CENTER+</button></p>
+    <p><button class="baseButton">CENTER-</button><button class="baseButton">CENTER+</button></p>
     <div id="fileList"></div>
   </div>
 <script>
 //https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial
 //https://www.w3schools.com/tags/ref_canvas.asp
 
-//const hostName = 'http://192.168.0.198';
+//const hostName = 'http://192.168.0.198'; //debug/develop
 const hostName = '';
 
-var bootCount = 0;
-
+var grapArea = document.getElementById( 'editorCanvas' );
 var rangeBottom = 15;
 var rangeTop    = 25;
+var measurements;
+
+$( document ).ready( function() {
+  var fileArray;
+  showRange();
+  showBase();
+  $.get( hostName + "/api/getdevice?hostname=")
+    .done(function( data ){
+      $( "#hostName" ).html( data + " LOG FILES");
+      document.title = data.toUpperCase();
+      $.get( hostName + '/api/getdevice?files=', function( data )
+      {
+        fileArray = data.split('\n');
+        fileArray.sort();
+        for ( f = 0; f < fileArray.length; f++ )
+        {
+          if ( fileArray[f].substring( 11, 15 ) == '.log' )
+          {
+            $('#fileList').append( '<div class="logFile">'+ fileArray[f].substring( 1, 11 ) + "</div>" );
+          }
+        }
+        $('.logFile').last().click();
+      });
+    })
+});
 
 function map( x,  in_min,  in_max,  out_min,  out_max)
 {
@@ -170,52 +194,49 @@ function drawLogFile( url )
 {
   $.get( url, function( data )
   {
-    bootCount = 0;
-    var measurements = data.split('\n');
-    var grapArea = document.getElementById( 'editorCanvas' );
-    var ctx = grapArea.getContext( "2d" );
-    ctx.clearRect(0, 0, grapArea.width, grapArea.height);
-    drawGraph( measurements, grapArea, "rgba( 0,255,0, 0.5)", 1, rangeBottom, rangeTop, true );
-    drawGraph( measurements, grapArea, "rgba( 0,0,255, 0.5)", 2, rangeBottom, rangeTop, false );
-    drawGraph( measurements, grapArea, "rgba( 255,0,0, 0.5)", 3, rangeBottom, rangeTop, false );
+    measurements = data.split('\n');
+    drawAllGraphs();
+    var bootCount = 0;
     measurements.forEach( function( item, index )
-    { 
+    {
       if ( item.indexOf( 'Aquacontrol32 start' ) > 0  )
       {
        bootCount++;
       }
     });
-    
+
     if ( bootCount )
     {
       url += " - System reboots: " + bootCount;
     }
-    ctx.textBaseline="bottom"; 
-    ctx.textAlign="left"; 
+    var ctx = grapArea.getContext( "2d" );
+    ctx.textBaseline="bottom";
+    ctx.textAlign="left";
     ctx.strokeStyle = 'rgba( 255, 255, 255, 0.9 )';
     ctx.strokeText( url, 10,  grapArea.height - 10 );
   });
 }
 
-function drawGraph( data, canvas, color, sensor, mintemp, maxtemp, legend )
+function drawSingleChannel( data, canvas, color, sensor, mintemp, maxtemp, legend )
 {
   const opacity = 0.3;
   const lineDash = [ 2, 2 ];
   var ctx = canvas.getContext( "2d" );
+
   ctx.beginPath();
 
   if ( legend )
   {
     ctx.strokeStyle = 'rgba( 255, 165, 0, ' + opacity + ')';
     ctx.font = '15px serif';
- 
+
     for ( hour = 0; hour < 25; hour++ )
     {
       var x = map( hour, 0, 24, 0, canvas.width );
       ctx.moveTo( x, 0 );
       ctx.lineTo( x, canvas.height );
       ctx.setLineDash([]);
-      ctx.textBaseline="middle"; 
+      ctx.textBaseline="middle";
       ctx.textAlign="center";
       ctx.strokeText( hour + "h", x, 10 );
       ctx.strokeText( hour + "h", x, canvas.height / 2 );
@@ -233,7 +254,7 @@ function drawGraph( data, canvas, color, sensor, mintemp, maxtemp, legend )
       var tempstr = parseInt( map( y, 0, canvas.height, maxtemp, mintemp ) );
       tempstr += "°";
       ctx.setLineDash([]);
-      ctx.textBaseline="middle"; 
+      ctx.textBaseline="middle";
       ctx.textAlign="center";
       ctx.strokeText( tempstr, 20, y );
       ctx.strokeText( tempstr, canvas.width / 2, y );
@@ -246,6 +267,7 @@ function drawGraph( data, canvas, color, sensor, mintemp, maxtemp, legend )
   ctx.setLineDash([]);
   ctx.strokeStyle = color;
 
+  /* draw the actual graph */
   var closeLine = true;
   for ( p = 0; p < data.length; p++ )
   {
@@ -254,7 +276,7 @@ function drawGraph( data, canvas, color, sensor, mintemp, maxtemp, legend )
 
     if ( isNaN( date.getTime() ) )
     {
-       closeLine = true;
+      closeLine = true;
     }
     else
     {
@@ -264,6 +286,7 @@ function drawGraph( data, canvas, color, sensor, mintemp, maxtemp, legend )
 
       var y = map( temp[ sensor ], mintemp, maxtemp, canvas.height, 0 );
       var x = map( secondsToday, 0, 86400, 0, canvas.width );
+
       if ( closeLine )
       {
         ctx.moveTo( x, y );
@@ -275,34 +298,6 @@ function drawGraph( data, canvas, color, sensor, mintemp, maxtemp, legend )
   ctx.stroke();
 }
 
-var currentFile = 0;
-
-$( document ).ready( function() {
-  var fileArray;
-  showRange();
-  showBase();
-
-
-  $.get( hostName + "/api/getdevice?hostname=")
-    .done(function( data ){
-      $( "#hostName" ).html( data + " LOG FILES");
-      document.title = data.toUpperCase();
-      $.get( hostName + '/api/getdevice?files=', function( data )
-      {
-        fileArray = data.split('\n');
-        fileArray.sort();
-        for ( f = 0; f < fileArray.length; f++ )
-        {
-          if ( fileArray[f].substring( 11, 15 ) == '.log' )
-          {
-            $('#fileList').append( '<div class="logFile">'+ fileArray[f].substring( 1, 11 ) + "</div>" );
-          }
-        }
-        currentFile = $('.logFile').last().index('.logFile');
-        $('.logFile').last().click();
-      });
-    })
-});
 
 $('#sideBox').on( 'click', '.logFile', function()
 {
@@ -310,7 +305,6 @@ $('#sideBox').on( 'click', '.logFile', function()
   $(this).css( { "background-color" : "darkgreen" } );
   var newurl = hostName + '/';
   newurl += $( this ).html() + '.log';
-  currentFile = $( this ).index('.logFile');
   drawLogFile( newurl );
 });
 
@@ -331,7 +325,7 @@ $('.rangeButton').on( 'click', function()
     rangeTop++;
   }
   showRange();
-  $('.logFile').eq( currentFile ).click();
+  drawAllGraphs();
 });
 
 function showBase()
@@ -352,9 +346,17 @@ $('.baseButton').on( 'click', function()
   }
   showBase();
   showRange();
-  $('.logFile').eq( currentFile ).click();
+  drawAllGraphs();
 });
 
+function drawAllGraphs()
+{
+  var ctx = grapArea.getContext( "2d" );
+  ctx.clearRect(0, 0, grapArea.width, grapArea.height);
+  drawSingleChannel( measurements, grapArea, "rgba( 0,255,0, 0.5)", 1, rangeBottom, rangeTop, true );
+  drawSingleChannel( measurements, grapArea, "rgba( 0,0,255, 0.5)", 2, rangeBottom, rangeTop, false );
+  drawSingleChannel( measurements, grapArea, "rgba( 255,0,0, 0.5)", 3, rangeBottom, rangeTop, false );
+}
 </script>
 </body>
 </html>

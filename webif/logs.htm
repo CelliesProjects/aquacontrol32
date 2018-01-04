@@ -5,6 +5,19 @@
 <meta charset="utf-8">
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">  <!--prevent favicon requests-->
 <style>
+  @-webkit-keyframes blinker {
+  from {opacity: 1.0;}
+  to {opacity: 0.0;}
+}
+.blink{
+  color:red;
+	text-decoration: blink;
+	-webkit-animation-name: blinker;
+	-webkit-animation-duration: 0.6s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-timing-function:ease-in-out;
+	-webkit-animation-direction: alternate;
+}
 html, body{
   margin:0 auto;
   background-color:grey;
@@ -45,6 +58,7 @@ p{
   display:inline-block;
   float:left;
   margin:0;
+  display:none;
 }
 #sideBox{
   width:210px;
@@ -54,47 +68,66 @@ p{
   float:right;
   overflow:hidden;
   margin:0;
+  display:none;
 }
 #fileList{
-  overflow:hidden;
-  width:100%;
+  overflow-y:auto;
+  margin:10px;
+  height:275px;
 }
 .logFile:hover{
-  background-color: yellow;
+  background-color:yellow;
+  cursor:pointer;
+}
+button:hover{
+  cursor:pointer;
 }
 .rangeButton, .baseButton{
   width:50%;
-  height:30px;
 }
-.sensorItem{
+.controlBox{
+  margin: 10px;
+  background-color: antiquewhite;
+  font-size: initial;
+  overflow:hidden;
   display:none;
+}
+#loaderBox{
+  line-height:400px;
+  background-color:darkgreen;
 }
 </style>
 <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div class="hostName shadowedBox"><h3 id="hostName">Loading...</h3></div>
+<div class="shadowedBox" id="loaderBox">CHECKING...</div>
 <canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
   <div id="sideBox" class="shadowedBox">
-    <p id="baseStatus" class="sensorItem">base</p>
-    <p><button class="baseButton sensorItem">CENTER-</button><button class="baseButton sensorItem">CENTER+</button></p>
-    <p id="rangeStatus" class="sensorItem">range</p>
-    <p><button class="rangeButton sensorItem">RANGE-</button><button class="rangeButton sensorItem">RANGE+</button></p>
-    <div id="fileList"></div>
+    <div class="controlBox shadowedBox">
+    <p id="baseStatus">&nbsp;</p>
+    <p><button class="baseButton">CENTER-</button><button class="baseButton">CENTER+</button></p>
+    </div>
+    <div class="controlBox shadowedBox">
+    <p id="rangeStatus">&nbsp;</p>
+    <p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button></p>
+    </div>
+    <div id="fileList" class="shadowedBox controlBox"></div>
   </div>
 <script>
-//const hostName = 'http://192.168.0.198'; //debug/develop
+//const hostName = 'http://192.168.0.197'; //debug/develop
 const hostName = '';
 var grapArea = document.getElementById( 'editorCanvas' );
-var rangeBottom = 15;
-var rangeTop    = 25;
+var rangeBottom = 10;
+var rangeTop    = 30;
 var sensorColor = ["","rgba( 255,0, 0, 0.9)","rgba( 0,255,0, 0.9)","rgba( 0,0,255, 0.9)"];
 var sensorName  = [];
 var measurements;
 $( document ).ready( function() {
+  if ( hostName ) $('body').append( '<p class="blink">!!!!!debug enabled!!!!!</p>')
   $.get( hostName + "/api/getdevice?hostname=")
     .done(function( data ){
-      $( "#hostName" ).html( data + " LOG FILES");
+      $( "#hostName" ).html( data + " LOGS");
       document.title = data.toUpperCase();
       $.get( hostName + '/api/getdevice?files=', function( data )
       {
@@ -107,7 +140,16 @@ $( document ).ready( function() {
             $('#fileList').append( '<div class="logFile">'+ fileArray[f].substring( 1, 11 ) + "</div>" );
           }
         }
-        $('.logFile').last().click();
+        if ( !$('.logFile').length )
+        {
+          $('#loaderBox').html( "NO LOGS FOUND" );
+        }
+        else
+        {
+          $('#loaderBox').hide();
+          $('#editorCanvas, #sideBox, .controlBox').show();
+          $('.logFile').last().click();
+        }
       });
     })
 });
@@ -141,6 +183,8 @@ function drawLogFile( url )
 {
   $.get( url, function( data )
   {
+    grapArea.width = grapArea.width;
+    var ctx = grapArea.getContext( "2d" );
     measurements = data.split('\n');
     var bootCount = 0;
     var numberOfMeasurements = 0;
@@ -157,14 +201,15 @@ function drawLogFile( url )
     });
     if ( numberOfMeasurements )
     {
-      $('.sensorItem').show();
+      $('.controlBox').show();
       showRange();
       showBase();
       drawAllGraphs();
     }
-    var ctx = grapArea.getContext( "2d" );
     if ( !numberOfMeasurements )
     {
+      $('.baseButton, .rangeButton').attr('disabled', 'disabled');
+
       ctx.textBaseline="middle";
       ctx.textAlign="center";
       ctx.font = '20px serif';
@@ -184,9 +229,9 @@ function drawLogFile( url )
           showChannelColor( offset - 6 );
           offset++;
         }
+        $('.baseButton, .rangeButton').removeAttr('disabled');
       });
     }
-
     if ( bootCount )
     {
       url += " - System reboots: " + bootCount;

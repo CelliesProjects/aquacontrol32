@@ -32,40 +32,45 @@ void webServerTask ( void * pvParameters )
     request->send( 200 );
   });
 
-  // / or 'index.htm'
   server.on( "/", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    request->send_P( 200, textHtmlHeader, index_htm );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, index_htm, index_htm_len );
+    request->send( response );
   });
 
   //  /channels or 'channels.htm'
   server.on( "/channels", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    request->send_P( 200, textHtmlHeader, channels_htm);
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, channels_htm, channels_htm_len );
+    request->send( response );
   });
 
   //  /editor or 'editor.htm'
   server.on( "/editor", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    request->send_P( 200, textHtmlHeader, editor_htm );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, editor_htm, editor_htm_len );
+    request->send( response );
   });
 
   //  /logs or 'logs.htm'
   server.on( "/logs", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    request->send_P( 200, textHtmlHeader, logs_htm );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, logs_htm, logs_htm_len );
+    request->send( response );
   });
 
   //  /setup or 'setup.htm'
   server.on( "/setup", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    request->send_P( 200, textHtmlHeader, setup_htm );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, setup_htm, setup_htm_len );
+    request->send( response );
   });
 
   //  /filemanager or 'fileman.htm'
   server.on( "/filemanager", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    request->send_P( 200, textHtmlHeader, fileman_htm );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, fileman_htm, fileman_htm_len );
+    request->send( response );
   });
 
   /**********************************************************************************************

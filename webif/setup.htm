@@ -181,6 +181,7 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
 <div class="shadowedBox">
   <h3>DEVICE STATUS</h3>
   <div class="settingsBox">
+    <p class="item" id="version"></p>
     <p class="item">SYSTEM START:&nbsp;&nbsp;<span id="bootTime"></span></p>
     <p class="item" id="diskSpaceBar">FREE DISK SPACE:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
     <p class="item">PWM STATUS:&nbsp;&nbsp;<span id="pwmStatus"></span></p>
@@ -272,7 +273,7 @@ function getTftOrientation(){
     })
     .fail( function( data ){
       if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( "Errot getting tft orientation: " + data.statusText );
+        $( '#deviceStatus' ).html( "Error getting tft orientation: " + data.statusText );
       }
     })
     .always( function( data ){
@@ -291,7 +292,7 @@ function getTftMaxBrightness(){
     })
     .fail( function( data ){
       if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( "Errot getting tft brightness: " + data.statusText );
+        $( '#deviceStatus' ).html( "Error getting tft brightness: " + data.statusText );
         console.log( data );
       }
     })
@@ -390,11 +391,27 @@ function getPwmDepth(){
     .always( function( data ){
       if ( getAllValues )
       {
-        getPwmFrequency();
+        getVersion();
       }
     });
 }
 
+function getVersion()
+{
+  $.get( "/api/getdevice?version=")
+    .done( function( data ){
+      $('#version').html( data );
+    })
+    .fail( function( data ){
+      $( '#deviceStatus' ).html( "Error getting version" + data.responseText );
+    })
+    .always( function( data ){
+      if ( getAllValues )
+      {
+        getPwmFrequency();
+      }
+    });
+}
 function getPwmFrequency(){
   $.get( "/api/getdevice?pwmfrequency=")
     .done( function( data ){

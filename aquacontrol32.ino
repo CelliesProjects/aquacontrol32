@@ -11,6 +11,12 @@
 
 
 /**************************************************************************
+       which version is this
+**************************************************************************/
+#define SKETCH_VERSION                     "0.0.1"
+
+
+/**************************************************************************
        OLED I2C address
 **************************************************************************/
 #define OLED_ADDRESS                       0x3C
@@ -281,7 +287,7 @@ void setup()
 
   Serial.begin( 115200 );
   Serial.println();
-  Serial.println( "aquacontrol32" );
+  Serial.printf( "aquacontrol32 %s\n", SKETCH_VERSION );
   Serial.print( "ESP32 SDK: " );
   Serial.println( ESP.getSdkVersion() );
   Serial.println();

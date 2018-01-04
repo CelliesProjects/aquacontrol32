@@ -287,10 +287,17 @@ void webServerTask ( void * pvParameters )
       snprintf( content, sizeof( content ), "%s", getenv( "TZ" ) );
     }
 
+
+    else if ( request->hasArg( "version" ) )
+    {
+      snprintf( content, sizeof( content ), "Version %s - compile date: %s", SKETCH_VERSION, __DATE__ );
+    }
+
     else
     {
       return request->send( 400, textPlainHeader, "Invalid option" );
     }
+
 
     request->send( 200, textPlainHeader, content );
   });

@@ -124,7 +124,7 @@ var sensorColor = ["","rgba( 255,0, 0, 0.9)","rgba( 0,255,0, 0.9)","rgba( 0,0,25
 var sensorName  = [];
 var measurements;
 $( document ).ready( function() {
-  if ( hostName ) $('body').append( '<p class="blink">!!!!!debug enabled!!!!!</p>')
+  if ( hostName ) $('body').append( '<p class="blink">!!!!!debug enabled!!!!!</p>');
   $.get( hostName + "/api/getdevice?hostname=")
     .done(function( data ){
       $( "#hostName" ).html( data + " LOGS");

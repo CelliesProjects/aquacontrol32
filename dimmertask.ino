@@ -1,4 +1,4 @@
-void dimmerTask ( void * pvParameters )
+void IRAM_ATTR dimmerTask ( void * pvParameters )
 {
   const uint64_t dimmerTaskdelayTime = 1000U / UPDATE_FREQ_LEDS;
 

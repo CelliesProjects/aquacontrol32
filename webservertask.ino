@@ -724,7 +724,7 @@ void webServerTask ( void * pvParameters )
   vTaskDelete( NULL );
 }
 
-int8_t checkChannelNumber( const AsyncWebServerRequest *request )
+static inline __attribute__((always_inline)) int8_t checkChannelNumber( const AsyncWebServerRequest *request )
 {
   if ( !request->hasArg( "channel" ) )
   {
@@ -771,33 +771,7 @@ void abortOnInvalidChar( const String str, AsyncWebServerRequest * request )
   Modified 8 May 2015 by Hristo Gochkov (proper post and file upload handling)
 */
 
-String getContentType( const String& path )
-{
-  if (path.endsWith(".html")) return "text/html";
-  else if (path.endsWith(".htm")) return "text/html";
-  else if (path.endsWith(".css")) return "text/css";
-  else if (path.endsWith(".txt")) return "text/plain";
-  else if (path.endsWith(".js")) return "application/javascript";
-  else if (path.endsWith(".png")) return "image/png";
-  else if (path.endsWith(".gif")) return "image/gif";
-  else if (path.endsWith(".jpg")) return "image/jpeg";
-  else if (path.endsWith(".ico")) return "image/x-icon";
-  else if (path.endsWith(".svg")) return "image/svg+xml";
-  else if (path.endsWith(".ttf")) return "application/x-font-ttf";
-  else if (path.endsWith(".otf")) return "application/x-font-opentype";
-  else if (path.endsWith(".woff")) return "application/font-woff";
-  else if (path.endsWith(".woff2")) return "application/font-woff2";
-  else if (path.endsWith(".eot")) return "application/vnd.ms-fontobject";
-  else if (path.endsWith(".sfnt")) return "application/font-sfnt";
-  else if (path.endsWith(".xml")) return "text/xml";
-  else if (path.endsWith(".pdf")) return "application/pdf";
-  else if (path.endsWith(".zip")) return "application/zip";
-  else if (path.endsWith(".gz")) return "application/x-gzip";
-  else if (path.endsWith(".appcache")) return "text/cache-manifest";
-  return "application/octet-stream";
-}
-
-String urlDecode( const String& text )
+static inline __attribute__((always_inline)) String urlDecode( const String& text )
 {
   String decoded = "";
   char temp[] = "0x00";
@@ -829,7 +803,7 @@ String urlDecode( const String& text )
 }
 
 /* format bytes as KB, MB or GB string */
-String humanReadableSize( size_t bytes )
+static inline __attribute__((always_inline)) String humanReadableSize( const size_t bytes )
 {
   if ( bytes < 1024)
   {

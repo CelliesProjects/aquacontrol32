@@ -286,11 +286,8 @@ void setup()
   btStop();
 
   Serial.begin( 115200 );
-  Serial.println();
-  Serial.printf( "aquacontrol32 %s\n", SKETCH_VERSION );
-  Serial.print( "ESP32 SDK: " );
-  Serial.println( ESP.getSdkVersion() );
-  Serial.println();
+  ESP_LOGI( TAG, "aquacontrol32 %s", SKETCH_VERSION );
+  ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
   SPI.setFrequency( 80000000 );
@@ -300,7 +297,8 @@ void setup()
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
   {
     touch.begin();
-    Serial.println( TFT_HAS_NO_MISO ? "Forced ILI9341 start." : "ILI9341 display found." );
+    if ( TFT_HAS_NO_MISO ) ESP_LOGI( TAG, "Forced ILI9341 start." );
+    else                   ESP_LOGI( TAG, "ILI9341 display found." );
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
       "tftTask",                      /* Name of the task */
@@ -312,16 +310,16 @@ void setup()
   }
   else
   {
-    Serial.println( "No ILI9341 found" );
+    ESP_LOGI( TAG, "No ILI9341 found" );
   }
 
-  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN );
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
 
   Wire.beginTransmission( OLED_ADDRESS );
   uint8_t err = Wire.endTransmission();
   if ( err == 0 )
   {
-    Serial.printf( "Found I2C device at address 0x%x.\n", OLED_ADDRESS );
+    ESP_LOGI( TAG, "Found I2C device at address 0x%x.\n", OLED_ADDRESS );
     xTaskCreatePinnedToCore(
       oledTask,                       /* Function to implement the task */
       "oledTask",                     /* Name of the task */
@@ -333,7 +331,7 @@ void setup()
   }
   else
   {
-    Serial.println( "No I2C device found." );
+    ESP_LOGI( TAG, "No I2C device found." );
   }
 
   xTaskCreatePinnedToCore(

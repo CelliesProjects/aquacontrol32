@@ -83,7 +83,7 @@ void wifiTask( void * pvParameters )
   xTaskCreatePinnedToCore(
     webServerTask,                  /* Function to implement the task */
     "webServerTask",                /* Name of the task */
-    1000,                           /* Stack size in words */
+    2000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     webserverTaskPriority,          /* Priority of the task */
     NULL,                           /* Task handle. */

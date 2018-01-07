@@ -21,7 +21,7 @@ const char* textHtmlHeader   = "text/html";
 
 void webServerTask ( void * pvParameters )
 {
-  Serial.println( "Starting webserver setup. " );
+  ESP_LOGI( TAG, "Starting webserver setup. " );
 
   server.on( "/api/login", HTTP_POST, []( AsyncWebServerRequest * request )
   {
@@ -567,7 +567,7 @@ void webServerTask ( void * pvParameters )
       snprintf( content, sizeof( content ), "sensorname%i", sensorNumber );
       saveStringNVS( content, request->arg( "sensorname" ).c_str() );
 
-      Serial.printf( " Saved '%s' as '%s'\n", request->arg( "sensorname" ).c_str(), content );
+      ESP_LOGI( TAG, " Saved '%s' as '%s'\n", request->arg( "sensorname" ).c_str(), content );
 
       snprintf( content , sizeof( content ), "%s", request->arg( "sensorname" ).c_str() );
     }
@@ -656,7 +656,7 @@ void webServerTask ( void * pvParameters )
       if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
       {
         startTimer = millis();
-        Serial.printf( "Starting upload. filename = %s\n", filename.c_str() );
+        ESP_LOGI( TAG, "Starting upload. filename = %s\n", filename.c_str() );
         if ( !filename.startsWith( "/" ) )
         {
           filename = "/" + filename;
@@ -666,7 +666,7 @@ void webServerTask ( void * pvParameters )
       }
       else
       {
-        Serial.println( "Unauthorized access." );
+        ESP_LOGI( TAG, "Unauthorized access." );
         return request->send( 401, "text/plain", "Not logged in." );
       }
     }
@@ -680,13 +680,14 @@ void webServerTask ( void * pvParameters )
     {
       if ( request->_tempFile )
       {
+        request->_tempFile.flush();
         request->_tempFile.close();
       }
       if ( filename == defaultTimerFile )
       {
         defaultTimersLoaded();
       }
-      Serial.printf( "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
+      ESP_LOGI( TAG, "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
     }
   });
 
@@ -697,29 +698,29 @@ void webServerTask ( void * pvParameters )
     const char* notFound = "NOT_FOUND: ";
 
     if ( request->method() == HTTP_GET )
-      Serial.printf( "%s GET", notFound );
+      ESP_LOGI( TAG, "%s GET", notFound );
     else if (request->method() == HTTP_POST)
-      Serial.printf("%s POST", notFound );
+      ESP_LOGI( TAG, "%s POST", notFound );
     else if (request->method() == HTTP_DELETE)
-      Serial.printf("%s DELETE", notFound );
+      ESP_LOGI( TAG, "%s DELETE", notFound );
     else if (request->method() == HTTP_PUT)
-      Serial.printf("%s PUT", notFound );
+      ESP_LOGI( TAG, "%s PUT", notFound );
     else if (request->method() == HTTP_PATCH)
-      Serial.printf("%s PATCH", notFound );
+      ESP_LOGI( TAG, "%s PATCH", notFound );
     else if (request->method() == HTTP_HEAD)
-      Serial.printf("%s HEAD", notFound );
+      ESP_LOGI( TAG, "%s HEAD", notFound );
     else if (request->method() == HTTP_OPTIONS)
-      Serial.printf("%s OPTIONS", notFound );
+      ESP_LOGI( TAG, "%s OPTIONS", notFound );
     else
-      Serial.printf("%s UNKNOWN", notFound );
-    Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
+      ESP_LOGI( TAG, "%s UNKNOWN", notFound );
+    ESP_LOGI( TAG, " http://%s%s\n", request->host().c_str(), request->url().c_str());
     request->send( 404 );
   });
 
   DefaultHeaders::Instance().addHeader( "Access-Control-Allow-Origin", "*" );
 
   server.begin();
-  Serial.println("HTTP server setup done.");
+  ESP_LOGI( TAG, "HTTP server setup done." );
 
   vTaskDelete( NULL );
 }
@@ -821,30 +822,37 @@ static inline __attribute__((always_inline)) String humanReadableSize( const siz
 
 bool setupMDNS( const String hostname )
 {
-  Serial.printf( "Check if %s is already present...\n", hostname.c_str() );
-  uint32_t serviceIp = MDNS.queryHost( hostname.c_str() );
-  if ( serviceIp != 0 )
+  static mdns_server_t * mdns = NULL;
+
+  if ( !mdns )
   {
-    Serial.printf( "%s already on network.\n", hostname.c_str() );
+    esp_err_t err = mdns_init( TCPIP_ADAPTER_IF_STA, &mdns );
+    if ( err) {
+      ESP_LOGE( TAG, "Failed starting MDNS: %u", err );
+      return false;
+    }
+  }
+
+  if ( mdns_query( mdns, hostname.c_str(), NULL, 1000 ) )
+  {
+    /* hostname already present */
     return false;
   }
-  Serial.printf( "%s is available.\nSetting new hostname...\n", hostname.c_str() );
 
-  MDNS.end();
+  ESP_ERROR_CHECK( mdns_set_hostname( mdns, hostname.c_str() ) );
+  ESP_ERROR_CHECK( mdns_set_instance( mdns, hostname.c_str() ) );
 
-  if ( MDNS.begin( hostname.c_str() ) )
+  const char * boardTxtData[3] =
   {
-    // Add service to MDNS-SD
-    MDNS.addService( "http", "tcp", 80 );
+    "board=aquacontrol32",
+    "secure=no",
+    "auth_upload=yes"
+  };
 
-    Serial.printf( "mDNS responder started\nmDNS name: %s.local.\n", hostname.c_str() );
-    saveStringNVS( "hostname", hostname );
-    Serial.printf( "mDNS hostname set to %s.\n", hostname.c_str() );
-    return true;
-  }
-  else
-  {
-    Serial.println( "Error setting up MDNS responder!" );
-    return false;
-  }
+  ESP_ERROR_CHECK( mdns_service_add( mdns, "_http", "_tcp", 80 ) );
+  ESP_ERROR_CHECK( mdns_service_txt_set( mdns, "_http", "_tcp", 4, boardTxtData ) );
+  ESP_ERROR_CHECK( mdns_service_instance_set( mdns, "_http", "_tcp", "Aquacontrol32 Web Interface") );
+  ESP_LOGI( TAG, "Started MDNS: %s", hostname.c_str() );
+  saveStringNVS( "hostname", hostname );
+  return true;
 }

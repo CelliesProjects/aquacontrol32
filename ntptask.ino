@@ -13,6 +13,8 @@ void ntpTask( void * pvParameters )
     snprintf( NTPpoolAdress, sizeof( NTPpoolAdress ), "0.%s", NTPpool );
   }
 
+  ESP_LOGI( TAG, "NTP syncing with %s.", NTPpoolAdress );
+
   configTzTime( readStringNVS( "timezone", defaultTimezone ).c_str(),
                 NTPpoolAdress );
 
@@ -26,7 +28,7 @@ void ntpTask( void * pvParameters )
   }
   gettimeofday( &systemStart, NULL );
 
-  ESP_LOGI( TAG, "NTP sync @ %s\n", asctime( localtime( &systemStart.tv_sec ) ) );
+  ESP_LOGI( TAG, "NTP sync @ %s", asctime( localtime( &systemStart.tv_sec ) ) );
 
   /* start time dependent tasks */
 

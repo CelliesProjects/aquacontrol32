@@ -23,7 +23,7 @@ void tempTask( void * pvParameters )
     snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), readStringNVS( buff, "temp sensor" ).c_str(), numberOfFoundSensors  );
     numberOfFoundSensors++;
   }
-  ESP_LOGI( TAG, "%i Dallas sensors found.\n", numberOfFoundSensors );
+  ESP_LOGI( TAG, "%i Dallas sensors found.", numberOfFoundSensors );
 
   if ( !numberOfFoundSensors )
   {

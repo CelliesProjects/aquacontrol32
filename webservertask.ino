@@ -852,7 +852,7 @@ bool setupMDNS( const String hostname )
   ESP_ERROR_CHECK( mdns_service_add( mdns, "_http", "_tcp", 80 ) );
   ESP_ERROR_CHECK( mdns_service_txt_set( mdns, "_http", "_tcp", 4, boardTxtData ) );
   ESP_ERROR_CHECK( mdns_service_instance_set( mdns, "_http", "_tcp", "Aquacontrol32 Web Interface") );
-  ESP_LOGI( TAG, "Started MDNS: %s", hostname.c_str() );
+  ESP_LOGI( TAG, "Started MDNS service: '%s.local'", hostname.c_str() );
   saveStringNVS( "hostname", hostname );
   return true;
 }

@@ -48,10 +48,11 @@ void wifiTask( void * pvParameters )
   /* We have succesfully connected */
   tft.invertDisplay( false );
   uint8_t mac[6];
+  esp_efuse_mac_get_default(mac);
   tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP().toString() );
-  ESP_LOGI( TAG, "WiFi connected to %c", WiFi.SSID() );
-  ESP_LOGI( TAG, "Local IP: %c", WiFi.localIP().toString() );
-  ESP_LOGI( TAG, "MAC address: %X", esp_efuse_read_mac(mac) );
+  ESP_LOGI( TAG, "WiFi connected to %s", WiFi.SSID().c_str() );
+  ESP_LOGI( TAG, "Local IP: %c", WiFi.localIP().toString()  );
+  ESP_LOGI( TAG, "MAC address: %X", mac );
 
   strncpy( hostName, readStringNVS( "hostname", "" ).c_str(), sizeof( hostName ) );
 

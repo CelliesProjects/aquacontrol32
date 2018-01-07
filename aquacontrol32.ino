@@ -270,7 +270,6 @@ uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 
 *****************************************************************************************/
 
-
 void setup()
 {
   pinMode( LED0_PIN, OUTPUT );
@@ -319,7 +318,7 @@ void setup()
   uint8_t err = Wire.endTransmission();
   if ( err == 0 )
   {
-    ESP_LOGI( TAG, "Found I2C device at address 0x%x.\n", OLED_ADDRESS );
+    ESP_LOGI( TAG, "Found I2C device at address 0x%x.", OLED_ADDRESS );
     xTaskCreatePinnedToCore(
       oledTask,                       /* Function to implement the task */
       "oledTask",                     /* Name of the task */

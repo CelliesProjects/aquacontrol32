@@ -26,7 +26,7 @@ void ntpTask( void * pvParameters )
   }
   gettimeofday( &systemStart, NULL );
 
-  Serial.printf( "NTP sync @ %s\n", asctime( localtime( &systemStart.tv_sec ) ) );
+  ESP_LOGI( TAG, "NTP sync @ %s\n", asctime( localtime( &systemStart.tv_sec ) ) );
 
   /* start time dependent tasks */
 

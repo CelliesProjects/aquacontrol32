@@ -613,7 +613,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "timezone" ) )
     {
-      //Serial.printf( request->arg( "timezone" ) );
+      //ESP_LOGI( TAG, request->arg( "timezone" ) );
       urlDecode( request->arg( "timezone" ) );
       if ( 0 == setenv( "TZ",  request->arg( "timezone" ).c_str(), 1 )  )
       {

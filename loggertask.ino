@@ -21,7 +21,7 @@ void loggerTask ( void * pvParameters )
       snprintf( content, sizeof( content ), "#%i Aquacontrol32 start", now );
       if ( !writelnFile( SPIFFS, fileName, content ) )
       {
-        Serial.println( appendError );
+        ESP_LOGE( TAG, "%s", appendError );
       }
       systemHasBooted = false;
     }
@@ -37,7 +37,7 @@ void loggerTask ( void * pvParameters )
       }
       if ( !writelnFile( SPIFFS, fileName, content ) )
       {
-        Serial.println( appendError );
+        ESP_LOGE( TAG, "%s", appendError );
       }
     }
     else

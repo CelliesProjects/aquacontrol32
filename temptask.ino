@@ -23,7 +23,7 @@ void tempTask( void * pvParameters )
     snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), readStringNVS( buff, "temp sensor" ).c_str(), numberOfFoundSensors  );
     numberOfFoundSensors++;
   }
-  Serial.printf( "%i Dallas sensors found.\n", numberOfFoundSensors );
+  ESP_LOGI( TAG, "%i Dallas sensors found.\n", numberOfFoundSensors );
 
   if ( !numberOfFoundSensors )
   {
@@ -85,7 +85,7 @@ void tempTask( void * pvParameters )
           break;
         default:
 #ifdef SHOW_DALLAS_ERROR
-          Serial.println("Device is not a DS18x20 family device.");
+          ESP_LOGE( TAG, "Device is not a DS18x20 family device.");
 #endif
           return;
       }
@@ -95,7 +95,7 @@ void tempTask( void * pvParameters )
       {
 #ifdef SHOW_DALLAS_ERROR
         // CRC of temperature reading indicates an error, so we print a error message and discard this reading
-        Serial.print( millis() / 1000.0 ); Serial.print( " - CRC error from device " ); Serial.println( thisSensor );
+        ESP_LOGE( TAG, "%u - CRC error from device %u",millis() / 1000.0, thisSensor );
 #endif
       }
       else

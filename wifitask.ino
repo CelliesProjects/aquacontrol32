@@ -5,7 +5,7 @@ void wifiTask( void * pvParameters )
   WiFi.begin();
   //WiFi.onEvent( WiFiEvent );
 
-  Serial.println( "Connecting WiFi");
+  ESP_LOGI( TAG, "Connecting WiFi");
   tft.println( "Connecting WiFi");
   connectWiFi();
   tft.setTextColor( ILI9341_WHITE , ILI9341_BLACK );
@@ -47,11 +47,11 @@ void wifiTask( void * pvParameters )
 
   /* We have succesfully connected */
   tft.invertDisplay( false );
-  tft.println( "\nWiFi connected.\nLocal IP: " + WiFi.localIP().toString() );
-  Serial.println( "\nWiFi connected to " + WiFi.SSID() );
-  Serial.println( "Local IP: " + WiFi.localIP().toString() );
-  Serial.println( "MAC address: " + WiFi.macAddress() );
-
+  uint8_t mac[6];
+  tft.println( "WiFi connected.\nLocal IP: " + WiFi.localIP().toString() );
+  ESP_LOGI( TAG, "WiFi connected to %c", WiFi.SSID() );
+  ESP_LOGI( TAG, "Local IP: %c", WiFi.localIP().toString() );
+  ESP_LOGI( TAG, "MAC address: %X", esp_efuse_read_mac(mac) );
 
   strncpy( hostName, readStringNVS( "hostname", "" ).c_str(), sizeof( hostName ) );
 
@@ -66,7 +66,7 @@ void wifiTask( void * pvParameters )
 
   if ( !setupMDNS( hostName ) )
   {
-    Serial.println( "Error setting up mDNS." );
+    ESP_LOGE( TAG, "Error setting up mDNS." );
     memset( hostName, 0, sizeof( hostName ) );
   }
 
@@ -93,7 +93,7 @@ void wifiTask( void * pvParameters )
   {
     if ( !WiFi.isConnected() )
     {
-      Serial.println( "No Wifi. Reconnecting.." );
+      ESP_LOGI( TAG, "No Wifi. Reconnecting.." );
       WiFi.reconnect();
     }
     vTaskDelay( 10000 / portTICK_PERIOD_MS );
@@ -110,41 +110,42 @@ void connectWiFi()
     vTaskDelay( 500 / portTICK_PERIOD_MS );
   }
 }
-
+/*
 void WiFiEvent( WiFiEvent_t event )
 {
   switch ( event )
   {
     case SYSTEM_EVENT_AP_START:
-      Serial.println("AP Started");
+      //ESP_LOGI( TAG, "AP Started");
       //WiFi.softAPsetHostname(AP_SSID);
       break;
     case SYSTEM_EVENT_AP_STOP:
-      Serial.println("AP Stopped");
+      ESP_LOGI( TAG, "AP Stopped");
       break;
     case SYSTEM_EVENT_STA_START:
-      Serial.println("STA Started");
+      //ESP_LOGI( TAG, "STA Started");
       //WiFi.setHostname( DEFAULT_HOSTNAME_PREFIX.c_str( );
       break;
     case SYSTEM_EVENT_STA_CONNECTED:
-      Serial.println("STA Connected");
+      ESP_LOGI( TAG, "STA Connected");
       //WiFi.enableIpV6();
       break;
     case SYSTEM_EVENT_AP_STA_GOT_IP6:
-      Serial.print("STA IPv6: ");
-      Serial.println(WiFi.localIPv6());
+      //ESP_LOGI( TAG, "STA IPv6: ");
+      //ESP_LOGI( TAG, "%s", WiFi.localIPv6().toString());
       break;
     case SYSTEM_EVENT_STA_GOT_IP:
-      Serial.print("STA IPv4: ");
-      Serial.println(WiFi.localIP());
+      //ESP_LOGI( TAG, "STA IPv4: ");
+      //ESP_LOGI( TAG, "%s", WiFi.localIP());
       break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
-      Serial.println("STA Disconnected");
+      ESP_LOGI( TAG, "STA Disconnected");
       break;
     case SYSTEM_EVENT_STA_STOP:
-      Serial.println("STA Stopped");
+      ESP_LOGI( TAG, "STA Stopped");
       break;
     default:
       break;
   }
 }
+*/

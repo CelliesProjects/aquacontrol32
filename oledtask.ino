@@ -3,7 +3,7 @@ void oledTask( void * pvParameters )
   const uint64_t oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
 
   OLED.init();
-  Serial.println( "OLED initialized." );
+  ESP_LOGI( TAG, "OLED initialized." );
 
   if ( readStringNVS( "oledorientation", "normal" ) == "upsidedown" )
   {

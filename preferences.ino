@@ -6,7 +6,7 @@ void clearNVS()
   preferences.begin( "aquacontrol32", WRITE_ENABLED );
   preferences.clear();
   preferences.end();
-  Serial.println( "NVS cleared from data" );
+  ESP_LOGI( TAG, "NVS cleared from data" );
 }
 
 float readFloatNVS( char const* key , const float defaultValue)

@@ -6,11 +6,11 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
 
   if ( defaultTimersLoaded() )
   {
-    Serial.println("Default timers loaded." );
+    ESP_LOGI( TAG, "Default timers loaded." );
   }
   else
   {
-    Serial.println( "No timers loaded." );
+    ESP_LOGI( TAG, "No timers loaded." );
     setEmptyTimers();
   }
 

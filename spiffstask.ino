@@ -1,14 +1,14 @@
 void spiffsTask( void * pvParameters )
 {
-  Serial.println( "Starting SPIFFS." );
+  ESP_LOGI( TAG, "Starting SPIFFS." );
 
   if ( !SPIFFS.begin( true ) )
   {
-    Serial.println( "Error starting SPIFFS." );
+    ESP_LOGE( TAG, "Error starting SPIFFS." );
   }
   else
   {
-    Serial.println( "SPIFFS started." );
+    ESP_LOGI( TAG, "SPIFFS started." );
   }
   vTaskDelete( NULL );
 }
@@ -21,7 +21,7 @@ bool defaultTimersLoaded()
   File f = SPIFFS.open( defaultTimerFile, "r" );
   if (!f)
   {
-    Serial.println( F("No default timer file found.") );
+    ESP_LOGI( TAG, "No default timer file found." );
     return false;
   }
   String lineBuf;

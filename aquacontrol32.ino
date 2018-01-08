@@ -284,7 +284,7 @@ void setup()
 
   btStop();
 
-  Serial.begin( 115200 );
+  //Serial.begin( 115200 );
   ESP_LOGI( TAG, "aquacontrol32 %s", SKETCH_VERSION );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 

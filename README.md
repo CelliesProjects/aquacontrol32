@@ -46,6 +46,8 @@ To compile or install Aquacontrol32, you will need the latest version [Arduino I
 
 Aquacontrol32 can run happily with or without OLED or TFT display.
 
-#### Compile note:
+#### Compile notes:
 
-Core debug level (in 'Tools' menu) should be set to 'None' in the Arduino IDE.
+Core debug level (in 'Tools' menu) should be set to 'None' in the Arduino IDE for production use.
+
+I2C is rather buggy at the moment, so until fixed by Espressif you can use [stickbreakers modified I2C library](https://github.com/stickbreaker/OneWire) to have troublefree DS18B20 sensors.

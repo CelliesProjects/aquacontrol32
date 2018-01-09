@@ -564,7 +564,11 @@ void webServerTask ( void * pvParameters )
 
       snprintf( sensor[sensorNumber].name, sizeof( sensor[sensorNumber].name ), "%s", request->arg( "sensorname" ).c_str() );
 
-      snprintf( content, sizeof( content ), "sensorname%i", sensorNumber );
+      //get the sensor id and save under that key
+
+      //snprintf( content, sizeof( content ), "sensorname%i", sensorNumber );
+      snprintf( content, sizeof( content ), "%02x%02x%02x%02x%02x%02x%02x", sensor[sensorNumber].addr[1], sensor[sensorNumber].addr[2], sensor[sensorNumber].addr[3], sensor[sensorNumber].addr[4], sensor[sensorNumber].addr[5], sensor[sensorNumber].addr[6], sensor[sensorNumber].addr[7] );
+
       saveStringNVS( content, request->arg( "sensorname" ).c_str() );
 
       ESP_LOGI( TAG, " Saved '%s' as '%s'\n", request->arg( "sensorname" ).c_str(), content );

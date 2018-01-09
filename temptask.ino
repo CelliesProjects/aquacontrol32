@@ -1,5 +1,3 @@
-//#define SHOW_DALLAS_ERROR  /* uncomment to show Dallas ( CRC ) errors on Serial. */
-
 void tempTask( void * pvParameters )
 {
   numberOfFoundSensors = 0;
@@ -7,20 +5,17 @@ void tempTask( void * pvParameters )
 
   while ( ds.search( currentAddr ) && numberOfFoundSensors < MAX_NUMBER_OF_SENSORS )
   {
-    //Serial.write( "Sensor "); Serial.print( counter ); Serial.print( ":" );
     for ( byte i = 0; i < 8; i++)
     {
-      //Serial.write(' ');
-      //Serial.print( currentAddr[i], HEX );
       sensor[numberOfFoundSensors].addr[i] = currentAddr[i];
     }
-
-    /* make a key field -in buff- for NVS */
-    char buff[15];
-    snprintf( buff, sizeof( buff ), "sensorname%i", numberOfFoundSensors );
+    /* make a key field -in sensorUniqueId- for NVS */
+    char sensorUniqueId[17];
+    snprintf( sensorUniqueId, sizeof( sensorUniqueId ), "%02x%02x%02x%02x%02x%02x%02x", currentAddr[1], currentAddr[2], currentAddr[3], currentAddr[4], currentAddr[5], currentAddr[6], currentAddr[7]  );
 
     /* and read value from NVS or use default name */
-    snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), readStringNVS( buff, "temp sensor" ).c_str(), numberOfFoundSensors  );
+    snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), readStringNVS( sensorUniqueId, "temp sensor" ).c_str(), numberOfFoundSensors  );
+    ESP_LOGD( TAG, "Sensor %i: %s - Name: '%s'",numberOfFoundSensors, sensorUniqueId, sensor[numberOfFoundSensors].name );
     numberOfFoundSensors++;
   }
   ESP_LOGI( TAG, "%i Dallas sensors found.", numberOfFoundSensors );
@@ -34,17 +29,9 @@ void tempTask( void * pvParameters )
 
   while (1)
   {
-    /*
-      for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
-      {
-      ds.reset();
-      ds.select( sensor[thisSensor].addr );
-      ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
-      }
-    */
     ds.reset();
     ds.write( 0xCC, 0); /* Skip ROM - All sensors */
-    ds.write( 0x44, 0);        // start conversion, with parasite power off at the end
+    ds.write( 0x44, 0); /* start conversion, with parasite power off at the end */
 
     vTaskDelay( 750 / portTICK_PERIOD_MS); //wait for conversion ready
     for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
@@ -52,51 +39,38 @@ void tempTask( void * pvParameters )
       byte data[12];
       ds.reset();
       ds.select( sensor[thisSensor].addr );
-      ds.write( 0xBE );         // Read Scratchpad
-
-      //Serial.print( "Sensor " );Serial.print( thisSensor ); Serial.print("  Data = ");
-      //Serial.println( present, HEX );
-      //Serial.print(" ");
+      ds.write( 0xBE );         /* Read Scratchpad */
       for ( byte i = 0; i < 9; i++)
       { // we need 9 bytes
-
         data[i] = ds.read(  );
-
-
-        //Serial.print(data[i], HEX);
-        //Serial.print(" ");
       }
-      //Serial.println();
+      ESP_LOGD( TAG, "Sensor %i '%s' data=%02x%02x%02x%02x%02x%02x%02x%02x%02x", thisSensor,sensor[thisSensor].name, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
       byte type_s;
       // the first ROM byte indicates which chip
       switch ( sensor[thisSensor].addr[0] )
       {
         case 0x10:
-          //Serial.println("  Chip = DS18S20");  // or old DS1820
+          //ESP_LOGD( TAG, "Chip = DS18S20");  /* or old DS1820 */
           type_s = 1;
           break;
         case 0x28:
-          //Serial.println("  Chip = DS18B20");
+          //ESP_LOGD( TAG, "Chip = DS18B20");
           type_s = 0;
           break;
         case 0x22:
-          //Serial.println("  Chip = DS1822");
+          //ESP_LOGD( TAG, "Chip = DS1822");
           type_s = 0;
           break;
         default:
-#ifdef SHOW_DALLAS_ERROR
           ESP_LOGE( TAG, "Device is not a DS18x20 family device.");
-#endif
           return;
       }
 
       int16_t raw;
       if ( OneWire::crc8(data, 8) != data[8])
       {
-#ifdef SHOW_DALLAS_ERROR
         // CRC of temperature reading indicates an error, so we print a error message and discard this reading
-        ESP_LOGE( TAG, "%u - CRC error from device %u",millis() / 1000.0, thisSensor );
-#endif
+        ESP_LOGE( TAG, "%u - CRC error from device %u", millis() / 1000.0, thisSensor );
       }
       else
       {

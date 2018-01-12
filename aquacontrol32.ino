@@ -222,13 +222,13 @@ struct sensorData_t                    /* struct to keep track of Dallas DS18B20
 const char* defaultTimerFile   = "/default.aqu";
 
 /* task priorities */
-const uint8_t dimmerTaskPriority       = 7;
-const uint8_t webserverTaskPriority    = 5;
-const uint8_t tempTaskPriority         = 6;
-const uint8_t tftTaskPriority          = 2;
-const uint8_t ntpTaskPriority          = 1;
-const uint8_t oledTaskPriority         = 1;
-const uint8_t wifiTaskPriority         = 1;
+const uint8_t dimmerTaskPriority       = 8;
+const uint8_t tempTaskPriority         = 7;
+const uint8_t webserverTaskPriority    = 6;
+const uint8_t tftTaskPriority          = 5;
+const uint8_t ntpTaskPriority          = 4;
+const uint8_t oledTaskPriority         = 3;
+const uint8_t wifiTaskPriority         = 2;
 const uint8_t loggerTaskPriority       = 1;
 const uint8_t spiffsTaskPriority       = 0;
 
@@ -283,9 +283,8 @@ void setup()
   pinMode( I2C_SDA_PIN, INPUT_PULLUP );
 
   btStop();
-
   //Serial.begin( 115200 );
-  ESP_LOGI( TAG, "aquacontrol32 %s", SKETCH_VERSION );
+  ESP_LOGI( TAG, "aquacontrol32 V%s", SKETCH_VERSION );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );

@@ -27,7 +27,7 @@ void wifiTask( void * pvParameters )
 
 /* https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFiSTA.h */
 
-    //WiFi.mode( WIFI_AP_STA );
+    WiFi.mode( WIFI_AP_STA );
     WiFi.beginSmartConfig();
 
     const time_t rebootTime = millis() + 60 * 5 * 1000; /* 5 min */
@@ -60,7 +60,7 @@ void wifiTask( void * pvParameters )
   ESP_ERROR_CHECK( tcpip_adapter_get_ip_info( TCPIP_ADAPTER_IF_STA, &ip_info ) );
   ESP_LOGI( TAG, "WiFi connected to %s", WiFi.SSID().c_str() );
   ESP_LOGI( TAG, "Local IP: %s", ip4addr_ntoa( &ip_info.ip ) );
-  ESP_LOGI( TAG, "%02x:%02x:%02x:%02x:%02x:%02x",mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  ESP_LOGI( TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x",mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   if ( xTftTaskHandle )
   {
     tft.invertDisplay( false );

@@ -48,19 +48,13 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
 
-Source are compiled for 'ESP32 Dev Module' which has support for ESP_LOGX macros.
+- Source are compiled for 'ESP32 Dev Module' which has support for ESP_LOGX macros.
 <br>Core debug level (in 'Tools' menu) should be set to 'None' in the Arduino IDE for production use.
-
-When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
+<br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>('Info' is probably what you need, 'Verbose' gives the most info)
+<br>When compiling for any other board than 'ESP32 Dev Module', no log output will be produced.
 
-When compiling for any other board than 'ESP32 Dev Module', no log output will be produced.
-
-OneWire is rather buggy at the moment, so until fixed by Espressif you can use [stickbreakers modified OneWire library](https://github.com/stickbreaker/OneWire) to have troublefree DS18B20 sensors.
-
-#### Known issues:
-
-SmartConfig is (again) not working properly, probably needs action from Espressif dev team.
+- OneWire is rather buggy at the moment, so until fixed by Espressif you can use [stickbreakers modified OneWire library](https://github.com/stickbreaker/OneWire) to have troublefree DS18B20 sensors.
 
 #### Connecting the hardware:
 
@@ -73,3 +67,7 @@ SmartConfig is (again) not working properly, probably needs action from Espressi
 - Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
 <br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 330R resistor in series to prevent burning up your ESP32.
+
+#### Known issues:
+
+- SmartConfig is (again) not working properly, probably needs action from Espressif dev team.

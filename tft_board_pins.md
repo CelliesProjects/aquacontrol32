@@ -20,7 +20,3 @@ See https://github.com/espressif/esp-idf/tree/master/examples/storage/sd_card
 ## More info:
 http://www.microchip.com/forums/m148739.aspx<br>
 http://www.avrfreaks.net/forum/why-have-pullup-mosi-and-miso
-
-## Pulsing leds:
-Currently on one of my tft breakouts, the leds pulse if I use pwm on the backlight.<br>
-Found a possible solution [here](https://github.com/esp8266/Arduino/issues/2675#issuecomment-260892256).

@@ -1,3 +1,4 @@
+
 void wifiTask( void * pvParameters )
 {
   /* trying last accesspoint */
@@ -6,7 +7,10 @@ void wifiTask( void * pvParameters )
   //WiFi.onEvent( WiFiEvent );
 
   ESP_LOGI( TAG, "Connecting WiFi");
-  tft.println( "Connecting WiFi");
+  if ( xTftTaskHandle )
+  {
+    tft.println( "Connecting WiFi");
+  }
   connectWiFi();
   tft.setTextColor( ILI9341_WHITE , ILI9341_BLACK );
 
@@ -14,29 +18,33 @@ void wifiTask( void * pvParameters )
   if ( WiFi.status() != WL_CONNECTED )
   {
     /* wait for SC */
-    Serial.printf( "\nWaiting %i seconds for SmartConfig.\n", 60 * 5 );
-    tft.println( "\nNo WiFi connection.\nWaiting for SmartConfig." );
-    tft.invertDisplay( true );
-    WiFi.mode( WIFI_AP_STA );
+    ESP_LOGI( TAG, "\nWaiting %i seconds for SmartConfig.\n", 60 * 5 );
+    if ( xTftTaskHandle )
+    {
+      tft.println( "\nNo WiFi connection.\nWaiting for SmartConfig." );
+      tft.invertDisplay( true );
+    }
+
+/* https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFiSTA.h */
+
+    //WiFi.mode( WIFI_AP_STA );
     WiFi.beginSmartConfig();
 
     const time_t rebootTime = millis() + 60 * 5 * 1000; /* 5 min */
 
     while ( !WiFi.smartConfigDone() && millis() < rebootTime )
     {
-      vTaskDelay( 100 / portTICK_PERIOD_MS );
+      vTaskDelay( 500 / portTICK_PERIOD_MS );
 
-      tft.setCursor( 70, 100 );
-      tft.printf( "%2i seconds until reboot.", ( 100 + rebootTime - millis() ) / 1000 );
+      if ( xTftTaskHandle )
+      {
+        tft.setCursor( 70, 100 );
+        tft.printf( "%2i seconds until reboot.", ( 100 + rebootTime - millis() ) / 1000 );
+      }
     }
 
     if ( !WiFi.smartConfigDone() )
     {
-      SPI.end();
-      /* set bootstrapping pins */
-      /* https://github.com/espressif/esptool/wiki/ESP32-Boot-Mode-Selection */
-      digitalWrite( 0, HIGH );
-      digitalWrite( 2, HIGH );
       ESP.restart();
     }
   }
@@ -46,15 +54,18 @@ void wifiTask( void * pvParameters )
 
 
   /* We have succesfully connected */
-  tft.invertDisplay( false );
   uint8_t mac[6];
   esp_efuse_mac_get_default(mac);
   tcpip_adapter_ip_info_t ip_info;
   ESP_ERROR_CHECK( tcpip_adapter_get_ip_info( TCPIP_ADAPTER_IF_STA, &ip_info ) );
-  tft.printf( "WiFi connected.\nLocal IP: %s\n", ip4addr_ntoa( &ip_info.ip ) );
   ESP_LOGI( TAG, "WiFi connected to %s", WiFi.SSID().c_str() );
   ESP_LOGI( TAG, "Local IP: %s", ip4addr_ntoa( &ip_info.ip ) );
   ESP_LOGI( TAG, "%02x:%02x:%02x:%02x:%02x:%02x",mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  if ( xTftTaskHandle )
+  {
+    tft.invertDisplay( false );
+    tft.printf( "WiFi connected.\nLocal IP: %s\n", ip4addr_ntoa( &ip_info.ip ) );
+  }
 
   strncpy( hostName, readStringNVS( "hostname", "" ).c_str(), sizeof( hostName ) );
 

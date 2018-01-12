@@ -3,7 +3,7 @@
 Aquacontrol32 is software used to program and control 5 led strips to create more natural sunrises and sunsets in your aquarium.
 
 Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32).
-<br>You can connect a cheap 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s). 
+<br>You can connect a cheap 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s).
 <br>The ILI9341 displays optionally come with a XPT2046 touch controller which is supported.
 
 #### The hardware:
@@ -51,7 +51,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 Source are compiled for 'ESP32 Dev Module' which has support for ESP_LOGX macros.
 <br>Core debug level (in 'Tools' menu) should be set to 'None' in the Arduino IDE for production use.
 
-When you are still testing your hardware and setup, debug level can be set to anything depending on your needs. 
+When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>('Info' is probably what you need, 'Verbose' gives the most info)
 
 When compiling for any other board than 'ESP32 Dev Module', no log output will be produced.
@@ -61,3 +61,15 @@ OneWire is rather buggy at the moment, so until fixed by Espressif you can use [
 #### Known issues:
 
 SmartConfig is (again) not working properly, probably needs action from Espressif dev team.
+
+#### Connecting the hardware:
+
+- Read the [file](tft_board_pins.md) on connecting a ILI9341 display. Pull-ups are not optional!
+
+- The ILI9341 boards from AliExpress, DealExtreme or any other supplier are not all equal.
+<br>
+<br>Among the tested boards I encountered some that have no MISO pin connected, so they can't respond to read commands.
+<br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to 1) in `aquacontrol32.ino`.
+- Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
+<br>To be on the safe side, I use a BC547 transistor between the ESP32 pin and the LED connector on the tft board.
+<br>If you connect the LED directly to a ESP32 pin, connect it through a 330R resistor in series to prevent burning up your ESP32.

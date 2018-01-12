@@ -311,7 +311,7 @@ void setup()
     ESP_LOGI( TAG, "No ILI9341 found" );
   }
 
-  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 1000000 );
+  Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 400000 );
 
   Wire.beginTransmission( OLED_ADDRESS );
   uint8_t err = Wire.endTransmission();

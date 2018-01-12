@@ -23,7 +23,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - Timezone support.
 
-- 1-Wire Maxim ( Dallas ) DS18B20 sensor support.
+- OneWire Maxim ( Dallas ) DS18B20 sensor support.
 
 - I2C 128x64 SSD1306 OLED support.
 
@@ -48,6 +48,16 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
 
-Core debug level (in 'Tools' menu) should be set to 'None' in the Arduino IDE for production use.
+Source are compiled for 'ESP32 Dev Module' which has support for ESP_LOGX macros.
+<br>Core debug level (in 'Tools' menu) should be set to 'None' in the Arduino IDE for production use.
+
+When you are still testing your hardware and setup, debug level can be set to anything depending on your needs. 
+<br>('Info' is probably what you need, 'Verbose' gives the most info)
+
+When compiling for any other board than 'ESP32 Dev Module', no log output will be produced.
 
 OneWire is rather buggy at the moment, so until fixed by Espressif you can use [stickbreakers modified OneWire library](https://github.com/stickbreaker/OneWire) to have troublefree DS18B20 sensors.
+
+#### Known issues:
+
+SmartConfig is (again) not working properly, probably needs action from Espressif dev team.

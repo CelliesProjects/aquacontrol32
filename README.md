@@ -64,6 +64,9 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>Among the tested boards I encountered some that have no MISO pin connected, so they can't respond to read commands.
 <br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to 1) in `aquacontrol32.ino`.
 
+- Some ILI9341 boards have their touch coordinates inverted.
+<br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to 1) in `aquacontrol32.ino`.
+
 - Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
 <br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 330R resistor in series to prevent burning up your ESP32.

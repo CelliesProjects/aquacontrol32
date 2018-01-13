@@ -383,19 +383,34 @@ static inline __attribute__((always_inline)) bool buttonPressed( struct button_t
   return ( clickedLocation.x > button.x && clickedLocation.x < button.x + button.w ) && ( clickedLocation.y > button.y && clickedLocation.y < button.y + button.h );
 }
 
-static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( uint16_t touchX, uint16_t touchY )
+static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const uint16_t touchX, const uint16_t touchY )
 {
   uint16_t x, y;
-
-  if ( tftOrientation == TFT_ORIENTATION_UPSIDEDOWN )
+  if ( !TOUCH_IS_INVERTED )
   {
-    x = mapFloat( touchX, 340, 3900, 0, 320 );
-    y = mapFloat( touchY, 200, 3850, 0, 240 );
+    if (  tftOrientation == TFT_ORIENTATION_UPSIDEDOWN )
+    {
+      x = mapFloat( touchX, 340, 3900, 0, 320 );
+      y = mapFloat( touchY, 200, 3850, 0, 240 );
+    }
+    else if ( tftOrientation == TFT_ORIENTATION_NORMAL )
+    {
+      x = mapFloat( touchX, 340, 3900, 320, 0 );
+      y = mapFloat( touchY, 200, 3850, 240, 0 );
+    }
   }
-  else if ( tftOrientation == TFT_ORIENTATION_NORMAL )
+  else
   {
-    x = mapFloat( touchX, 340, 3900, 320, 0 );
-    y = mapFloat( touchY, 200, 3850, 240, 0 );
+    if (  tftOrientation == TFT_ORIENTATION_UPSIDEDOWN )
+    {
+      x = mapFloat( touchX, 340, 3900, 320, 0 );
+      y = mapFloat( touchY, 200, 3850, 240, 0 );
+    }
+    else if ( tftOrientation == TFT_ORIENTATION_NORMAL )
+    {
+      x = mapFloat( touchX, 340, 3900, 0, 320 );
+      y = mapFloat( touchY, 200, 3850, 0, 240 );
+    }
   }
   return { x, y };
 }

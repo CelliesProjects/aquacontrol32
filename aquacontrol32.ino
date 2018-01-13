@@ -36,12 +36,19 @@
 
 
 /**************************************************************************
-       Some tft/sdcard breakout boards from China have their TFT MISO pin unconnected.
+       Some tft/sdcard breakout boards have their TFT MISO pin unconnected.
        These displays will not be detected by aquacontrol.
        Set TFT_HAS_NO_MISO to 1 to override detection and use these tft boards.
        Set TFT_HAS_NO_MISO to 0 use device detection.
 **************************************************************************/
 #define TFT_HAS_NO_MISO                    0
+
+
+/**************************************************************************
+       Some tft/sdcard breakout boards have their touch coordinates reversed.
+       Set to 1 if your touchscreen has reversed coordinates.
+**************************************************************************/
+#define TOUCH_IS_INVERTED                  0
 
 
 /**************************************************************************

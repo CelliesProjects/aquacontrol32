@@ -48,13 +48,12 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
 
-- Source are compiled for 'ESP32 Dev Module' which has support for ESP_LOGX macros.
-<br>Core debug level (in 'Tools' menu) should be set to 'None' in the Arduino IDE for production use.
+- Source are compiled for `ESP32 Dev Module` which has support for ESP_LOGX macros.
+<br>`Core debug level` (in `Tools` menu) should be set to `None` in the Arduino IDE for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
-<br>('Info' is probably what you need, 'Verbose' gives the most info)
-<br>When compiling for any other board than 'ESP32 Dev Module', no log output will be produced.
+<br>(`Info` is probably what you need, `Verbose` gives the most info)
 
-- OneWire is rather buggy at the moment, so until fixed by Espressif you can use [stickbreakers modified OneWire library](https://github.com/stickbreaker/OneWire) to have troublefree DS18B20 sensors.
+- OneWire is rather buggy at the moment, so until fixed you can use [stickbreakers modified OneWire library](https://github.com/stickbreaker/OneWire) to have troublefree DS18B20 sensors.
 
 #### Connecting the hardware:
 
@@ -73,4 +72,4 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Known issues:
 
-- SmartConfig is (again) not working properly, probably needs action from Espressif dev team.
+- SmartConfig is not working properly, probably needs action from Espressif dev team.

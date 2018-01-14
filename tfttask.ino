@@ -30,12 +30,12 @@ struct button_t
 /* buttons used in menu*/
 const button_t LIGHTSON_BUTTON
 {
-  10, 10, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "ON"
+  10, 60, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "ON"
 };
 
 const button_t LIGHTSOFF_BUTTON
 {
-  10, 90, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "OFF"
+  10, 115, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, "OFF"
 };
 
 const button_t LIGHTSAUTO_BUTTON
@@ -52,7 +52,7 @@ const button_t EXIT_BUTTON
 const uint16_t BL_SLIDER_XPOS = 160;
 const uint16_t BL_SLIDER_YPOS = 40;
 const uint16_t BL_SLIDER_WIDTH = 60;
-const uint16_t BL_SLIDER_HEIGHT = 180;
+const uint16_t BL_SLIDER_HEIGHT = 160;
 
 /* area to check for touch to control backlight */
 const button_t BL_SLIDER_AREA
@@ -103,16 +103,17 @@ void tftTask( void * pvParameters )
     {
       case normal:
         showStatus();
+        vTaskDelay( tftTaskdelayTime );
         break;
 
       case menu:
         showMenu();
+        vTaskDelay( 10 / portTICK_PERIOD_MS );
         break;
 
       default:
         break;
     }
-    vTaskDelay( tftTaskdelayTime );
   }
 }
 
@@ -122,7 +123,10 @@ static inline __attribute__((always_inline)) void showMenu()
 
   if ( tftClearScreen )
   {
+    const button_t lightButtonsLabel = { LIGHTSON_BUTTON.x, uint16_t( LIGHTSON_BUTTON.y - 35 ), LIGHTSON_BUTTON.w, LIGHTSON_BUTTON.h, "LIGHTS" };
+
     tft.fillScreen( ILI9341_BLACK );
+    drawButton( lightButtonsLabel, ILI9341_YELLOW, 0, 0, 2 );
     drawMenuButtons();
     drawBacklightSlider( BL_SLIDER_AREA, "backlight" );
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
@@ -148,26 +152,31 @@ static inline __attribute__((always_inline)) void showMenu()
   {
     TS_Point p = touch.getPoint();
 
-    if ( buttonPressed( LIGHTSON_BUTTON , p ) )
+    tftPoint_t clickedLocation;
+    clickedLocation = mapToTft( p.x, p.y );
+
+    if ( buttonPressed( LIGHTSON_BUTTON , clickedLocation ) )
     {
       lightsOn();
     }
-    else if ( buttonPressed( LIGHTSOFF_BUTTON , p ) )
+    else if ( buttonPressed( LIGHTSOFF_BUTTON , clickedLocation ) )
     {
       lightsOff();
     }
-    else if ( buttonPressed( LIGHTSAUTO_BUTTON , p ) )
+    else if ( buttonPressed( LIGHTSAUTO_BUTTON , clickedLocation ) )
     {
       lightsAuto();
     }
-    else if ( buttonPressed( BL_SLIDER_AREA , p ) )
+    else if ( buttonPressed( BL_SLIDER_AREA , clickedLocation ) )
     {
-      tftPoint_t touchedLocation;
-
-      touchedLocation = mapToTft( p.x, p.y );
-      tftBrightness = map( touchedLocation.y , BL_SLIDER_YPOS, BL_SLIDER_HEIGHT + BL_SLIDER_YPOS, 100, 0 );
+      static uint16_t oldLocation;
+      if ( !( clickedLocation.y == oldLocation ) )
+      {
+        tftBrightness = map( clickedLocation.y , BL_SLIDER_YPOS, BL_SLIDER_HEIGHT + BL_SLIDER_YPOS, 100, 0 );
+        oldLocation = clickedLocation.y;
+      }
     }
-    else if ( buttonPressed( EXIT_BUTTON , p ) )
+    else if ( buttonPressed( EXIT_BUTTON , clickedLocation ) )
     {
       tftClearScreen = true;
       tftState = normal;
@@ -314,13 +323,13 @@ static inline __attribute__((always_inline)) void showStatus()
 
   getLocalTime( &timeinfo );
 
-  static struct tm oldtimeinfo;
+  static uint16_t oldtimeinfo;
 
-  if ( timeinfo.tm_sec != oldtimeinfo.tm_sec );
+  if ( timeinfo.tm_sec != oldtimeinfo );
   {
     strftime( clockArea.text, sizeof( clockArea.text ), "%T", &timeinfo );
     drawButton( clockArea, ILI9341_YELLOW, 0, 0, 2 );
-    oldtimeinfo.tm_sec = timeinfo.tm_sec;
+    oldtimeinfo = timeinfo.tm_sec;
   }
 
   if ( currentWiFiStatus != WiFi.status() )
@@ -331,7 +340,11 @@ static inline __attribute__((always_inline)) void showStatus()
 
   if ( touch.tirqTouched() )
   {
-    if ( buttonPressed( MENU_BUTTON , touch.getPoint() ) )
+    tftPoint_t clickedLocation;
+
+    TS_Point p = touch.getPoint();
+    clickedLocation = mapToTft( p.x,p.y );
+    if ( buttonPressed( MENU_BUTTON , clickedLocation ) )
     {
       tftState = menu;
       tftClearScreen = true;
@@ -339,7 +352,7 @@ static inline __attribute__((always_inline)) void showStatus()
   }
 }
 
-static inline __attribute__((always_inline)) void drawButton( struct button_t button, uint16_t labelcolor, uint16_t color, uint16_t bordercolor, const uint8_t fontsize )
+static inline __attribute__((always_inline)) void drawButton( struct button_t button, const uint16_t labelcolor, const uint16_t color, const uint16_t bordercolor, const uint8_t fontsize )
 {
   if ( color || bordercolor )
   {
@@ -376,10 +389,8 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
   drawButton( EXIT_BUTTON,         ILI9341_YELLOW, ILI9341_BLUE, 0, 2 );
 }
 
-static inline __attribute__((always_inline)) bool buttonPressed( struct button_t button, const TS_Point p )
+static inline __attribute__((always_inline)) bool buttonPressed( const struct button_t button, const struct tftPoint_t clickedLocation )
 {
-  tftPoint_t clickedLocation;
-  clickedLocation = mapToTft( p.x, p.y);
   return ( clickedLocation.x > button.x && clickedLocation.x < button.x + button.w ) && ( clickedLocation.y > button.y && clickedLocation.y < button.y + button.h );
 }
 
@@ -431,7 +442,7 @@ static inline __attribute__((always_inline)) void drawBacklightSlider( const but
   if ( label )
   {
     //print label under the slider
-    sliderKnob.y = area.y + area.h + 4;
+    sliderKnob.y = area.y + area.h + 8;
     snprintf( sliderKnob.text, sizeof( sliderKnob.text ), "%s", label );
     drawButton( sliderKnob, ILI9341_YELLOW, 0, 0, 0 );
   }

@@ -14,7 +14,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
     setEmptyTimers();
   }
 
-  //setup channels
+  /* setup pwm on leds */
   channel[ 0 ].pin = LED0_PIN;
   channel[ 1 ].pin = LED1_PIN;
   channel[ 2 ].pin = LED2_PIN;
@@ -45,8 +45,6 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
 
   while (1)
   {
-    //time_t startTimer = micros();
-
     struct timeval microSecondTime;
 
     gettimeofday( &microSecondTime, NULL );
@@ -103,7 +101,6 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
                                             ledcMaxValue ) );
       }
     }
-    //Serial.println( micros() - startTimer );
     vTaskDelayUntil( &xLastWakeTime, dimmerTaskdelayTime / portTICK_PERIOD_MS );
   }
 }
@@ -117,12 +114,12 @@ void setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits
   }
   ledcMaxValue = ( 0x00000001 << numberOfBits ) - 1;
   ledcNumberOfBits = numberOfBits;
-  //Serial.printf( "\nPWM frequency set to %.2f kHz\n", ledcActualFrequency / 1000);
-  //Serial.printf( "PWM bit depth set to %i bits\n", ledcNumberOfBits);
-  //Serial.printf( "Maximum raw value set to 0x%x or %i decimal\n\n", ledcMaxValue, ledcMaxValue);
+  ESP_LOGI( TAG, "PWM frequency set to %.2f kHz.", ledcActualFrequency / 1000);
+  ESP_LOGI( TAG, "PWM bit depth set to %i bits.", ledcNumberOfBits);
+  ESP_LOGI( TAG, "Maximum raw value set to 0x%x or %i decimal.", ledcMaxValue, ledcMaxValue);
 }
 
-static inline __attribute__((always_inline)) float mapFloat( float x, const float in_min, const float in_max, const float out_min, const float out_max)
+static inline __attribute__((always_inline)) float mapFloat( const float x, const float in_min, const float in_max, const float out_min, const float out_max)
 {
   return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
 }

@@ -1,46 +1,68 @@
-
 void wifiTask( void * pvParameters )
 {
+  const uint16_t rebootSeconds = 60 * 5;
+
   /* trying last accesspoint */
   WiFi.mode( WIFI_STA );
   WiFi.begin();
   //WiFi.onEvent( WiFiEvent );
 
-  ESP_LOGI( TAG, "Connecting WiFi");
+  ESP_LOGI( TAG, "Connecting WiFi" );
+
   if ( xTftTaskHandle )
   {
+    tft.setTextColor( ILI9341_WHITE , ILI9341_BLACK );
     tft.println( "Connecting WiFi");
   }
-  connectWiFi();
-  tft.setTextColor( ILI9341_WHITE , ILI9341_BLACK );
 
-  /* check if we are connected */
+  waitForWifi();
+
   if ( WiFi.status() != WL_CONNECTED )
   {
-    /* wait for SC */
-    ESP_LOGI( TAG, "\nWaiting %i seconds for SmartConfig.\n", 60 * 5 );
+    ESP_LOGI( TAG, "Waiting %i seconds for SmartConfig.", rebootSeconds );
+
     if ( xTftTaskHandle )
     {
       tft.println( "\nNo WiFi connection.\nWaiting for SmartConfig." );
       tft.invertDisplay( true );
     }
 
-/* https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFiSTA.h */
-
     WiFi.mode( WIFI_AP_STA );
     WiFi.beginSmartConfig();
 
-    const time_t rebootTime = millis() + 60 * 5 * 1000; /* 5 min */
+    const time_t rebootTime = millis() + ( rebootSeconds * 1000 );
 
     while ( !WiFi.smartConfigDone() && millis() < rebootTime )
     {
-      vTaskDelay( 500 / portTICK_PERIOD_MS );
+      char remainingSCTime[12];
+      if ( xOledTaskHandle )
+      {
+        OLED.clear();
+        OLED.setFont( ArialMT_Plain_10 );
+        OLED.drawString( 64, 10, "Waiting for SmartConfig." );
+        snprintf( remainingSCTime, sizeof( remainingSCTime), "%i seconds",  ( 100 + rebootTime - millis() ) / 1000 );
+        OLED.drawString( 64, 30, remainingSCTime );
+        OLED.invertDisplay();
+        OLED.display();
+      }
 
       if ( xTftTaskHandle )
       {
         tft.setCursor( 70, 100 );
-        tft.printf( "%2i seconds until reboot.", ( 100 + rebootTime - millis() ) / 1000 );
+        tft.print( remainingSCTime );
       }
+      else
+      {
+        if ( !gpio_get_level( gpio_num_t( TFT_BACKLIGHT_PIN ) ) )
+        {
+          digitalWrite( TFT_BACKLIGHT_PIN, HIGH );
+        }
+        else
+        {
+          digitalWrite( TFT_BACKLIGHT_PIN, LOW );
+        }
+      }
+      vTaskDelay( 500 / portTICK_PERIOD_MS );
     }
 
     if ( !WiFi.smartConfigDone() )
@@ -49,24 +71,25 @@ void wifiTask( void * pvParameters )
     }
   }
 
-  //Wait for WiFi to connect to AP
-  connectWiFi();
-
+  waitForWifi();
 
   /* We have succesfully connected */
-  uint8_t mac[6];
-  esp_efuse_mac_get_default(mac);
+  ESP_LOGI( TAG, "WiFi connected to %s", WiFi.SSID().c_str() );
   tcpip_adapter_ip_info_t ip_info;
   ESP_ERROR_CHECK( tcpip_adapter_get_ip_info( TCPIP_ADAPTER_IF_STA, &ip_info ) );
-  ESP_LOGI( TAG, "WiFi connected to %s", WiFi.SSID().c_str() );
   ESP_LOGI( TAG, "Local IP: %s", ip4addr_ntoa( &ip_info.ip ) );
-  ESP_LOGI( TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x",mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  uint8_t mac[6];
+  esp_efuse_mac_get_default(mac);
+  ESP_LOGI( TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   if ( xTftTaskHandle )
   {
     tft.invertDisplay( false );
     tft.printf( "WiFi connected.\nLocal IP: %s\n", ip4addr_ntoa( &ip_info.ip ) );
   }
-
+  if ( xOledTaskHandle )
+  {
+    OLED.normalDisplay();
+  }
   strncpy( hostName, readStringNVS( "hostname", "" ).c_str(), sizeof( hostName ) );
 
   if ( hostName[0] ==  0 )
@@ -114,19 +137,20 @@ void wifiTask( void * pvParameters )
   }
 }
 
-void connectWiFi()
+/* https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFiType.h */
+void waitForWifi()
 {
-  const time_t endTime = millis() +  15 * 1000; /* 15 sec */
-
-  while ( WiFi.status() != WL_CONNECTED && millis() < endTime )
+  while ( WiFi.status() != WL_CONNECTED &&
+          WiFi.status() != WL_NO_SSID_AVAIL &&
+          WiFi.status() != WL_CONNECT_FAILED )
   {
     tft.print( "." );
     vTaskDelay( 500 / portTICK_PERIOD_MS );
   }
 }
 /*
-void WiFiEvent( WiFiEvent_t event )
-{
+  void WiFiEvent( WiFiEvent_t event )
+  {
   switch ( event )
   {
     case SYSTEM_EVENT_AP_START:
@@ -161,5 +185,5 @@ void WiFiEvent( WiFiEvent_t event )
     default:
       break;
   }
-}
+  }
 */

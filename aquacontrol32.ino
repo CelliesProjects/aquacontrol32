@@ -42,7 +42,7 @@
        Set TFT_HAS_NO_MISO to 1 to override detection and use these tft boards.
        Set TFT_HAS_NO_MISO to 0 use device detection.
 **************************************************************************/
-#define TFT_HAS_NO_MISO                    1
+#define TFT_HAS_NO_MISO                    0
 
 
 /**************************************************************************

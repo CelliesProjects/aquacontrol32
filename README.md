@@ -70,6 +70,27 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 330R resistor in series to prevent burning up your ESP32.
 
+#### SmartConfig:
+
+- If your ESP32 has connected to your WiFi router before you flash Aquacontrol to your device, it will probably connect automagically .
+
+- If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
+<br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
+<br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
+
 #### Known issues:
 
-- SmartConfig is not working properly, probably needs action from Espressif dev team.
+SmartConfig is not working properly, probably needs some action from the Espressif dev team.
+
+See [issue #1001](https://github.com/espressif/arduino-esp32/issues/1001).
+
+To connect your device while this is sorted out, change line 7 in `wifitask.ino` from
+
+````c
+    WiFi.begin();
+````
+to
+
+````c
+    WiFi.begin( "YOURSSID", "YOURPSK" );
+````

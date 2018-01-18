@@ -17,7 +17,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 - 50 timers per channel.
 
 - Password protected web interface to control the device.
-<br>See it in action at my [fish](http://thuis.wasietsmet.nl:99/) and my [salamanders](http://thuis.wasietsmet.nl:88/) tank.
+<br>See it in action at my [fish](http://vissen.wasietsmet.nl/) and my [salamanders](http://salamanders.wasietsmet.nl/) tank.
 
 - Automatic NTP timekeeping.
 

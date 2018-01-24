@@ -15,8 +15,7 @@ void ntpTask( void * pvParameters )
 
   ESP_LOGI( TAG, "NTP syncing with %s.", NTPpoolAdress );
 
-  configTzTime( readStringNVS( "timezone", defaultTimezone ).c_str(),
-                NTPpoolAdress );
+  configTzTime( readStringNVS( "timezone", defaultTimezone ).c_str(), NTPpoolAdress );
 
   time_t now;
   struct tm timeinfo;
@@ -32,7 +31,9 @@ void ntpTask( void * pvParameters )
 
   /* start time dependent tasks */
 
-  xTaskCreatePinnedToCore(
+  BaseType_t xReturned;
+
+  xReturned = xTaskCreatePinnedToCore(
     dimmerTask,                     /* Function to implement the task */
     "dimmerTask",                   /* Name of the task */
     2500,                           /* Stack size in words */
@@ -41,7 +42,9 @@ void ntpTask( void * pvParameters )
     &xDimmerTaskHandle,             /* Task handle. */
     1);                             /* Core where the task should run */
 
-  xTaskCreatePinnedToCore(
+  ESP_LOGI( TAG, "DimmerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
+
+  xReturned = xTaskCreatePinnedToCore(
     loggerTask,                     /* Function to implement the task */
     "loggerTask",                   /* Name of the task */
     3000,                           /* Stack size in words */
@@ -49,6 +52,8 @@ void ntpTask( void * pvParameters )
     loggerTaskPriority,             /* Priority of the task */
     &xLoggerTaskHandle,             /* Task handle. */
     1);                             /* Core where the task should run */
+
+  ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
 
   vTaskDelete( NULL );
 

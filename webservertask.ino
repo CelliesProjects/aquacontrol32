@@ -23,6 +23,11 @@ void webServerTask ( void * pvParameters )
 {
   ESP_LOGI( TAG, "Starting webserver setup. " );
 
+  server.on( "/robots.txt", HTTP_GET, []( AsyncWebServerRequest * request )
+  {
+    request->send( 200, textPlainHeader, "User-agent: *\nDisallow: /" );
+  });
+
   server.on( "/api/login", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )

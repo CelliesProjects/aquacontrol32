@@ -11,11 +11,15 @@ void tempTask( void * pvParameters )
     }
     /* make a key field -in sensorUniqueId- for NVS */
     char sensorUniqueId[17];
-    snprintf( sensorUniqueId, sizeof( sensorUniqueId ), "%02x%02x%02x%02x%02x%02x%02x", currentAddr[1], currentAddr[2], currentAddr[3], currentAddr[4], currentAddr[5], currentAddr[6], currentAddr[7]  );
+    snprintf( sensorUniqueId, sizeof( sensorUniqueId ), "%02x%02x%02x%02x%02x%02x%02x",
+              currentAddr[1], currentAddr[2], currentAddr[3], currentAddr[4], currentAddr[5], currentAddr[6], currentAddr[7]  );
 
     /* and read value from NVS or use default name */
-    snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ), readStringNVS( sensorUniqueId, "temp sensor" ).c_str(), numberOfFoundSensors  );
-    ESP_LOGD( TAG, "Sensor %i: %s - Name: '%s'",numberOfFoundSensors, sensorUniqueId, sensor[numberOfFoundSensors].name );
+    snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ),
+              preferences.getString( sensorUniqueId, "temp sensor" ).c_str(), numberOfFoundSensors  );
+
+    ESP_LOGD( TAG, "Sensor %i: %s - Name: '%s'", numberOfFoundSensors, sensorUniqueId, sensor[numberOfFoundSensors].name );
+
     numberOfFoundSensors++;
   }
   ESP_LOGI( TAG, "%i Dallas sensors found.", numberOfFoundSensors );
@@ -44,7 +48,10 @@ void tempTask( void * pvParameters )
       { // we need 9 bytes
         data[i] = ds.read(  );
       }
-      ESP_LOGD( TAG, "Sensor %i '%s' data=%02x%02x%02x%02x%02x%02x%02x%02x%02x", thisSensor,sensor[thisSensor].name, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+
+      ESP_LOGD( TAG, "Sensor %i '%s' data=%02x%02x%02x%02x%02x%02x%02x%02x%02x", thisSensor, sensor[thisSensor].name,
+                data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+
       byte type_s;
       // the first ROM byte indicates which chip
       switch ( sensor[thisSensor].addr[0] )

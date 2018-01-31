@@ -25,19 +25,20 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
     char buff[32];
 
     snprintf( buff, sizeof( buff ), "channelname%i", channelNumber );
-    channel[ channelNumber ].name          = readStringNVS( buff, "channelname" );
+    channel[ channelNumber ].name          = preferences.getString( buff, "channelname" );
 
     snprintf( buff, sizeof( buff ), "channelcolor%i", channelNumber );
-    channel[ channelNumber ].color         = readStringNVS( buff, "#fffe7a" );
+    channel[ channelNumber ].color         = preferences.getString( buff, "#fffe7a" );
 
     snprintf( buff, sizeof( buff ), "channelminimum%i", channelNumber );
-    channel[ channelNumber ].minimumLevel  = readFloatNVS( buff, 0 );
+    //channel[ channelNumber ].minimumLevel  = readFloatNVS( buff, 0 );
+    channel[ channelNumber ].minimumLevel  = preferences.getFloat( buff, 0  );
 
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }
 
-  setupDimmerPWMfrequency( readDoubleNVS( "pwmfrequency", LEDC_MAXIMUM_FREQ ),
-                           readInt8NVS( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
+  setupDimmerPWMfrequency( preferences.getDouble( "pwmfrequency", LEDC_MAXIMUM_FREQ ),
+                           preferences.getUInt( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
 
   lightStatus = LIGHTS_AUTO;
 

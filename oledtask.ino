@@ -5,7 +5,7 @@ void oledTask( void * pvParameters )
   OLED.init();
   ESP_LOGI( TAG, "OLED initialized." );
 
-  if ( readStringNVS( "oledorientation", "normal" ) == "upsidedown" )
+  if ( preferences.getString( "oledorientation", "normal" ) == "upsidedown" )
   {
     oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
     OLED.flipScreenVertically();
@@ -22,7 +22,7 @@ void oledTask( void * pvParameters )
     vTaskDelay( 10 / portTICK_PERIOD_MS );
   }
 
-  oledContrast = readUint8NVS( "oledcontrast", 15 );
+  oledContrast = preferences.getUInt( "oledcontrast", 15 );
   OLED.setContrast( oledContrast << 0x04 );
 
   OLED.setFont( ArialMT_Plain_10 );

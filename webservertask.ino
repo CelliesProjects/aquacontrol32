@@ -30,7 +30,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/login", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -84,7 +84,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/deletefile", HTTP_POST, []( AsyncWebServerRequest * request)
   {
-    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -314,7 +314,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/setchannel", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -341,7 +341,7 @@ void webServerTask ( void * pvParameters )
 
       //pre-use 'content' buffer
       snprintf( content, sizeof( content ), "channelcolor%i", channelNumber );
-      saveStringNVS( content, channel[channelNumber].color );
+      preferences.putString( content, channel[channelNumber].color );
 
       snprintf( content, sizeof( content ), "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color.c_str() );
     }
@@ -359,7 +359,7 @@ void webServerTask ( void * pvParameters )
 
       //pre-use 'content' buffer
       snprintf( content, sizeof( content ), "channelminimum%i", channelNumber );
-      saveFloatNVS( content, channel[channelNumber].minimumLevel );
+      preferences.putFloat( content, channel[channelNumber].minimumLevel );
 
       snprintf( content, sizeof( content ), "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].minimumLevel );
     }
@@ -385,7 +385,7 @@ void webServerTask ( void * pvParameters )
 
       //pre-use 'content' buffer
       snprintf( content, sizeof( content ), "channelname%i", channelNumber );
-      saveStringNVS( content, channel[channelNumber].name );
+      preferences.putString( content, channel[channelNumber].name );
 
       snprintf( content, sizeof( content ), "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name.c_str() );
     }
@@ -402,7 +402,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/setdevice", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -411,7 +411,7 @@ void webServerTask ( void * pvParameters )
 
     if ( request->hasArg( "clearnvs" ) )
     {
-      clearNVS();
+      preferences.clear();
       snprintf( content, sizeof( content ), "NVS cleared" );
     }
 
@@ -424,7 +424,7 @@ void webServerTask ( void * pvParameters )
         return request->send( 400, textPlainHeader, "name not available." );
       }
       snprintf( hostName , sizeof( hostName ), "%s", request->arg( "hostname" ).c_str() );
-      saveStringNVS( "hostname", hostName );
+      preferences.putString( "hostname", hostName );
       snprintf( content, sizeof( content ), "%s", hostName );
     }
 
@@ -464,14 +464,14 @@ void webServerTask ( void * pvParameters )
     else if ( request->hasArg( "oledcontrast" ) )
     {
       request->arg( "oledcontrast" );
-      int8_t contrast = request->arg( "oledcontrast" ).toInt();
+      uint8_t contrast = request->arg( "oledcontrast" ).toInt();
       if ( contrast < 0 || contrast > 15 )
       {
         return request->send( 400, textPlainHeader, "Invalid contrast." );
       }
       oledContrast = contrast;
       OLED.setContrast( contrast << 4 );
-      saveUint8NVS( "oledcontrast", oledContrast );
+      preferences.putUInt( "oledcontrast", oledContrast );
       snprintf( content, sizeof( content ), "%i", contrast );
     }
 
@@ -495,7 +495,7 @@ void webServerTask ( void * pvParameters )
       OLED.init();
       OLED.setContrast( oledContrast << 0x04 );
       oledOrientation == OLED_ORIENTATION_NORMAL ? OLED.normalDisplay() : OLED.flipScreenVertically();
-      saveStringNVS( "oledorientation", ( oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" ) );
+      preferences.putString( "oledorientation", ( oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" ) );
       snprintf( content, sizeof( content ), "%s", oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
     }
 
@@ -511,7 +511,7 @@ void webServerTask ( void * pvParameters )
 
       //some more tests...
 
-      saveStringNVS( passwordKeyNVS, request->arg( "password") );
+      preferences.putString( passwordKeyNVS, request->arg( "password") );
 
       strncpy( content, "Password saved.", sizeof( content ) );
     }
@@ -528,7 +528,7 @@ void webServerTask ( void * pvParameters )
       if ( ledcNumberOfBits != newPWMDepth )
       {
         setupDimmerPWMfrequency( LEDC_MAXIMUM_FREQ, newPWMDepth );
-        saveInt8NVS( "pwmdepth" , ledcNumberOfBits );
+        preferences.putUInt( "pwmdepth" , ledcNumberOfBits );
       }
       snprintf( content, sizeof( content ), "%i", ledcNumberOfBits );
     }
@@ -546,7 +546,7 @@ void webServerTask ( void * pvParameters )
       if ( tempPWMfrequency != ledcActualFrequency )
       {
         setupDimmerPWMfrequency( tempPWMfrequency, ledcNumberOfBits );
-        saveDoubleNVS( "pwmfrequency", ledcActualFrequency );
+        preferences.putDouble( "pwmfrequency", ledcActualFrequency );
       }
       snprintf( content, sizeof( content ), "%.0f", ledcActualFrequency );
     }
@@ -571,10 +571,9 @@ void webServerTask ( void * pvParameters )
 
       //get the sensor id and save under that key
 
-      //snprintf( content, sizeof( content ), "sensorname%i", sensorNumber );
       snprintf( content, sizeof( content ), "%02x%02x%02x%02x%02x%02x%02x", sensor[sensorNumber].addr[1], sensor[sensorNumber].addr[2], sensor[sensorNumber].addr[3], sensor[sensorNumber].addr[4], sensor[sensorNumber].addr[5], sensor[sensorNumber].addr[6], sensor[sensorNumber].addr[7] );
 
-      saveStringNVS( content, request->arg( "sensorname" ).c_str() );
+      preferences.putString( content, request->arg( "sensorname" ).c_str() );
 
       ESP_LOGI( TAG, " Saved '%s' as '%s'\n", request->arg( "sensorname" ).c_str(), content );
 
@@ -600,7 +599,7 @@ void webServerTask ( void * pvParameters )
       tft.setRotation( tftOrientation );
       tft.fillScreen( ILI9341_BLACK );
       tftClearScreen = true;
-      saveStringNVS( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+      preferences.putString( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
       snprintf( content, sizeof( content ), "%s", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
     }
 
@@ -614,7 +613,7 @@ void webServerTask ( void * pvParameters )
         return request->send( 400, textPlainHeader, "Invalid tft brightness." );
       }
       tftBrightness = brightness;
-      saveInt8NVS( "tftbrightness", brightness );
+      preferences.putFloat( "tftbrightness", brightness );
       snprintf( content, sizeof( content ), "%.2f", tftBrightness );
     }
 
@@ -626,7 +625,7 @@ void webServerTask ( void * pvParameters )
       urlDecode( request->arg( "timezone" ) );
       if ( 0 == setenv( "TZ",  request->arg( "timezone" ).c_str(), 1 )  )
       {
-        saveStringNVS( "timezone", getenv( "TZ" ) );
+        preferences.putString( "timezone", getenv( "TZ" ) );
       }
       else
       {
@@ -647,7 +646,7 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/upload", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -662,7 +661,7 @@ void webServerTask ( void * pvParameters )
     if ( !index )
     {
       _authenticated = false;
-      if ( request->authenticate( www_username, readStringNVS( passwordKeyNVS, www_default_passw ).c_str() ) )
+      if ( request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
       {
         startTimer = millis();
         ESP_LOGI( TAG, "Starting upload. filename = %s\n", filename.c_str() );
@@ -862,6 +861,6 @@ bool setupMDNS( const String hostname )
   ESP_ERROR_CHECK( mdns_service_txt_set( mdns, "_http", "_tcp", 4, boardTxtData ) );
   ESP_ERROR_CHECK( mdns_service_instance_set( mdns, "_http", "_tcp", "Aquacontrol32 Web Interface") );
   ESP_LOGI( TAG, "Started MDNS service: '%s.local'", hostname.c_str() );
-  saveStringNVS( "hostname", hostname );
+  preferences.putString( "hostname", hostname );
   return true;
 }

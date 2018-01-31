@@ -86,10 +86,10 @@ void tftTask( void * pvParameters )
 
   backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
-  tftBrightness = readInt8NVS( "tftbrightness", tftBrightness );
+  tftBrightness = preferences.getFloat( "tftbrightness", tftBrightness );
   ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
 
-  ( readStringNVS( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
+  ( preferences.getString( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
   tft.setRotation( tftOrientation );
   while ( !xDimmerTaskHandle )
   {
@@ -343,7 +343,7 @@ static inline __attribute__((always_inline)) void showStatus()
     tftPoint_t clickedLocation;
 
     TS_Point p = touch.getPoint();
-    clickedLocation = mapToTft( p.x,p.y );
+    clickedLocation = mapToTft( p.x, p.y );
     if ( buttonPressed( MENU_BUTTON , clickedLocation ) )
     {
       tftState = menu;

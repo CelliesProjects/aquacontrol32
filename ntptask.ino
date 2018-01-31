@@ -15,7 +15,7 @@ void ntpTask( void * pvParameters )
 
   ESP_LOGI( TAG, "NTP syncing with %s.", NTPpoolAdress );
 
-  configTzTime( readStringNVS( "timezone", defaultTimezone ).c_str(), NTPpoolAdress );
+  configTzTime( preferences.getString( "timezone", defaultTimezone ).c_str(), NTPpoolAdress );
 
   time_t now;
   struct tm timeinfo;

@@ -90,7 +90,7 @@ void wifiTask( void * pvParameters )
   {
     OLED.normalDisplay();
   }
-  strncpy( hostName, readStringNVS( "hostname", "" ).c_str(), sizeof( hostName ) );
+  strncpy( hostName, preferences.getString( "hostname", "" ).c_str(), sizeof( hostName ) );
 
   if ( hostName[0] ==  0 )
   {

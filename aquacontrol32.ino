@@ -290,6 +290,8 @@ void setup()
   pinMode( I2C_SCL_PIN, INPUT_PULLUP );
   pinMode( I2C_SDA_PIN, INPUT_PULLUP );
 
+  preferences.begin( "aquacontrol32", false );
+
   btStop();
   //Serial.begin( 115200 );
   ESP_LOGI( TAG, "aquacontrol32 V%s", SKETCH_VERSION );

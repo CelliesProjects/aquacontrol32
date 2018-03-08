@@ -7,7 +7,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 <br><br>The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 330R gate resistors to 5 NPN mosfets. I use IRLZ44N mosfets as these are very cheap.
 <br><br>You can connect a cheap 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s).
 <br>The ILI9341 displays optionally come with a XPT2046 touch controller which is supported.
-<br><br>Checkout the BOM on the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware) to see how to connect the hardware.
+<br><br>Checkout the [pin documentation](https://github.com/CelliesProjects/aquacontrol32/blob/master/tft_board_pins.md) to see how to connect the hardware.
 
 #### Features:
 

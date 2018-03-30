@@ -51,7 +51,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>`Core debug level` (in `Tools` menu) should be set to `None` in the Arduino IDE for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`Info` is probably what you need, `Verbose` gives the most info)
-- Check your compile settings and used libraries.
+- Check your [compile settings](compile_options.md) and [used libraries](libraries.md).
 
 #### Connecting the hardware:
 - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).

@@ -2,7 +2,7 @@ void ntpTask( void * pvParameters )
 {
   const char * NTPpool         = "pool.ntp.org";
   const char * defaultTimezone = "CET-1CEST,M3.5.0/2,M10.5.0/3";
-  char NTPpoolAdress[20];
+  static char NTPpoolAdress[20];
 
   if ( COUNTRY_CODE_ISO_3166 )
   {

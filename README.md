@@ -41,7 +41,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 #### You will need:
 
-To compile or install Aquacontrol32, you will need the latest version [Arduino IDE](https://arduino.cc/), with the latest [ESP32 Arduino Core at commit 81a9c45a1ef5833e80c9235ff393a7641c669a94](https://github.com/espressif/arduino-esp32/commit/81a9c45a1ef5833e80c9235ff393a7641c669a94) installed.
+To compile or install Aquacontrol32, you will need the latest version [Arduino IDE](https://arduino.cc/), with the [ESP32 Arduino Core at this commit](https://github.com/espressif/arduino-esp32/commit/3a4ec66d41615cbb1c3e830cb6e761cdc4cca9d3) installed.
 
 Aquacontrol32 can run happily with or without OLED or TFT display.
 
@@ -51,8 +51,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>`Core debug level` (in `Tools` menu) should be set to `None` in the Arduino IDE for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`Info` is probably what you need, `Verbose` gives the most info)
-
-- OneWire is rather buggy at the moment, so until fixed you can use [stickbreakers modified OneWire library](https://github.com/stickbreaker/OneWire) to have troublefree DS18B20 sensors.
+- Check your compile settings and used libraries.
 
 #### Connecting the hardware:
 - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
@@ -80,20 +79,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Known issues:
 
-SmartConfig is not working properly, probably needs some action from the Espressif dev team.
-
-See [issue #1001](https://github.com/espressif/arduino-esp32/issues/1001).
-
-To connect your device while this is sorted out, change line 7 in `wifitask.ino` from
-
-````c
-    WiFi.begin();
-````
-to
-
-````c
-    WiFi.begin( "YOURSSID", "YOURPSK" );
-````
+None at the moment.
 
 #### The test hardware:
 

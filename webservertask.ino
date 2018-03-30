@@ -828,39 +828,46 @@ static inline __attribute__((always_inline)) String humanReadableSize( const siz
   }
 }
 
+/* https://github.com/espressif/esp-idf/blob/master/docs/en/api-reference/protocols/mdns.rst */
+/* https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/blob/master/MicroPython_BUILD/components/micropython/esp32/network_mdns.c */
+/* https://www.avahi.org/doxygen/html/client-publish-service_8c-example.html */
 bool setupMDNS( const String hostname )
 {
-  static mdns_server_t * mdns = NULL;
-
-  if ( !mdns )
+  //initialize mDNS service
+  esp_err_t err = mdns_init();
+  if (err)
   {
-    esp_err_t err = mdns_init( TCPIP_ADAPTER_IF_STA, &mdns );
-    if ( err) {
-      ESP_LOGE( TAG, "Failed starting MDNS: %u", err );
-      return false;
-    }
-  }
-
-  if ( mdns_query( mdns, hostname.c_str(), NULL, 1000 ) )
-  {
-    /* hostname already present */
+    ESP_LOGI( TAG, "MDNS Init failed: %d\n", err );
     return false;
   }
 
-  ESP_ERROR_CHECK( mdns_set_hostname( mdns, hostname.c_str() ) );
-  ESP_ERROR_CHECK( mdns_set_instance( mdns, hostname.c_str() ) );
+  ESP_LOGI( TAG, "Query A: %s.local", hostname.c_str() );
+  /*
+    struct ip4_addr addr;
+    addr.addr = 0;
 
-  const char * boardTxtData[3] =
-  {
-    "board=aquacontrol32",
-    "secure=no",
-    "auth_upload=yes"
+    mdns_query_a( hostname, 2000,  &addr);
+
+    if( addr.addr  )
+    {
+        ESP_LOGI( TAG, "hostname already present" );
+        return false;
+    }
+  */
+  //set hostname
+  mdns_hostname_set( hostname.c_str() );
+
+  mdns_service_add( NULL, "_http", "_tcp", 80, NULL, 0 );
+
+  mdns_service_instance_name_set("_http", "_tcp", "Aquacontrol32 Web Interface - 5 Channel LED controller" );
+
+  mdns_txt_item_t serviceTxtData[3] = {
+    {"board", "esp32"},
+    {"u", "user"},
+    {"p", "password"}
   };
-
-  ESP_ERROR_CHECK( mdns_service_add( mdns, "_http", "_tcp", 80 ) );
-  ESP_ERROR_CHECK( mdns_service_txt_set( mdns, "_http", "_tcp", 4, boardTxtData ) );
-  ESP_ERROR_CHECK( mdns_service_instance_set( mdns, "_http", "_tcp", "Aquacontrol32 Web Interface") );
-  ESP_LOGI( TAG, "Started MDNS service: '%s.local'", hostname.c_str() );
+  //set txt data for service (will free and replace current data)
+  mdns_service_txt_set("_http", "_tcp", serviceTxtData, 3);
   preferences.putString( "hostname", hostname );
   return true;
 }

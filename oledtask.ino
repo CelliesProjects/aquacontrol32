@@ -56,10 +56,10 @@ void oledTask( void * pvParameters )
     }
     else
     {
-      const uint8_t BARS_BOTTOM      = DISPLAY_HEIGHT - 11;
+      const uint8_t BARS_BOTTOM      = OLED.getHeight() - 11;
       const uint8_t BARS_HEIGHT      = BARS_BOTTOM;
       const uint8_t BARS_BORDER      = 4;
-      const uint8_t BARS_WIDTH       = DISPLAY_WIDTH  / NUMBER_OF_CHANNELS;
+      const uint8_t BARS_WIDTH       = OLED.getWidth() / NUMBER_OF_CHANNELS;
 
       OLED.drawString( 64, 0, WiFi.localIP().toString() );
 

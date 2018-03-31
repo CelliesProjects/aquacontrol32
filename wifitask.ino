@@ -140,28 +140,30 @@ void wifiTask( void * pvParameters )
 /* https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFiType.h */
 void waitForWifi()
 {
-  while ( WiFi.status() != WL_CONNECTED &&
-          WiFi.status() != WL_NO_SSID_AVAIL &&
-          WiFi.status() != WL_CONNECT_FAILED )
+  unsigned long timeOut = millis() + 10000;
+  while ( !WiFi.isConnected() && millis() < timeOut )
   {
-    tft.print( "." );
+    if ( xTftTaskHandle )
+    {
+      tft.print( "." );
+    }
     vTaskDelay( 500 / portTICK_PERIOD_MS );
   }
 }
 /*
-  void WiFiEvent( WiFiEvent_t event )
-  {
+void WiFiEvent( WiFiEvent_t event )
+{
   switch ( event )
   {
     case SYSTEM_EVENT_AP_START:
-      //ESP_LOGI( TAG, "AP Started");
+      ESP_LOGI( TAG, "AP Started");
       //WiFi.softAPsetHostname(AP_SSID);
       break;
     case SYSTEM_EVENT_AP_STOP:
       ESP_LOGI( TAG, "AP Stopped");
       break;
     case SYSTEM_EVENT_STA_START:
-      //ESP_LOGI( TAG, "STA Started");
+      ESP_LOGI( TAG, "STA Started");
       //WiFi.setHostname( DEFAULT_HOSTNAME_PREFIX.c_str( );
       break;
     case SYSTEM_EVENT_STA_CONNECTED:
@@ -169,7 +171,7 @@ void waitForWifi()
       //WiFi.enableIpV6();
       break;
     case SYSTEM_EVENT_AP_STA_GOT_IP6:
-      //ESP_LOGI( TAG, "STA IPv6: ");
+      ESP_LOGI( TAG, "STA IPv6: ");
       //ESP_LOGI( TAG, "%s", WiFi.localIPv6().toString());
       break;
     case SYSTEM_EVENT_STA_GOT_IP:
@@ -185,5 +187,5 @@ void waitForWifi()
     default:
       break;
   }
-  }
+}
 */

@@ -7,8 +7,6 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 <br><br>The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 330R gate resistors to 5 NPN mosfets. I use IRLZ44N mosfets as these are very cheap.
 <br><br>You can connect a cheap 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s).
 <br>The ILI9341 displays optionally come with a XPT2046 touch controller which is supported.
-<br><br>Checkout the [pin documentation](https://github.com/CelliesProjects/aquacontrol32/blob/master/tft_board_pins.md) to see how to connect the hardware.
-
 #### Features:
 
 - 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
@@ -46,7 +44,10 @@ To compile or install Aquacontrol32, you will need the latest version [Arduino I
 Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
-
+- ALWAYS ERASE YOUR FLASH BEFORE FLASHING AQUACONTROL!
+<br>Use this command to erase (INCLUDED SPIFFS!) flash in Linux:
+<br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
+<br>Backup your `default.aqu` in the file manager before erasing and upload it after you flash your controller.
 - Source are compiled for `ESP32 Dev Module` which has support for ESP_LOGX macros.
 <br>`Core debug level` (in `Tools` menu) should be set to `None` in the Arduino IDE for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.

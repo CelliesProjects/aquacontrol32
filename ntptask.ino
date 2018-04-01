@@ -34,26 +34,30 @@ void ntpTask( void * pvParameters )
   BaseType_t xReturned;
 
   xReturned = xTaskCreatePinnedToCore(
-    dimmerTask,                     /* Function to implement the task */
-    "dimmerTask",                   /* Name of the task */
-    2500,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    dimmerTaskPriority,             /* Priority of the task */
-    &xDimmerTaskHandle,             /* Task handle. */
-    1);                             /* Core where the task should run */
+                dimmerTask,                     /* Function to implement the task */
+                "dimmerTask",                   /* Name of the task */
+                2500,                           /* Stack size in words */
+                NULL,                           /* Task input parameter */
+                dimmerTaskPriority,             /* Priority of the task */
+                &xDimmerTaskHandle,             /* Task handle. */
+                1);                             /* Core where the task should run */
 
   ESP_LOGI( TAG, "DimmerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
 
-  xReturned = xTaskCreatePinnedToCore(
-    loggerTask,                     /* Function to implement the task */
-    "loggerTask",                   /* Name of the task */
-    3000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    loggerTaskPriority,             /* Priority of the task */
-    &xLoggerTaskHandle,             /* Task handle. */
-    1);                             /* Core where the task should run */
+  if ( LOG_FILES )
+  {
+    xReturned = xTaskCreatePinnedToCore(
+                  loggerTask,                     /* Function to implement the task */
+                  "loggerTask",                   /* Name of the task */
+                  3000,                           /* Stack size in words */
+                  NULL,                           /* Task input parameter */
+                  loggerTaskPriority,             /* Priority of the task */
+                  &xLoggerTaskHandle,             /* Task handle. */
+                  1);                             /* Core where the task should run */
 
-  ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
+    ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
+  }
+
 
   vTaskDelete( NULL );
 

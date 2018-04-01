@@ -82,6 +82,11 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
 
+#### Log files
+
+Log files are saved on SPIFFS and could reduce the lifetime of the flash memory.
+<br>To log the temperature sensor values on SPIFFS enable `LOG_FILES` (set it to 1) in `aquacontrol32.ino`.  
+
 #### Known issues:
 
 None at the moment.

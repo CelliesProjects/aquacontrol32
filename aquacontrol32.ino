@@ -9,12 +9,7 @@
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/ESPAsyncTCP */
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
-
-
-/**************************************************************************
-       which version is this
-**************************************************************************/
-#define SKETCH_VERSION                     "1.0.0"
+#include "gitTagVersion.h"
 
 
 /**************************************************************************
@@ -301,7 +296,7 @@ void setup()
 
   btStop();
   //Serial.begin( 115200 );
-  ESP_LOGI( TAG, "aquacontrol32 V%s", SKETCH_VERSION );
+  ESP_LOGI( TAG, "aquacontrol32 V%s", sketchVersion );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );

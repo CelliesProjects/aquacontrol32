@@ -44,15 +44,19 @@ To compile or install Aquacontrol32, you will need the latest version [Arduino I
 Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
-- ALWAYS ERASE YOUR FLASH BEFORE FLASHING AQUACONTROL!
-<br>Use this command to erase (INCLUDED SPIFFS!) flash in Linux:
-<br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
-<br>Backup your `default.aqu` in the file manager before erasing and upload it after you flash your controller.
+
 - Source are compiled for `ESP32 Dev Module` which has support for ESP_LOGX macros.
 <br>`Core debug level` (in `Tools` menu) should be set to `None` in the Arduino IDE for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`Info` is probably what you need, `Verbose` gives the most info)
+
 - Check your [compile settings](compile_options.md) and [used libraries](libraries.md).
+
+- If your controller has a problem after flashing (no Wifi or not properly booting) the most probable cause is corrupted NVS.
+<br>Erasing the complete flash memory will solve this.
+<br>Use this command to erase flash (SPIFFS INCLUDED!) in Linux:
+<br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
+<br>Backup your `default.aqu` in the file manager before erasing and upload it after you flash your controller.
 
 #### Connecting the hardware:
 - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).

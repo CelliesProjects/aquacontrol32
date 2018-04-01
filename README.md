@@ -46,10 +46,10 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 #### Compile notes:
 
 - Compiling from the Arduino IDE does not work.
-<br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to upload the sketch to the controller.
+<br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
 
 - Source are compiled for `ESP32 Dev Module` which has support for ESP_LOGX macros.
-<br>`Core debug level` (in `Tools` menu) should be set to `esp32_none` in the `compile.sh` script for production use.
+<br>`Core debug level` should be set to `esp32_none` in the `flash.sh` script for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)
 

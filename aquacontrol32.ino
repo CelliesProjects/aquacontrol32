@@ -296,7 +296,7 @@ void setup()
 
   btStop();
   //Serial.begin( 115200 );
-  ESP_LOGI( TAG, "aquacontrol32 V%s", sketchVersion );
+  ESP_LOGI( TAG, "aquacontrol32 %s", sketchVersion );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );

@@ -300,7 +300,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "version" ) )
     {
-      snprintf( content, sizeof( content ), "Version %s - compile date: %s", sketchVersion, __DATE__ );
+      snprintf( content, sizeof( content ), "%s - compile date: %s", sketchVersion, __DATE__ );
     }
 
     else

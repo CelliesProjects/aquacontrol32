@@ -39,17 +39,19 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 #### You will need:
 
-To compile or install Aquacontrol32, you will need the latest version [Arduino IDE](https://arduino.cc/), with the [ESP32 Arduino Core at this commit](https://github.com/espressif/arduino-esp32/commit/3a4ec66d41615cbb1c3e830cb6e761cdc4cca9d3) installed.
+The [latest aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
+
+To compile and install Aquacontrol32, you will need the latest version [Arduino IDE](https://arduino.cc/), with the [ESP32 Arduino Core at this commit](https://github.com/espressif/arduino-esp32/commit/3a4ec66d41615cbb1c3e830cb6e761cdc4cca9d3) installed.
 
 Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
 
 - Compiling from the Arduino IDE does not work.
-<br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
+<br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller. Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
 
 - Source are compiled for `ESP32 Dev Module` which has support for ESP_LOGX macros.
-<br>`Core debug level` should be set to `esp32_none` in the `flash.sh` script for production use.
+<br>`custom_DebugLevel` should be set to `esp32_none` in the `flash.sh` script for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)
 

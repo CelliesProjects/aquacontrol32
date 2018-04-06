@@ -88,9 +88,6 @@ a {
   background:red;
   cursor:pointer;
 }
-#uploadBox{
-  display:none;
-}
 button{
   margin:10px;
 }
@@ -176,10 +173,9 @@ function updateDiskspace() {
     .done( function( data ){
       diskSpace = parseInt( data );
       $('#diskSpace').html( formatBytes( diskSpace ) + " LEFT" );
-      $( '#uploadBox').show();
     })
     .fail( function( data ){
-      $( '#diskSpace' ).html( '<p class="fileName">NO SD CARD FOUND</p>' );
+      $( '#diskSpace' ).html( '<p class="fileName">ERROR GETTING DISKSPACE</p>' );
     });
 }
 
@@ -196,11 +192,13 @@ function deleteFile(file){
     }).done( function( data ){
         readFiles();
         $('#uploadTitle').html( data );
-        $('input').prop('disabled', false); //and finally enable the inputs again
       })
       .fail( function( data ){
         readFiles();
         $('#uploadTitle').html( 'ERROR ' + data );
+      })
+      .always( function( data ){
+        updateDiskspace();
         $('input').prop('disabled', false); //and finally enable the inputs again
       });
   }
@@ -221,23 +219,23 @@ function readFiles(){
       $('#fileList').append( '<div class="fileEntry"><p class="fileName"><a href="' +
       thisFile[0] + '" target="_blank">' + thisFile[0] + '</a></p><p class="fileSize">' + thisFile[1] + '</p><p class="deleteButton" data-filename="' + thisFile[0] +'">DELETE</p></div>' );
     });
-    updateDiskspace();
   })
   .fail( function( data ) {
-    $( '#fileList' ).html( '<p class="fileName" style="width:100%;">NO SD CARD FOUND</p>' );
+    $( '#fileList' ).html( '<p class="fileName" style="width:100%;">NO FILES FOUND</p>' );
   })
-  .always( function() {
+  .always( function( data ) {
     $('body').css('opacity','1');
-  });
+  })
 }
 
 const pickFile_Message = "Click or drop a file in the box to upload";
-var diskSpace = null;
+var diskSpace = 0;
 
 $(document).ready( function() {
   $("#status").html( pickFile_Message );
   $( '#hostName' ).load( "/api/getdevice?hostname=" );
   readFiles();
+  updateDiskspace();
 });
 
 $( '#fileList' ).on( 'click', '.deleteButton', function() {
@@ -248,6 +246,7 @@ $( '#fileList' ).on( 'click', '.deleteButton', function() {
 $( ':file' ).on( 'change', function() {
   var file = this.files[0];
   if ( file.name == '' ) { return; }
+  updateDiskspace();
   if ( file.size > diskSpace ) {
     alert( 'Not enough space left!\n' + formatBytes(diskSpace,2) + ' free.\n' + formatBytes( file.size, 2) + " in '" + file.name + "'" );
     $( '#fileInput' ).val( "" );
@@ -343,7 +342,7 @@ $("#uploadFileButton").click(function(event)
       $('#status').html( "Not logged in." );
     })
     .always(function( data ){
-      console.log( data )
+      updateDiskspace();
     });
 });
 </script>

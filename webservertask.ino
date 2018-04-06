@@ -153,18 +153,25 @@ void webServerTask ( void * pvParameters )
       {
         return request->send( 400, textPlainHeader, "Not a directory");
       }
+
       File file = root.openNextFile();
-      uint16_t charCount = 0;
-      content[0] = 0;        /* solves webif filemanager showing garbage when no files on sd */
+
+      if ( !file )
+      {
+        return request->send( 404 );
+      }
+
+      AsyncResponseStream *response = request->beginResponseStream( "text/html" );
+
       while ( file )
       {
         if ( !file.isDirectory() )
         {
-          size_t fileSize = file.size();
-          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%s,%s\n", file.name(), humanReadableSize( fileSize ).c_str() );
+          response->printf( "%s,%s\n", file.name(), humanReadableSize( file.size() ).c_str() );
         }
         file = root.openNextFile();
       }
+      return request->send( response ); /* leave early */
     }
     else if ( request->hasArg( "hostname" ) )
     {

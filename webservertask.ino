@@ -147,11 +147,11 @@ void webServerTask ( void * pvParameters )
       File root = SPIFFS.open( "/" );
       if ( !root )
       {
-        return request->send( 503, textPlainHeader, "SD card not available." );
+        return request->send( 503, textPlainHeader, "SPIFFS not available." );
       }
       if ( !root.isDirectory() )
       {
-        return request->send( 400, textPlainHeader, "Not a directory");
+        return request->send( 400, textPlainHeader, "No root on SPIFFS.");
       }
 
       File file = root.openNextFile();

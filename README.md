@@ -39,16 +39,22 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 #### You will need:
 
-The [latest aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
+- The [latest aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
 
-To compile and install Aquacontrol32, you will need the latest version [Arduino IDE](https://arduino.cc/), with the [ESP32 Arduino Core at this commit](https://github.com/espressif/arduino-esp32/commit/69f72eca849a44688e2da38028eb9aa707e91f08) installed.
+- The latest version [Arduino IDE](https://arduino.cc/).
+
+- The [ESP32 Arduino Core at this commit](https://github.com/espressif/arduino-esp32/commit/69f72eca849a44688e2da38028eb9aa707e91f08).
 
 Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
 
-- Compiling from the Arduino IDE does not work.
-<br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller. Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
+- Compiling from the Arduino IDE does not work if you just cloned the repo.
+<br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
+<br>Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
+<br>You can however still compile from the Arduino IDE if you manually add a file named `gitTagVersion.h` to your sketch folder with the following content:
+<br>`const char * sketchVersion = "change this to a version string";`
+<br>This file will be overwritten and deleted if you use the `flash.sh` or `compile.sh` script.
 
 - Source are compiled for `ESP32 Dev Module` which has support for ESP_LOGX macros.
 <br>`custom_DebugLevel` should be set to `esp32_none` in the `flash.sh` script for production use.
@@ -57,8 +63,8 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 - Check your [compile settings](compile_options.md) and [used libraries](libraries.md).
 
-- If your controller has a problem after flashing (no Wifi or not properly booting) the most probable cause is corrupted NVS.
-<br>Erasing the complete flash memory will solve this.
+- If your controller has a problem after flashing (no Wifi or stuck/not properly booting) the most probable cause is corrupted NVS.
+<br>Erasing the complete flash memory will solve most of these problems.
 <br>Use this command to erase flash (SPIFFS INCLUDED!) in Linux:
 <br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
 <br>Backup your `default.aqu` in the file manager before erasing and upload it after you flash your controller.
@@ -87,9 +93,10 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
 
-#### Log files
+#### Log files:
 
-Log files are saved on SPIFFS and could reduce the lifetime of the flash memory.
+By default log files are not generated.
+<br>Log files are saved on SPIFFS and could reduce the lifetime of the flash memory.
 <br>To log the temperature sensor values on SPIFFS enable `LOG_FILES` (set it to 1) in `aquacontrol32.ino`.  
 
 #### Known issues:

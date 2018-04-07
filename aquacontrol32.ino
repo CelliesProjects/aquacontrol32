@@ -1,5 +1,5 @@
-#include "SPI.h"                   /* should be installed together with ESP32 Arduino install */
-#include "SPIFFS.h"                /* should be installed together with ESP32 Arduino install */
+#include <SPI.h>                   /* should be installed together with ESP32 Arduino install */
+#include <SPIFFS.h>                /* should be installed together with ESP32 Arduino install */
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
 #include "Adafruit_ILI9341.h"      /* Install via 'Manage Libraries' in Arduino IDE */

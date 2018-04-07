@@ -94,7 +94,7 @@ Log files are saved on SPIFFS and could reduce the lifetime of the flash memory.
 
 #### Known issues:
 
-None at the moment.
+[See issue #6](https://github.com/CelliesProjects/aquacontrol32/issues/6) mDNS does not check if a new hostname already exists. 
 
 #### The test hardware:
 

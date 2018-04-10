@@ -192,7 +192,7 @@ enum lightStatus_t
   LIGHTS_OFF, LIGHTS_ON, LIGHTS_AUTO
 };
 
-inline const char* ToString( lightStatus_t status )
+static inline __attribute__((always_inline)) const char *ToString( const lightStatus_t status )
 {
   switch ( status )
   {

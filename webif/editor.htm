@@ -153,7 +153,7 @@ input[type="button"]:hover {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/16.7.3/jcanvas.js"></script>
 </head>
 <script>
-var ghLink = '<a href="https://github.com/CelliesProjects/aquacontrol32">Aquacontrol32 on GitHub</a>';
+var githubLink = '<a href="https://github.com/CelliesProjects/aquacontrol32">Aquacontrol32 on GitHub</a>';
 </script>
 <body>
 <div id="confirmWindow"><div id="confirmMessage">A message</div></div>
@@ -239,7 +239,7 @@ function showMousePosition( event ){
     $('#statusBox').html( formattedTime( clickedTimeInSeconds ).slice(0,5)+" "+currentPercentage+"%" );
     return;
   } else {
-    $('#statusBox').html( ghLink );
+    $('#statusBox').html( githubLink );
   }
 }
 
@@ -253,7 +253,7 @@ function addTimer( thisChannel, thisTime, currentPercentage ){
     return;
   }
   var insertPosition = 0;
-  //check if check if timer already in list
+  //check if timer already in list
   while ( (  thisTime >= thisChannel[ insertPosition ].time  ) ){
     insertPosition++;
     if ( insertPosition == thisChannel.length ) {
@@ -473,8 +473,6 @@ function readTimerFile( filename ) {
       }
       refreshCanvas();
       refreshTimerList();
-      $('input').prop("disabled",false);
-      $('body').css('opacity','1'); // and show the page
     })
     .fail( function() {
       $('#statusBox').html( "No default timers found" );
@@ -482,7 +480,8 @@ function readTimerFile( filename ) {
       makeEmptyTimerList();
       refreshCanvas();
       refreshTimerList();
-      $('input').prop("disabled",false);
+    })
+    .always( function() {
       $('body').css('opacity','1'); // and show the page
     });
 }
@@ -516,382 +515,384 @@ function updateNowIndicator() {
 }
 
 $( document ).ready( function() {
-  $('input').prop("disabled",true);
-
-  $( '#hostName' ).load( "/api/getdevice?hostname=" );
-
   //set correct height for jCanvas - get the width/height set in html
   $('#editorCanvas').width( $('#editorCanvas').width() ).height( $('#editorCanvas').height() );
 
   //draw the editor background
   drawBackground();
 
+  $.get( "/api/getdevice?hostname=" , function( data ){
+    //console.log( "" );
+  })
+  .done( function( data ) {
+    $( '#hostName' ).html( data );
+  })
+  .fail( function() {
+    $( '#hostName' ).html( "Failed getting hostname." );
+  })
+  .always( function() {
+    readTimerFile( "/default.aqu" );
+  });
   var nowUpdater = setInterval( updateNowIndicator, 1000 );
-
-  //read the default timer file
-  readTimerFile( "/default.aqu" );
-
-  ///end of setup
+});
 
   //event handlers
 
-  $('#editorCanvas').on( 'mousemove', function( event ){
-    showMousePosition( event );
-  });
+$('#editorCanvas').on( 'mousemove', function( event ){
+  showMousePosition( event );
+});
 
-  $('#editorCanvas').on( 'mouseout', function() {
-    $('#statusBox').html( ghLink );
-  });
+$('#editorCanvas').on( 'mouseout', function() {
+  $('#statusBox').html( githubLink );
+});
 
-  $('#editorCanvas').on( 'mouseup', function( event ) {
-    if ( pointerInTimerArea( event ) ) {
-      var clickedTimeInSeconds =  parseInt( ( event.offsetX - sideBorder ) / ( $('#editorCanvas').width() - ( 2 * sideBorder ) ) * 86400 );
-      var currentPercentage =  parseInt (map( event.offsetY, updownBorder, $('#editorCanvas').height() - updownBorder, 100, 0 ) );
-      currentPercentage = Math.min(Math.max(parseInt(currentPercentage), 0), 100);
-      //console.log( "Clicked on graph at " + formattedTime( clickedTimeInSeconds ) + " setting " + currentPercentage + "%" );
-      clickedTimeInSeconds = timeInSeconds( formattedTime( clickedTimeInSeconds ).slice(0,5) ); //effing neccesary to get it rounded off to nearest minute - TODO: fix this!
-      switch ( parseInt(currentChannel) ) {
-        case 0:
-          addTimer( channel1, clickedTimeInSeconds, currentPercentage );
-          break;
-        case 1:
-          addTimer( channel2, clickedTimeInSeconds, currentPercentage );
-          break;
-        case 2:
-          addTimer( channel3, clickedTimeInSeconds, currentPercentage );
-          break;
-        case 3:
-          addTimer( channel4, clickedTimeInSeconds, currentPercentage );
-          break;
-        case 4:
-          addTimer( channel5, clickedTimeInSeconds, currentPercentage );
-          break;
-      }
-    }
-  });
-
-  $('.channelButton').on('click', function() {
-    $('.channelButton').css('background','lightgray');
-    $(this).css('background','aqua');
-    currentChannel = $(this).index();
-    refreshCanvas();
-    refreshTimerList();
-  });
-
-  $('#timerList').on('click', '.timerEntryDelete', function() {
-    if ( $(this).parent().index() != 0 ) {
-      //delete the clicked item
-      switch ( currentChannel ) {
-        case 0:
-          channel1.splice( $(this).parent().index(), 1 );
-          break;
-        case 1:
-          channel2.splice( $(this).parent().index(), 1 );
-          break;
-        case 2:
-          channel3.splice( $(this).parent().index(), 1 );
-          break;
-        case 3:
-          channel4.splice( $(this).parent().index(), 1 );
-          break;
-        case 4:
-          channel5.splice( $(this).parent().index(), 1 );
-          break;
-      }
-      $('#editorCanvas').removeLayer( 'timerLayer' ).drawLayers();
-      refreshCanvas();
-      refreshTimerList();
-    }
-  });
-
-  $('#clearButton').on('click', function() {
-    makeEmptyTimerList();
-    refreshCanvas();
-    refreshTimerList();
-  });
-
-  $('#reloadButton').on('click', function() {
-    readTimerFile( "/default.aqu" );
-  });
-
-  $('#uploadButton').on('click', function() {
-    if (!confirm("Uploading these timers will overwrite current timers.\nAre you sure?") ) {
-      return;
-    }
-
-    var formData = new FormData();
-    //make a valid file from the cahnneldata
-    var fileData = "[0]\n";
-    for ( lineCounter = 0; lineCounter < channel1.length; lineCounter++) {
-      fileData += channel1[lineCounter].time+','+channel1[lineCounter].percentage+'\n';
-    }
-    fileData += "[1]\n";
-    for ( lineCounter = 0; lineCounter < channel2.length; lineCounter++) {
-      fileData += channel2[lineCounter].time+','+channel2[lineCounter].percentage+'\n';
-    }
-    fileData += "[2]\n";
-    for ( lineCounter = 0; lineCounter < channel3.length; lineCounter++) {
-      fileData += channel3[lineCounter].time+','+channel3[lineCounter].percentage+'\n';
-    }
-    fileData += "[3]\n";
-    for ( lineCounter = 0; lineCounter < channel4.length; lineCounter++) {
-      fileData += channel4[lineCounter].time+','+channel4[lineCounter].percentage+'\n';
-    }
-    fileData += "[4]\n";
-    for ( lineCounter = 0; lineCounter < channel5.length; lineCounter++) {
-      fileData += channel5[lineCounter].time+','+channel5[lineCounter].percentage+'\n';
-    }
-    var blob = new Blob([ fileData ], {type: 'plain/text'});
-    formData.append('file', blob, "/default.aqu");
-    var request = new XMLHttpRequest();
-
-    //only upload if logged in
-    $.post( '/api/upload', function() {
-      //empty
-    })
-      .done(function(){
-        request.open("POST", "/api/upload");
-        request.send(formData);
-      });
-  });
-
-  $('#timerList').on('click', '.earlierButton' , function(){
-    console.log( "Current Channel: " + currentChannel );
-    //dont handle first timer!
-    if ( $(this).parents('.timerEntry' ).index() != 0 ) {
-      console.log( "Timer " + $(this).parents('.timerEntry' ).index() + " clicked" );
-      //change the timer if it is bigger than the previous timer + 1 minute
-      var thisTimer = $(this).parents('.timerEntry' ).index();
-      switch ( currentChannel + 1 ) {
-        case 1:
-          if ( channel1[thisTimer].time - 60 > channel1[thisTimer - 1].time ) {
-            channel1[thisTimer].time = channel1[thisTimer].time - 60;
-          }
-          break;
-        case 2:
-          if ( channel2[thisTimer].time - 60 > channel2[thisTimer - 1].time ) {
-            channel2[thisTimer].time = channel2[thisTimer].time - 60;
-          }
-          break;
-        case 3:
-          if ( channel3[thisTimer].time - 60 > channel3[thisTimer - 1].time ) {
-            channel3[thisTimer].time = channel3[thisTimer].time - 60;
-          }
-          break;
-        case 4:
-          if ( channel4[thisTimer].time - 60 > channel4[thisTimer - 1].time ) {
-            channel4[thisTimer].time = channel4[thisTimer].time - 60;
-          }
-          break;
-        case 5:
-          if ( channel5[thisTimer].time - 60 > channel5[thisTimer - 1].time ) {
-            channel5[thisTimer].time = channel5[thisTimer].time - 60;
-          }
-          break;
-        default:
-          //default
-      }
-      refreshCanvas();
-      refreshTimerList();
-    }
-  });
-
-  $('#timerList').on('click', '.laterButton' , function(){
-    console.log( "Current Channel: " + currentChannel );
-    //dont handle first timer!
-    if ( $(this).parents('.timerEntry' ).index() != 0 ) {
-      console.log( "Timer " + $(this).parents('.timerEntry' ).index() + " clicked" );
-      //change the timer if it is bigger than the previous timer - 1 minute
-      var thisTimer = $(this).parents('.timerEntry' ).index();
-      switch ( currentChannel + 1 ) {
-        case 1:
-          //last timer cannot be set later then 23:59
-          if ( thisTimer == channel1.length - 1 && channel1[thisTimer].time < 86400 - 60 ) {
-            console.log("last timer");
-            channel1[thisTimer].time = channel1[thisTimer].time + 60 ;
-            break;
-          }
-          if ( channel1[thisTimer].time < channel1[thisTimer + 1].time - 60) {
-            channel1[thisTimer].time = channel1[thisTimer].time + 60 ;
-          }
-          break;
-        case 2:
-          //last timer cannot be set later then 23:59
-          if ( thisTimer == channel2.length - 1 && channel2[thisTimer].time < 86400 - 60 ) {
-            console.log("last timer");
-            channel2[thisTimer].time = channel2[thisTimer].time + 60 ;
-            break;
-          }
-          if ( channel2[thisTimer].time < channel2[thisTimer + 1].time - 60) {
-            channel2[thisTimer].time = channel2[thisTimer].time + 60 ;
-          }
-          break;
-        case 3:
-          //last timer cannot be set later then 23:59
-          if ( thisTimer == channel3.length - 1 && channel3[thisTimer].time < 86400 - 60 ) {
-            console.log("last timer");
-            channel3[thisTimer].time = channel3[thisTimer].time + 60 ;
-            break;
-          }
-          if ( channel3[thisTimer].time < channel3[thisTimer + 1].time - 60) {
-            channel3[thisTimer].time = channel3[thisTimer].time + 60 ;
-          }
-          break;
-        case 4:
-          //last timer cannot be set later then 23:59
-          if ( thisTimer == channel4.length - 1 && channel4[thisTimer].time < 86400 - 60 ) {
-            console.log("last timer");
-            channel4[thisTimer].time = channel4[thisTimer].time + 60 ;
-            break;
-          }
-          if ( channel4[thisTimer].time < channel4[thisTimer + 1].time - 60) {
-            channel4[thisTimer].time = channel4[thisTimer].time + 60 ;
-          }
-          break;
-        case 5:
-          //last timer cannot be set later then 23:59
-          if ( thisTimer == channel5.length - 1 && channel5[thisTimer].time < 86400 - 60 ) {
-            console.log("last timer");
-            channel5[thisTimer].time = channel5[thisTimer].time + 60 ;
-            break;
-          }
-          if ( channel5[thisTimer].time < channel5[thisTimer + 1].time - 60) {
-            channel5[thisTimer].time = channel5[thisTimer].time + 60 ;
-          }
-          break;
-        default:
-          //default
-      }
-      refreshCanvas();
-      refreshTimerList();
-    }
-  });
-
-  $('#timerList').on('click','.downButton',function(){
-    console.log( $(this).parents('.timerEntry').index() );
-    var thisTimer = $(this).parents('.timerEntry').index();
-    switch ( currentChannel + 1) {
+$('#editorCanvas').on( 'mouseup', function( event ) {
+  if ( pointerInTimerArea( event ) ) {
+    var clickedTimeInSeconds =  parseInt( ( event.offsetX - sideBorder ) / ( $('#editorCanvas').width() - ( 2 * sideBorder ) ) * 86400 );
+    var currentPercentage =  parseInt (map( event.offsetY, updownBorder, $('#editorCanvas').height() - updownBorder, 100, 0 ) );
+    currentPercentage = Math.min(Math.max(parseInt(currentPercentage), 0), 100);
+    //console.log( "Clicked on graph at " + formattedTime( clickedTimeInSeconds ) + " setting " + currentPercentage + "%" );
+    clickedTimeInSeconds = timeInSeconds( formattedTime( clickedTimeInSeconds ).slice(0,5) ); //effing neccesary to get it rounded off to nearest minute - TODO: fix this!
+    switch ( parseInt(currentChannel) ) {
+      case 0:
+        addTimer( channel1, clickedTimeInSeconds, currentPercentage );
+        break;
       case 1:
-        if ( channel1[ thisTimer ].percentage > 0) {
-          channel1[ thisTimer ].percentage -= 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
+        addTimer( channel2, clickedTimeInSeconds, currentPercentage );
         break;
       case 2:
-        if ( channel2[ thisTimer ].percentage > 0) {
-          channel2[ thisTimer ].percentage -= 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
+        addTimer( channel3, clickedTimeInSeconds, currentPercentage );
         break;
       case 3:
-        if ( channel3[ thisTimer ].percentage > 0) {
-          channel3[ thisTimer ].percentage -= 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
+        addTimer( channel4, clickedTimeInSeconds, currentPercentage );
         break;
       case 4:
-        if ( channel4[ thisTimer ].percentage > 0) {
-          channel4[ thisTimer ].percentage -= 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
+        addTimer( channel5, clickedTimeInSeconds, currentPercentage );
         break;
-      case 5:
-        if ( channel5[ thisTimer ].percentage > 0) {
-          channel5[ thisTimer ].percentage -= 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
-        break;
-      default:
     }
-  });
+  }
+});
 
-  $('#timerList').on('click','.upButton',function(){
-    console.log( $(this).parents('.timerEntry').index() );
-    var thisTimer = $(this).parents('.timerEntry').index();
-    switch ( currentChannel + 1) {
+$('.channelButton').on('click', function() {
+  $('.channelButton').css('background','lightgray');
+  $(this).css('background','aqua');
+  currentChannel = $(this).index();
+  refreshCanvas();
+  refreshTimerList();
+});
+
+$('#timerList').on('click', '.timerEntryDelete', function() {
+  if ( $(this).parent().index() != 0 ) {
+    //delete the clicked item
+    switch ( currentChannel ) {
+      case 0:
+        channel1.splice( $(this).parent().index(), 1 );
+        break;
       case 1:
-        if ( channel1[ thisTimer ].percentage < 100) {
-          channel1[ thisTimer ].percentage += 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
+        channel2.splice( $(this).parent().index(), 1 );
         break;
       case 2:
-        if ( channel2[ thisTimer ].percentage < 100) {
-          channel2[ thisTimer ].percentage += 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
+        channel3.splice( $(this).parent().index(), 1 );
         break;
       case 3:
-        if ( channel3[ thisTimer ].percentage < 100) {
-          channel3[ thisTimer ].percentage += 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
+        channel4.splice( $(this).parent().index(), 1 );
         break;
       case 4:
-        if ( channel4[ thisTimer ].percentage < 100) {
-          channel4[ thisTimer ].percentage += 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
+        channel5.splice( $(this).parent().index(), 1 );
         break;
-      case 5:
-        if ( channel5[ thisTimer ].percentage < 100) {
-          channel5[ thisTimer ].percentage += 1;
-          refreshCanvas();
-          refreshTimerList();
-        }
-        break;
-      default:
     }
-  });
+    $('#editorCanvas').removeLayer( 'timerLayer' ).drawLayers();
+    refreshCanvas();
+    refreshTimerList();
+  }
+});
 
-  $('#timerList').on('mouseenter','.timerEntry',function(){
-    //highlight the timer
-    var timeOffset;
+$('#clearButton').on('click', function() {
+  makeEmptyTimerList();
+  refreshCanvas();
+  refreshTimerList();
+});
+
+$('#reloadButton').on('click', function() {
+  readTimerFile( "/default.aqu" );
+});
+
+$('#uploadButton').on('click', function() {
+  if (!confirm("Uploading these timers will overwrite current timers.\nAre you sure?") ) {
+    return;
+  }
+
+  var formData = new FormData();
+  //make a valid file from the cahnneldata
+  var fileData = "[0]\n";
+  for ( lineCounter = 0; lineCounter < channel1.length; lineCounter++) {
+    fileData += channel1[lineCounter].time+','+channel1[lineCounter].percentage+'\n';
+  }
+  fileData += "[1]\n";
+  for ( lineCounter = 0; lineCounter < channel2.length; lineCounter++) {
+    fileData += channel2[lineCounter].time+','+channel2[lineCounter].percentage+'\n';
+  }
+  fileData += "[2]\n";
+  for ( lineCounter = 0; lineCounter < channel3.length; lineCounter++) {
+    fileData += channel3[lineCounter].time+','+channel3[lineCounter].percentage+'\n';
+  }
+  fileData += "[3]\n";
+  for ( lineCounter = 0; lineCounter < channel4.length; lineCounter++) {
+    fileData += channel4[lineCounter].time+','+channel4[lineCounter].percentage+'\n';
+  }
+  fileData += "[4]\n";
+  for ( lineCounter = 0; lineCounter < channel5.length; lineCounter++) {
+    fileData += channel5[lineCounter].time+','+channel5[lineCounter].percentage+'\n';
+  }
+  var blob = new Blob([ fileData ], {type: 'plain/text'});
+  formData.append('file', blob, "/default.aqu");
+  var request = new XMLHttpRequest();
+
+  //only upload if logged in
+  $.post( '/api/upload', function() {
+    //empty
+  })
+    .done(function(){
+      request.open("POST", "/api/upload");
+      request.send(formData);
+    });
+});
+
+$('#timerList').on('click', '.earlierButton' , function(){
+  console.log( "Current Channel: " + currentChannel );
+  //dont handle first timer!
+  if ( $(this).parents('.timerEntry' ).index() != 0 ) {
+    console.log( "Timer " + $(this).parents('.timerEntry' ).index() + " clicked" );
+    //change the timer if it is bigger than the previous timer + 1 minute
+    var thisTimer = $(this).parents('.timerEntry' ).index();
     switch ( currentChannel + 1 ) {
       case 1:
-        timeOffset = map( channel1[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+        if ( channel1[thisTimer].time - 60 > channel1[thisTimer - 1].time ) {
+          channel1[thisTimer].time = channel1[thisTimer].time - 60;
+        }
         break;
       case 2:
-        timeOffset = map( channel2[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+        if ( channel2[thisTimer].time - 60 > channel2[thisTimer - 1].time ) {
+          channel2[thisTimer].time = channel2[thisTimer].time - 60;
+        }
         break;
       case 3:
-        timeOffset = map( channel3[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+        if ( channel3[thisTimer].time - 60 > channel3[thisTimer - 1].time ) {
+          channel3[thisTimer].time = channel3[thisTimer].time - 60;
+        }
         break;
       case 4:
-        timeOffset = map( channel4[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+        if ( channel4[thisTimer].time - 60 > channel4[thisTimer - 1].time ) {
+          channel4[thisTimer].time = channel4[thisTimer].time - 60;
+        }
         break;
       case 5:
-        timeOffset = map( channel5[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+        if ( channel5[thisTimer].time - 60 > channel5[thisTimer - 1].time ) {
+          channel5[thisTimer].time = channel5[thisTimer].time - 60;
+        }
         break;
       default:
+        //default
     }
-    $('#editorCanvas').addLayer({
-      //describe the layer
-      type: "line",
-      layer: true,
-      name: 'timerLayer',
-      strokeStyle: 'yellow',
-      strokeWidth: 1.7,
-      strokeDash: [2],
-      strokeDashOffset: 0,
-      x1: timeOffset, y1: updownBorder,
-      x2: timeOffset, y2: $('#editorCanvas').height() - updownBorder
-    }).drawLayers();
-  });
+    refreshCanvas();
+    refreshTimerList();
+  }
+});
 
-  $('#timerList').on('mouseleave','.timerEntry',function(){
-    $('#editorCanvas').removeLayer( 'timerLayer' ).drawLayers();
-  });
+$('#timerList').on('click', '.laterButton' , function(){
+  console.log( "Current Channel: " + currentChannel );
+  //dont handle first timer!
+  if ( $(this).parents('.timerEntry' ).index() != 0 ) {
+    console.log( "Timer " + $(this).parents('.timerEntry' ).index() + " clicked" );
+    //change the timer if it is bigger than the previous timer - 1 minute
+    var thisTimer = $(this).parents('.timerEntry' ).index();
+    switch ( currentChannel + 1 ) {
+      case 1:
+        //last timer cannot be set later then 23:59
+        if ( thisTimer == channel1.length - 1 && channel1[thisTimer].time < 86400 - 60 ) {
+          console.log("last timer");
+          channel1[thisTimer].time = channel1[thisTimer].time + 60 ;
+          break;
+        }
+        if ( channel1[thisTimer].time < channel1[thisTimer + 1].time - 60) {
+          channel1[thisTimer].time = channel1[thisTimer].time + 60 ;
+        }
+        break;
+      case 2:
+        //last timer cannot be set later then 23:59
+        if ( thisTimer == channel2.length - 1 && channel2[thisTimer].time < 86400 - 60 ) {
+          console.log("last timer");
+          channel2[thisTimer].time = channel2[thisTimer].time + 60 ;
+          break;
+        }
+        if ( channel2[thisTimer].time < channel2[thisTimer + 1].time - 60) {
+          channel2[thisTimer].time = channel2[thisTimer].time + 60 ;
+        }
+        break;
+      case 3:
+        //last timer cannot be set later then 23:59
+        if ( thisTimer == channel3.length - 1 && channel3[thisTimer].time < 86400 - 60 ) {
+          console.log("last timer");
+          channel3[thisTimer].time = channel3[thisTimer].time + 60 ;
+          break;
+        }
+        if ( channel3[thisTimer].time < channel3[thisTimer + 1].time - 60) {
+          channel3[thisTimer].time = channel3[thisTimer].time + 60 ;
+        }
+        break;
+      case 4:
+        //last timer cannot be set later then 23:59
+        if ( thisTimer == channel4.length - 1 && channel4[thisTimer].time < 86400 - 60 ) {
+          console.log("last timer");
+          channel4[thisTimer].time = channel4[thisTimer].time + 60 ;
+          break;
+        }
+        if ( channel4[thisTimer].time < channel4[thisTimer + 1].time - 60) {
+          channel4[thisTimer].time = channel4[thisTimer].time + 60 ;
+        }
+        break;
+      case 5:
+        //last timer cannot be set later then 23:59
+        if ( thisTimer == channel5.length - 1 && channel5[thisTimer].time < 86400 - 60 ) {
+          console.log("last timer");
+          channel5[thisTimer].time = channel5[thisTimer].time + 60 ;
+          break;
+        }
+        if ( channel5[thisTimer].time < channel5[thisTimer + 1].time - 60) {
+          channel5[thisTimer].time = channel5[thisTimer].time + 60 ;
+        }
+        break;
+      default:
+        //default
+    }
+    refreshCanvas();
+    refreshTimerList();
+  }
+});
 
+$('#timerList').on('click','.downButton',function(){
+  console.log( $(this).parents('.timerEntry').index() );
+  var thisTimer = $(this).parents('.timerEntry').index();
+  switch ( currentChannel + 1) {
+    case 1:
+      if ( channel1[ thisTimer ].percentage > 0) {
+        channel1[ thisTimer ].percentage -= 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    case 2:
+      if ( channel2[ thisTimer ].percentage > 0) {
+        channel2[ thisTimer ].percentage -= 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    case 3:
+      if ( channel3[ thisTimer ].percentage > 0) {
+        channel3[ thisTimer ].percentage -= 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    case 4:
+      if ( channel4[ thisTimer ].percentage > 0) {
+        channel4[ thisTimer ].percentage -= 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    case 5:
+      if ( channel5[ thisTimer ].percentage > 0) {
+        channel5[ thisTimer ].percentage -= 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    default:
+  }
+});
+
+$('#timerList').on('click','.upButton',function(){
+  console.log( $(this).parents('.timerEntry').index() );
+  var thisTimer = $(this).parents('.timerEntry').index();
+  switch ( currentChannel + 1) {
+    case 1:
+      if ( channel1[ thisTimer ].percentage < 100) {
+        channel1[ thisTimer ].percentage += 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    case 2:
+      if ( channel2[ thisTimer ].percentage < 100) {
+        channel2[ thisTimer ].percentage += 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    case 3:
+      if ( channel3[ thisTimer ].percentage < 100) {
+        channel3[ thisTimer ].percentage += 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    case 4:
+      if ( channel4[ thisTimer ].percentage < 100) {
+        channel4[ thisTimer ].percentage += 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    case 5:
+      if ( channel5[ thisTimer ].percentage < 100) {
+        channel5[ thisTimer ].percentage += 1;
+        refreshCanvas();
+        refreshTimerList();
+      }
+      break;
+    default:
+  }
+});
+
+$('#timerList').on('mouseenter','.timerEntry',function(){
+  //highlight the timer
+  var timeOffset;
+  switch ( currentChannel + 1 ) {
+    case 1:
+      timeOffset = map( channel1[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+      break;
+    case 2:
+      timeOffset = map( channel2[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+      break;
+    case 3:
+      timeOffset = map( channel3[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+      break;
+    case 4:
+      timeOffset = map( channel4[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+      break;
+    case 5:
+      timeOffset = map( channel5[$(this).index()].time, 0,86400, sideBorder, $('#editorCanvas').width() - sideBorder );
+      break;
+    default:
+  }
+  $('#editorCanvas').addLayer({
+    //describe the layer
+    type: "line",
+    layer: true,
+    name: 'timerLayer',
+    strokeStyle: 'yellow',
+    strokeWidth: 1.7,
+    strokeDash: [2],
+    strokeDashOffset: 0,
+    x1: timeOffset, y1: updownBorder,
+    x2: timeOffset, y2: $('#editorCanvas').height() - updownBorder
+  }).drawLayers();
+});
+
+$('#timerList').on('mouseleave','.timerEntry',function(){
+  $('#editorCanvas').removeLayer( 'timerLayer' ).drawLayers();
 });
 </script>
 </body>

@@ -109,6 +109,9 @@ p{
 <script>
 function updateBargraph() {
   $.get( '/api/getdevice?status=', function( data ) {
+    //console.log( "retrieved status" );
+  })
+  .done(function( data ){
     var channelValue = data.split( '\n' );
     for ( i=0; i < 5; i++ ) {
       $( '.bar:eq(' + i + ')' ).css( 'height', String( channelValue[i]*.75) + '%' ).css( 'opacity', Math.max( channelValue[i]/100, 0.15 ) );
@@ -145,8 +148,7 @@ function updateBargraph() {
       $( "#tempBox" ).show();
       $( "#tempStats" ).html( str );
     }
-    $( 'a' ).unbind( 'click' ); //re-enable the links which are bound to e.preventdefault()
-  })
+  });
 }
 </script>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
@@ -174,12 +176,6 @@ function updateBargraph() {
 <div id="tempBox" class="shadowedBox" style="background-color:beige;"><p id="tempStats" class="tempStr"></p></div>
 <script>
 $( document ).ready( function() {
-
-  //disable the links
-  $( 'a' ).bind( 'click', function( e ){
-    e.preventDefault(); //will be unbound by first call to updateBarGraph
-  });
-
   // get the hostname, then the channelcolors and finally the channelnames
   $.get( "/api/getdevice?hostname=")
     .done(function( data ){

@@ -101,10 +101,13 @@ void wifiTask( void * pvParameters )
             );
   }
 
-  if ( !setupMDNS( hostName ) )
+  if ( !MDNS.begin( "" ) )
   {
     ESP_LOGE( TAG, "Error setting up mDNS." );
-    memset( hostName, 0, sizeof( hostName ) );
+  }
+  else if ( !setupMDNS( hostName ) )
+  {
+    ESP_LOGE( TAG, "Error setting up %s as hostname. ", hostName );
   }
 
   /* start network dependent tasks */

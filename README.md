@@ -101,7 +101,7 @@ By default log files are not generated.
 
 #### Known issues:
 
-[See issue #6](https://github.com/CelliesProjects/aquacontrol32/issues/6) mDNS does not check if a new hostname already exists. 
+No issues at the moment.
 
 #### The test hardware:
 

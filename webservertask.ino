@@ -823,9 +823,9 @@ bool setupMDNS( const char *hostname )
     mdns_service_add( NULL, "_http", "_tcp", 80, NULL, 0 );
     mdns_service_instance_name_set( "_http", "_tcp", hostname );
     mdns_txt_item_t serviceTxtData[3] = {
-      { "board", "Aquacontrol32 - 5 Channel LED controller" },
-      { "url", "https://github.com/CelliesProjects/aquacontrol32" },
-      { "p", "password" }
+      { "description", "5 Channel LED controller" },
+      { "source url", "https://github.com/CelliesProjects/aquacontrol32" },
+      { "name", "Aquacontrol32" }
     };
     //set txt data for service (will free and replace current data)
     mdns_service_txt_set( "_http", "_tcp", serviceTxtData, 3 );

@@ -126,7 +126,7 @@ void webServerTask ( void * pvParameters )
       response = request->beginResponseStream( textHtmlHeader );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        response->printf( "%s\n", channel[channelNumber].color.c_str() );
+        response->printf( "%s\n", channel[channelNumber].color );
       }
       return request->send( response );
     }
@@ -136,7 +136,7 @@ void webServerTask ( void * pvParameters )
       response = request->beginResponseStream( textHtmlHeader );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        response->printf( "%s\n", channel[channelNumber].name.c_str() );
+        response->printf( "%s\n", channel[channelNumber].name );
       }
       return request->send( response );
     }
@@ -354,11 +354,11 @@ void webServerTask ( void * pvParameters )
           return request->send( 400, textHtmlHeader, "Invalid char" );
         }
       }
-      channel[ channelNumber ].color = "#" + request->arg( "color" );
+      snprintf( channel[ channelNumber ].color, sizeof( channel[ channelNumber ].color ), "#%s", request->arg( "color" ).c_str() );
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelcolor%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].color );
       response = request->beginResponseStream( textHtmlHeader );
-      response->printf( "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color.c_str() );
+      response->printf( "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color );
       return request->send( response );
     }
 
@@ -390,16 +390,16 @@ void webServerTask ( void * pvParameters )
       }
       if ( request->arg( "name" ) != "" )
       {
-        channel[ channelNumber ].name = request->arg( "name" );
+        strncpy( channel[ channelNumber ].name, request->arg( "name" ).c_str(), sizeof( channel[ channelNumber ].name ) );
       }
       else
       {
-        channel[ channelNumber ].name = "Channel" + String( channelNumber + 1 );
+        snprintf( channel[ channelNumber ].name, sizeof( channel[ channelNumber ].name ), "Channel%i", channelNumber + 1 );
       }
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelname%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].name );
       response = request->beginResponseStream( textHtmlHeader );
-      response->printf( "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name.c_str() );
+      response->printf( "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name );
       return request->send( response );
     }
 

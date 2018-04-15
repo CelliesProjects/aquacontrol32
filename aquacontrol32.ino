@@ -203,7 +203,7 @@ static inline __attribute__((always_inline)) const char *ToString( const lightSt
   }
 }
 
-struct lightTimerArr_t
+struct lightTimer_t
 {
   time_t      time;                    /* time in seconds since midnight so range is 0-86400 */
   byte        percentage;              /* in percentage so range is 0-100 */
@@ -211,9 +211,9 @@ struct lightTimerArr_t
 
 struct channelData_t
 {
-  lightTimerArr_t timer[MAX_TIMERS];
-  String          name;                /* initially set to 'channel 1' 'channel 2' etc. */
-  String          color;               /* interface color, not light color! in hex format*/
+  lightTimer_t    timer[MAX_TIMERS];
+  char            name[15];            /* initially set to 'channel 1' 'channel 2' etc. */
+  char            color[8];            /* interface color, not light color! in hex format*/
   /*                                      Example: '#ff0000' for bright red */
   float           currentPercentage;   /* what percentage is this channel set to */
   byte            pin;                 /* which ESP32 pin is this channel on */

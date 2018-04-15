@@ -22,17 +22,16 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
   channel[ 4 ].pin = LED4_PIN;
   for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
-    char buff[32];
+    char NVSKeyName[32];
 
-    snprintf( buff, sizeof( buff ), "channelname%i", channelNumber );
-    channel[ channelNumber ].name          = preferences.getString( buff, "channelname" );
+    snprintf( NVSKeyName, sizeof( NVSKeyName ), "channelname%i", channelNumber );
+    snprintf( channel[ channelNumber ].name, sizeof( channel[ channelNumber ].name ), preferences.getString( NVSKeyName, "channelname" ).c_str() );
 
-    snprintf( buff, sizeof( buff ), "channelcolor%i", channelNumber );
-    channel[ channelNumber ].color         = preferences.getString( buff, "#fffe7a" );
+    snprintf( NVSKeyName, sizeof( NVSKeyName ), "channelcolor%i", channelNumber );
+    snprintf( channel[ channelNumber ].color, sizeof( channel[ channelNumber ].color ), preferences.getString( NVSKeyName, "#fffe7a" ).c_str() );
 
-    snprintf( buff, sizeof( buff ), "channelminimum%i", channelNumber );
-    //channel[ channelNumber ].minimumLevel  = readFloatNVS( buff, 0 );
-    channel[ channelNumber ].minimumLevel  = preferences.getFloat( buff, 0  );
+    snprintf( NVSKeyName, sizeof( NVSKeyName ), "channelminimum%i", channelNumber );
+    channel[ channelNumber ].minimumLevel  = preferences.getFloat( NVSKeyName, 0  );
 
     ledcAttachPin( channel[channelNumber].pin, channelNumber);
   }

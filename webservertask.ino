@@ -321,7 +321,11 @@ void webServerTask ( void * pvParameters )
     else if ( request->hasArg( "version" ) )
     {
       response = request->beginResponseStream( textHtmlHeader );
-      response->printf( "%s - compiled @ %s", sketchVersion, __DATE__ );
+      response->printf( "%s", sketchVersion);
+      if ( newReleaseFound )
+      {
+        response->printf( " - <a href=\"%s\" target=\"_blank\">New version %s released!</a>", newUrl, newRelease );
+      }
       return request->send( response );
     }
 

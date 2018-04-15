@@ -9,6 +9,8 @@
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/ESPAsyncTCP */
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
 
 #include "gitTagVersion.h"
 #include "deviceSetup.h"
@@ -154,6 +156,7 @@ const uint8_t ntpTaskPriority          = 4;
 const uint8_t oledTaskPriority         = 3;
 const uint8_t wifiTaskPriority         = 2;
 const uint8_t loggerTaskPriority       = 1;
+const uint8_t versionCheckPriority     = 1;
 const uint8_t spiffsTaskPriority       = 0;
 
 

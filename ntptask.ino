@@ -57,7 +57,18 @@ void ntpTask( void * pvParameters )
 
     ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
   }
+  vTaskDelay( 10 / portTICK_PERIOD_MS );
 
+  xReturned = xTaskCreatePinnedToCore(
+                versionCheck,                     /* Function to implement the task */
+                "versionCheck",                   /* Name of the task */
+                6000,                             /* Stack size in words */
+                NULL,                             /* Task input parameter */
+                versionCheckPriority,             /* Priority of the task */
+                NULL,                             /* Task handle. */
+                1);                               /* Core where the task should run */
+
+  ESP_LOGI( TAG, "VersionCheck %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
 
   vTaskDelete( NULL );
 

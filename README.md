@@ -48,7 +48,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
-
+- Check your device options in `deviceSetup.h`.
 - Compiling from the Arduino IDE does not work if you just cloned the repo.
 <br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
 <br>Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
@@ -76,10 +76,10 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 - The ILI9341 boards from AliExpress, DealExtreme or any other supplier are not all equal.
 <br>Among the tested boards I encountered some that have no MISO pin connected, so they can't respond to read commands.
-<br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to 1) in `aquacontrol32.ino`.
+<br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to 1) in `deviceSetup.h`.
 
 - Some ILI9341 boards have their touch coordinates inverted.
-<br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to 1) in `aquacontrol32.ino`.
+<br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to 1) in `deviceSetup.h`.
 
 - Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
 <br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
@@ -97,7 +97,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 By default log files are not generated.
 <br>Log files are saved on SPIFFS and could reduce the lifetime of the flash memory.
-<br>To log the temperature sensor values on SPIFFS enable `LOG_FILES` (set it to 1) in `aquacontrol32.ino`.  
+<br>To log the temperature sensor values on SPIFFS enable `LOG_FILES` (set it to 1) in `deviceSetup.h`.  
 
 #### Known issues:
 

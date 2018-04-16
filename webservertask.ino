@@ -320,11 +320,12 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "version" ) )
     {
+      const char* latestReleaseURL = "https://github.com/CelliesProjects/aquacontrol32/releases/latest";
       response = request->beginResponseStream( textHtmlHeader );
       response->printf( "%s", sketchVersion);
       if ( newReleaseFound )
       {
-        response->printf( " - <a href=\"%s\" target=\"_blank\">New version %s released!</a>", newUrl, newRelease );
+        response->printf( " - <a href=\"%s\" target=\"_blank\">New version %s released!</a>", latestReleaseURL, newRelease );
       }
       return request->send( response );
     }

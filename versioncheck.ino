@@ -1,14 +1,13 @@
 /* https://github.com/espressif/arduino-esp32/issues/846 */
 
 char newRelease[8];
-char newUrl[256];
 bool newReleaseFound = false;
 
 void versionCheck ( void * pvParameters )
 {
   const uint64_t versionCheckDelayTime = ( 1000 * 3600 ) / portTICK_PERIOD_MS;
 
-  const char* latestReleaseUrl = "https://api.github.com/repos/CelliesProjects/aquacontrol32/releases/latest";
+  const char* latestReleaseAPI = "https://api.github.com/repos/CelliesProjects/aquacontrol32/releases/latest";
   const char* github_root_ca = \
                                "-----BEGIN CERTIFICATE-----\n" \
                                "MIIDxTCCAq2gAwIBAgIQAqxcJmoLQJuPC3nyrkYldzANBgkqhkiG9w0BAQUFADBs\n" \
@@ -38,37 +37,37 @@ void versionCheck ( void * pvParameters )
   {
     HTTPClient http;
 
-    http.begin( latestReleaseUrl, github_root_ca );
+    http.begin( latestReleaseAPI, github_root_ca );
     uint8_t httpCode = http.GET();
-    // Use arduinojson.org/assistant to compute the capacity.
-    const size_t capacity = 2200;
 
-    if ( httpCode > 0 )
+    ESP_LOGI( TAG, "GitHub https request result: %i", httpCode );
+
+    if ( httpCode == 200 )
     {
+      const size_t capacity = 2200;
+      // Use arduinojson.org/assistant to compute the capacity.
       DynamicJsonBuffer jsonBuffer( capacity );
       JsonObject& root = jsonBuffer.parseObject( http.getString() );
       if ( !root.success() )
       {
-        ESP_LOGI( TAG, "Parsing of %s failed!", latestReleaseUrl );
+        ESP_LOGI( TAG, "Parsing of %s failed!", latestReleaseAPI );
       }
       else
       {
         char installedRelease[8];
         uint8_t i = 0;
-        while ( ( sketchVersion[i] != '-' ) && ( i <= sizeof( installedRelease ) ) )
+        while ( ( sketchVersion[i] != '-' ) && ( i < sizeof( installedRelease ) ) )
         {
           installedRelease[i] = sketchVersion[i];
           i++;
         }
-        snprintf( newRelease, sizeof( newRelease ), root["tag_name"] );
+        strncpy( newRelease, root["tag_name"], sizeof( newRelease ) );
         ESP_LOGI( TAG, "Local Version: '%s'", installedRelease );
 
         if ( strcmp ( installedRelease, newRelease) < 0 )
         {
           newReleaseFound = true;
           ESP_LOGI( TAG, "Found new version: '%s'", newRelease );
-          snprintf( newUrl, sizeof( newUrl ), root["html_url"] );
-          ESP_LOGI( TAG, "Download url: %s", newUrl );
         }
         else
         {

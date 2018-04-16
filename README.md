@@ -36,14 +36,16 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
 
+- Get a notification in the web interface if a new release is available.
+
 
 #### You will need:
 
-- The [latest aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
+- The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
 
-- The latest version [Arduino IDE](https://arduino.cc/).
+- The latest [Arduino IDE](https://arduino.cc/).
 
-- The [ESP32 Arduino Core at this commit](https://github.com/espressif/arduino-esp32/commit/69f72eca849a44688e2da38028eb9aa707e91f08).
+- The [ESP32 Arduino Core at this commit](https://github.com/espressif/arduino-esp32/commit/1da3138ed6bf4675836f6ebaa15bb5db280a6e36).
 
 Aquacontrol32 can run happily with or without OLED or TFT display.
 

@@ -1,6 +1,7 @@
 /* https://github.com/espressif/arduino-esp32/issues/846 */
+const uint8_t releaseLength = 10;
 
-char newRelease[8];
+char newRelease[releaseLength];
 bool newReleaseFound = false;
 
 void versionCheck ( void * pvParameters )
@@ -40,8 +41,6 @@ void versionCheck ( void * pvParameters )
     http.begin( latestReleaseAPI, github_root_ca );
     uint8_t httpCode = http.GET();
 
-    ESP_LOGI( TAG, "GitHub https request result: %i", httpCode );
-
     if ( httpCode == 200 )
     {
       const size_t capacity = 2200;
@@ -54,25 +53,22 @@ void versionCheck ( void * pvParameters )
       }
       else
       {
-        char installedRelease[8];
+        char installedRelease[releaseLength];
+
         uint8_t i = 0;
         while ( ( sketchVersion[i] != '-' ) && ( i < sizeof( installedRelease ) ) )
         {
           installedRelease[i] = sketchVersion[i];
           i++;
         }
-        strncpy( newRelease, root["tag_name"], sizeof( newRelease ) );
-        ESP_LOGI( TAG, "Local Version: '%s'", installedRelease );
 
-        if ( strcmp ( installedRelease, newRelease) < 0 )
+        ESP_LOGI( TAG, "Local release: '%s'", installedRelease );
+        strncpy( newRelease, root["tag_name"], sizeof( newRelease ) );
+        if ( strcmp ( installedRelease, newRelease) != 0 )
         {
           newReleaseFound = true;
-          ESP_LOGI( TAG, "Found new version: '%s'", newRelease );
         }
-        else
-        {
-          ESP_LOGI( TAG, "No new version found.");
-        }
+        ESP_LOGI( TAG, "%s new release was found: '%s'", ( newReleaseFound == true ) ? "A" : "No", newRelease );
       }
     }
     else

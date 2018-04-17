@@ -38,7 +38,7 @@ unsigned char index_htm[] = {
 };
 unsigned int index_htm_len = 24;
 ```
-Now change this file so the `unsigned char` is changed to `const uint8_t`.
+Now change this file so the `unsigned char` on the first line is `const uint8_t` and `unsigned int` on the last is `const unsigned int`.
 
 The above code should look like:
 ```c
@@ -46,7 +46,7 @@ const uint8_t index_htm[] = {
   0x3c, 0x68, 0x31, 0x3e, 0x53, 0x69, 0x6d, 0x70, 0x6c, 0x65, 0x20, 0x77,
   0x65, 0x62, 0x70, 0x61, 0x67, 0x65, 0x3c, 0x2f, 0x68, 0x31, 0x3e, 0x0a
 };
-unsigned int index_htm_len = 24;
+const unsigned int index_htm_len = 24;
 ```
 Now the data is saved in flash memory instead of precious ram memory.
 

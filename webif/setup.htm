@@ -251,7 +251,9 @@ function getOledContrast(){
       $('#oledContrastSlider').val( data );
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( data.statusText );
+      if ( data.status != 501 ){
+        $( '#deviceStatus' ).html( data.statusText );
+      }
     })
     .always( function( data ){
       if ( getAllValues )

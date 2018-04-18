@@ -1,6 +1,6 @@
 void oledTask( void * pvParameters )
 {
-  const uint64_t oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED;
+  const TickType_t oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED / portTICK_PERIOD_MS;
 
   OLED.init();
   ESP_LOGI( TAG, "OLED initialized." );
@@ -103,7 +103,7 @@ void oledTask( void * pvParameters )
     }
 
     OLED.display();
-    vTaskDelay( oledTaskdelayTime / portTICK_PERIOD_MS );
+    vTaskDelay( oledTaskdelayTime );
   }
 }
 

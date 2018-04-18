@@ -1,6 +1,6 @@
 void loggerTask ( void * pvParameters )
 {
-  const uint64_t loggerTaskdelayTime  = ( 1000 * 119 ) / portTICK_PERIOD_MS;
+  const TickType_t loggerTaskdelayTime  = ( 1000 * 120 ) / portTICK_PERIOD_MS;
 
   while (1)
   {

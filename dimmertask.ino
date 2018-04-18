@@ -1,6 +1,6 @@
 void IRAM_ATTR dimmerTask ( void * pvParameters )
 {
-  const uint64_t dimmerTaskdelayTime = 1000U / UPDATE_FREQ_LEDS;
+  const TickType_t dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS / portTICK_PERIOD_MS;
 
   TickType_t xLastWakeTime;
 
@@ -101,7 +101,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
                                             ledcMaxValue ) );
       }
     }
-    vTaskDelayUntil( &xLastWakeTime, dimmerTaskdelayTime / portTICK_PERIOD_MS );
+    vTaskDelayUntil( &xLastWakeTime, dimmerTaskdelayTime );
   }
 }
 

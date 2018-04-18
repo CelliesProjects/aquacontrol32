@@ -76,7 +76,7 @@ bool tftClearScreen = true;
 
 void tftTask( void * pvParameters )
 {
-  const uint64_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
+  const TickType_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
 
   tft.fillScreen( TFT_BACK_COLOR );
 

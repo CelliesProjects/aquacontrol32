@@ -39,7 +39,7 @@ void versionCheck ( void * pvParameters )
     HTTPClient http;
 
     http.begin( latestReleaseAPI, github_root_ca );
-    uint8_t httpCode = http.GET();
+    int httpCode = http.GET();
 
     if ( httpCode == 200 )
     {
@@ -63,6 +63,7 @@ void versionCheck ( void * pvParameters )
         }
 
         ESP_LOGI( TAG, "Local release: '%s'", installedRelease );
+
         strncpy( newRelease, root["tag_name"], sizeof( newRelease ) );
         if ( strcmp ( installedRelease, newRelease) != 0 )
         {
@@ -73,7 +74,7 @@ void versionCheck ( void * pvParameters )
     }
     else
     {
-      ESP_LOGI( TAG, "Error %i on HTTPS request.", httpCode );
+      ESP_LOGI( TAG, "Error %i on HTTPS request '%s'.", httpCode, latestReleaseAPI );
     }
     http.end();
     vTaskDelay( versionCheckDelayTime );

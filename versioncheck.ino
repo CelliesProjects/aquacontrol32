@@ -6,7 +6,7 @@ bool newReleaseFound = false;
 
 void versionCheck ( void * pvParameters )
 {
-  const uint64_t versionCheckDelayTime = ( 1000 * 3600 ) / portTICK_PERIOD_MS;
+  const TickType_t versionCheckDelayTime = ( 1000 * 3600 ) / portTICK_PERIOD_MS;
 
   const char* latestReleaseAPI = "https://api.github.com/repos/CelliesProjects/aquacontrol32/releases/latest";
   const char* github_root_ca = \

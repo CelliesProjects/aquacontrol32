@@ -103,17 +103,16 @@ void tftTask( void * pvParameters )
     {
       case normal:
         showStatus();
-        vTaskDelay( tftTaskdelayTime );
         break;
 
       case menu:
         showMenu();
-        vTaskDelay( 10 / portTICK_PERIOD_MS );
         break;
 
       default:
         break;
     }
+    vTaskDelay( tftTaskdelayTime );
   }
 }
 

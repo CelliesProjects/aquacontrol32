@@ -62,6 +62,11 @@ void wifiTask( void * pvParameters )
     {
       ESP.restart();
     }
+
+    if ( !xTftTaskHandle )
+    {
+      digitalWrite( TFT_BACKLIGHT_PIN, LOW );
+    }
   }
 
   waitForWifi();
@@ -147,8 +152,8 @@ void waitForWifi()
   }
 }
 /*
-void WiFiEvent( WiFiEvent_t event )
-{
+  void WiFiEvent( WiFiEvent_t event )
+  {
   switch ( event )
   {
     case SYSTEM_EVENT_AP_START:
@@ -183,5 +188,5 @@ void WiFiEvent( WiFiEvent_t event )
     default:
       break;
   }
-}
+  }
 */

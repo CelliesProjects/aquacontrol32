@@ -53,14 +53,7 @@ void wifiTask( void * pvParameters )
       }
       else
       {
-        if ( !gpio_get_level( gpio_num_t( TFT_BACKLIGHT_PIN ) ) )
-        {
-          digitalWrite( TFT_BACKLIGHT_PIN, HIGH );
-        }
-        else
-        {
-          digitalWrite( TFT_BACKLIGHT_PIN, LOW );
-        }
+        digitalWrite( TFT_BACKLIGHT_PIN, !gpio_get_level( gpio_num_t( TFT_BACKLIGHT_PIN ) ) );
       }
       vTaskDelay( 500 / portTICK_PERIOD_MS );
     }

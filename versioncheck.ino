@@ -39,6 +39,7 @@ void versionCheck ( void * pvParameters )
     HTTPClient http;
 
     http.begin( latestReleaseAPI, github_root_ca );
+    http.setUserAgent( "aquacontrol32" );
     int httpCode = http.GET();
 
     if ( httpCode == 200 )

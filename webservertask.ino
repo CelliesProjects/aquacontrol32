@@ -633,7 +633,9 @@ void webServerTask ( void * pvParameters )
     {
       return request->requestAuthentication();
     }
-    request->send( 200 );
+    AsyncWebServerResponse *response = request->beginResponse( 200, textHtmlHeader );
+    response->addHeader("Connection", "close");
+    request->send(response);
   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {

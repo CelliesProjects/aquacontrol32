@@ -330,6 +330,13 @@ void webServerTask ( void * pvParameters )
       return request->send( response );
     }
 
+    else if ( request->hasArg( "wifissid" ) )
+    {
+      //response = request->beginResponseStream( textHtmlHeader );
+      //response->printf( "%s", WiFi.SSID().c_str() );
+      return request->send( 200, textHtmlHeader, WiFi.SSID().c_str() );
+    }
+
     else
     {
       return request->send( 400, textHtmlHeader, "Invalid option" );

@@ -435,11 +435,20 @@ void webServerTask ( void * pvParameters )
       return request->send( 200, textHtmlHeader, "NVS cleared" );
     }
 
+    if ( request->hasArg( "clearwifi" ) )
+    {
+      request->send( 200, textHtmlHeader, "WiFi data erased" );
+      WiFi.disconnect(true);
+      return;
+    }
+
     else if ( request->hasArg( "hostname" ) )
     {
       if ( !setupMDNS( request->arg( "hostname" ).c_str() ) )
       {
-        return request->send( 400, textHtmlHeader, "name not available." );
+        char wrongName[81];
+        snprintf( wrongName , sizeof( wrongName ), "ERROR: %s is already present.", request->arg( "hostname" ).c_str() );
+        return request->send( 400, textHtmlHeader, wrongName );
       }
       snprintf( hostName , sizeof( hostName ), "%s", request->arg( "hostname" ).c_str() );
       preferences.putString( "hostname", hostName );
@@ -828,11 +837,11 @@ bool setupMDNS( const char *hostname )
   struct ip4_addr addr;
   addr.addr = 0;
   esp_err_t res;
-  ESP_LOGI( TAG, "Query A: %s.local", hostname );
+  ESP_LOGI( TAG, "Looking for: %s.local...", hostname );
   res = mdns_query_a( hostname, 2000, &addr );
   if ( res == ESP_ERR_NOT_FOUND )
   {
-    ESP_LOGI( TAG, "Host %s was not found!", hostname );
+    ESP_LOGI( TAG, "Host %s.local was not found!", hostname );
     mdns_hostname_set( hostname );
     mdns_service_add( NULL, "_http", "_tcp", 80, NULL, 0 );
     mdns_service_instance_name_set( "_http", "_tcp", hostname );

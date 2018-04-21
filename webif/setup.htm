@@ -1,7 +1,6 @@
 <!doctype HTML>
 <html lang="en">
 <head>
-<title>Device setup</title>
 <meta charset="utf-8">
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">  <!--prevent favicon requests-->
 <style>
@@ -14,45 +13,35 @@ html, body{
   font-size:20px;
   font-family: monospace;
 }
-
 body{
   opacity:0.4;
 }
-
 hr{
   margin:0;
 }
-
 h3{
   margin:10px;
 }
-
 p{
   margin:0;
 }
-
 a {
   color: black;
   text-decoration: none;
   margin: 0 10px;
 }
-
 .webLink {
   color: #da1717;
 }
-
 .systemLink{
   padding: 3px 10px;
 }
-
 .systemLink:hover {
   background:grey;
 }
-
 .fileName a{
   display:block;
 }
-
 .shadowedBox  {
   box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
   border:solid 1px black;
@@ -60,46 +49,40 @@ a {
   margin:10px 0;
 }
 
-#titleBox{
+#hostName{
+  text-transform:uppercase;
+  margin:10px;
 }
-
 #fileInput{
   display:block;
   width:300px;
   height:50px;
   border:solid 1px black;
 }
-
 .settingsBox{
   width:800px;
   margin:auto;
 }
-
 .item{
   width:100%;
   margin:10px 0;
   height:30px;
 }
-
 .itemName, .itemValue {
   float:left;
   line-height: 30px;
 }
-
 .itemName{
   width:41%
 }
-
 .itemValue{
   width:20%;
   margin:0 30px;
 }
-
 .deleteButton:hover{
   background:red;
   cursor:pointer;
 }
-
 input{
   margin:5px auto;
   vertical-align:middle;
@@ -108,7 +91,6 @@ input{
   font-family: monospace;
   font-size:15px;
 }
-
 input[type="text"], input[type="password"]{
     background: beige;
     height: 25px;
@@ -117,31 +99,27 @@ input[type="text"], input[type="password"]{
     text-align: center;
     padding: 0;
 }
-
 input[type="button"]{
   height:30px;
+  width:150px;
   padding:5px 20px;
   margin:0 10px;
   border:solid 1px black;
 }
-
 input[type="range"]{
   width:18%;
   height:10px;
   box-shadow:unset;
 }
-
 .oledBar, .tftBar{
   display:none;
 }
 #diskSpaceBar{
   display:none;
 }
-
 input#timeZoneTextBox{
   width:450px;
 }
-
 .sensorBar{
   display:none;
 }
@@ -154,8 +132,8 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div id="titleBox" class="shadowedBox">
-  <h3 id="hostName">&nbsp;</h3>
-  <p>Lights and device setup.</p>
+  <h2 id="hostName">&nbsp;</h2>
+  <p class="item">Light and device setup.</p>
 </div>
 <div class="shadowedBox">
   <h3>LIGHT SETUP</h3>
@@ -163,12 +141,14 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   <p class="item"><input id="lightsOn" type="button" value="LIGHTS ON" disabled/><input id="lightsOff" type="button" value="LIGHTS OFF" disabled/><input id="lightsProgram" type="button" value="LIGHTS AUTO" disabled/></p>
 </div>
 <div class="shadowedBox">
+  <h3>SETUP WARNINGS/MESSAGES</h3>
+  <p class="item"><span id="deviceStatus">Only authorized users can change settings.</span></p>
+</div>
+<div class="shadowedBox">
   <h3>DEVICE SETUP</h3>
   <div class="settingsBox">
-    <p class="item"><span id="deviceStatus">&nbsp;</span></p>
     <p class="item"><span class="itemName">TIME ZONE <a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneTextBox"></span></p>
     <p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
-    <p class="item"><span class="itemName">ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 1 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 2 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 3 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
@@ -181,6 +161,13 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   </div>
 </div>
 <div class="shadowedBox">
+  <h3>ADMIN SETUP</h3>
+    <div class="settingsBox">
+    <p class="item"><span class="itemName">CHANGE ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
+    <p class="item"><span class="itemName">DISCONNECT AND RESET WIFI</span><input type="button" id="clearwifi" value="RESET"></p>
+    </div>
+</div>
+<div class="shadowedBox">
   <h3>DEVICE STATUS</h3>
   <div class="settingsBox">
     <p class="item" id="version"></p>
@@ -191,7 +178,11 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   </div>
 </div>
 <script>
-
+function checkAuth( data )
+{
+  if ( data.status == 401 ) $( '#deviceStatus' ).html( "You are not authorized." )
+  else $( '#deviceStatus' ).html( data.responseText );
+}
 function formatBytes( bytes, decimals ) {
   if( bytes == 0 ) return '0 Bytes';
   var k = 1000,
@@ -211,10 +202,11 @@ $(document).ready( function() {
     .done(function( data ){
       $('#hostNameInput' ).val( data );
       $( '#hostName' ).html( data );
+      document.title = data + " setup";
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( data.statusText );
-    })
+      $( '#deviceStatus' ).html( "Problem getting hostname." );
+   })
     .always( function( data ){
       if ( getAllValues )
       {
@@ -228,14 +220,11 @@ function getOledOrientation(){
     .done( function( data ){
       $('.oledBar' ).show();
       $('#oledOrientationValue').html( data );
-      if ( data == 'normal' ) { $('#oledOrientationSlider').val(0); }
-      if ( data == 'upsidedown' ) { $('#oledOrientationSlider').val(1); }
+      if ( data == 'normal' ) $('#oledOrientationSlider').val(0);
+      if ( data == 'upsidedown' ) $('#oledOrientationSlider').val(1);
     })
     .fail( function( data ){
-      if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( data.statusText );
-        console.log( data );
-      }
+      if ( data.status != 501 ) $( '#deviceStatus' ).html( data.statusText );
     })
     .always( function( data ){
       if ( getAllValues )
@@ -252,9 +241,7 @@ function getOledContrast(){
       $('#oledContrastSlider').val( data );
     })
     .fail( function( data ){
-      if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( data.statusText );
-      }
+      if ( data.status != 501 ) $( '#deviceStatus' ).html( data.statusText );
     })
     .always( function( data ){
       if ( getAllValues )
@@ -277,9 +264,7 @@ function getTftOrientation(){
       }
     })
     .fail( function( data ){
-      if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( "Error getting tft orientation: " + data.statusText );
-      }
+      if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft orientation." );
     })
     .always( function( data ){
       if ( getAllValues )
@@ -296,10 +281,7 @@ function getTftMaxBrightness(){
       $('#tftBrightnessSlider').val( data );
     })
     .fail( function( data ){
-      if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( "Error getting tft brightness: " + data.statusText );
-        console.log( data );
-      }
+      if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft brightness.");
     })
     .always( function( data ){
       if ( getAllValues )
@@ -340,7 +322,7 @@ function getLightStatus(){
       }
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting lightstatus: " + data.statusText );
+      $( '#deviceStatus' ).html( "Error getting lightstatus." );
     })
     .always( function( data ){
       if ( getAllValues )
@@ -389,9 +371,7 @@ function getDiskSpace(){
       $('#freeDiskSpace').html( formatBytes( data ) );
     })
     .fail( function( data ){
-      if ( data.status != 501 ){
-        $( '#deviceStatus' ).html( "Error getting diskspace: " + data.responseText );
-      }
+      if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting diskspace: " + data.responseText );
     })
     .always( function( data ){
       if ( getAllValues )
@@ -407,7 +387,7 @@ function getPwmDepth(){
       $('#pwmStatus').html( data + "bit - ");
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting pwmdepth" + data.responseText );
+      $( '#deviceStatus' ).html( "Error getting pwmdepth " + data.responseText );
     })
     .always( function( data ){
       if ( getAllValues )
@@ -424,7 +404,7 @@ function getVersion()
       $('#version').html( data );
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting version" + data.responseText );
+      $( '#deviceStatus' ).html( "Error getting version: " + data.responseText );
     })
     .always( function( data ){
       if ( getAllValues )
@@ -439,7 +419,7 @@ function getPwmFrequency(){
       $('#pwmStatus').append( data + "Hz");
     })
     .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting pwmfrequency" + data.responseText );
+      $( '#deviceStatus' ).html( "Error getting pwmfrequency: " + data.responseText );
     })
     .always( function( data ){
       getAllValues = false;
@@ -474,23 +454,24 @@ $('#passwordInput').on('change', function( event ) {
     $( '#deviceStatus' ).html( data );
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( data.statusText );
+    checkAuth( data );
     $('#passwordInput').css({'background':'red'});
   });
 });
 
 $('#oledOrientationSlider').on('change', function( event ) {
-  if ( $(this).val() == 0 ) $('#oledOrientationValue').html('normal');
-  if ( $(this).val() == 1 ) $('#oledOrientationValue').html('upsidedown');
+  $(this).val() == 1  ? $('#oledOrientationValue').html( 'upsidedown' ): $('#oledOrientationValue').html( 'normal' );
   $.post( "/api/setdevice",
   {
     oledorientation : $('#oledOrientationValue').html()
   })
   .done(function(data) {
-    $('#oledOrientationValue').html( data )
+    $('#oledOrientationValue').html( data );
+    console.log( data );
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( data.statusText  );
+    console.log( data );
+    checkAuth( data );
     getOledOrientation();
   });
 });
@@ -506,7 +487,7 @@ $('#tftOrientationSlider').on('change', function( event ) {
     $('#tftOrientation').html( data )
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( data.statusText );
+    checkAuth( data );
     getTftOrientation();
   });
 });
@@ -533,7 +514,7 @@ $('#lightsOff').on('click', function() {
     $('#lightStatus').html( data );
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( data.statusText  );
+    checkAuth( data );
   });
 });
 
@@ -546,7 +527,7 @@ $('#lightsProgram').on('click', function() {
     $('#lightStatus').html( data );
   })
   .fail(function( data ){
-    $( '#deviceStatus' ).html( data.statusText  );
+    checkAuth( data );
   });
 });
 
@@ -559,9 +540,11 @@ $('#hostNameInput').on('change', function( data ) {
     .done(function( data ){
       $( '#deviceStatus' ).html( "Hostname changed. <a href=\"http://" + data + ".local\">Click here to go to " + data + "</a>");
       $( '#hostNameInput' ).css({'background':'lightgreen'});
+      $( '#hostName').html( data );
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( data.statusText );
+      console.log( data );
+      checkAuth( data );
       $( '#hostNameInput' ).css({'background':'red'});
     });
 });
@@ -580,7 +563,7 @@ $('#oledContrastSlider').on('change', function() {
       $('#oledContrastSlider').val( data );
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( data.statusText  );
+      checkAuth( data );
       getOledContrast();
     });
 });
@@ -598,7 +581,7 @@ $('#tftBrightnessSlider').on('change', function() {
       $('#tftBrightnessSlider').val( data );
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( data.statusText  );
+      checkAuth( data );
       getTftMaxBrightness();
     });
 });
@@ -613,7 +596,7 @@ $('#timeZoneTextBox').on('change', function( data ) {
       $('#deviceStatus').html( 'Timezone set to ' + data );
     })
     .fail(function( data ) {
-      $('#deviceStatus').html( data.statusText );
+      checkAuth( data );
       $('#timeZoneTextBox').css( {'background':'red'} );
     });
 }); /* last in chain setup */
@@ -630,10 +613,27 @@ $('.sensorNameInput').on('change', function( data ) {
       $( '.sensorNameInput' ).eq( sensor ).css({'background':'lightgreen'});
     })
     .fail(function( data ){
-      $( '#deviceStatus' ).html( data.statusText );
+      checkAuth( data );
       $( '.sensorNameInput' ).eq( sensor ).css({'background':'red'});
     });
 });
+
+$('#clearwifi').on('click', function( data ) {
+  if ( confirm( "Are you sure to reset the WiFi data?\nAfter clicking yes you will not be able to access this web interface." ) )
+  {
+  $.post( "/api/setdevice",
+  {
+    clearwifi : 0
+  })
+    .done(function( data ){
+      $( '#deviceStatus' ).html( "You can now reset the ESP32." );
+    })
+    .fail(function( data ){
+      checkAuth( data );
+    });
+  };
+});
+
 </script>
 </body>
 </html>

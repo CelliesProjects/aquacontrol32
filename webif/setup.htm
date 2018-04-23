@@ -48,7 +48,6 @@ a {
   border-radius: 15px;
   margin:10px 0;
 }
-
 #hostName{
   text-transform:uppercase;
   margin:10px;
@@ -191,227 +190,207 @@ function formatBytes( bytes, decimals ) {
     i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat( ( bytes / Math.pow( k, i ) ).toFixed( dm ) ) + ' ' + sizes[i];
 }
-
 var getAllValues;
-
 $(document).ready( function() {
-
   getAllValues = true;
-
   $.get( "/api/getdevice?hostname=" )
-    .done(function( data ){
-      $('#hostNameInput' ).val( data );
-      $( '#hostName' ).html( data );
-      document.title = data + " setup";
-    })
-    .fail(function( data ){
-      $( '#deviceStatus' ).html( "Problem getting hostname." );
-   })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getOledOrientation();
-      }
-    });
+  .done(function( data ){
+    $('#hostNameInput' ).val( data );
+    $( '#hostName' ).html( data );
+    document.title = data + " setup";
+  })
+  .fail(function( data ){
+    $( '#deviceStatus' ).html( "Problem getting hostname." );
+ })
+  .always( function( data ){
+    if ( getAllValues )
+    {
+      getOledOrientation();
+    }
+  });
 });
-
 function getOledOrientation(){
   $.get( "/api/getdevice?oledorientation=")
-    .done( function( data ){
-      $('.oledBar' ).show();
-      $('#oledOrientationValue').html( data );
-      if ( data == 'normal' ) $('#oledOrientationSlider').val(0);
-      if ( data == 'upsidedown' ) $('#oledOrientationSlider').val(1);
-    })
-    .fail( function( data ){
-      if ( data.status != 501 ) $( '#deviceStatus' ).html( data.statusText );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getOledContrast();
-      }
-    });
+  .done( function( data ){
+    $('.oledBar' ).show();
+    $('#oledOrientationValue').html( data );
+    if ( data == 'normal' ) $('#oledOrientationSlider').val(0);
+    if ( data == 'upsidedown' ) $('#oledOrientationSlider').val(1);
+  })
+  .fail( function( data ){
+    if ( data.status != 501 ) $( '#deviceStatus' ).html( data.statusText );
+  })
+  .always( function( data ){
+    if ( getAllValues )
+    {
+      getOledContrast();
+    }
+  });
 }
-
 function getOledContrast(){
   $.get( "/api/getdevice?oledcontrast=")
-    .done( function( data ){
-      $('#oledContrastValue').html( data );
-      $('#oledContrastSlider').val( data );
-    })
-    .fail( function( data ){
-      if ( data.status != 501 ) $( '#deviceStatus' ).html( data.statusText );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getTftOrientation();
-      }
-    });
+  .done( function( data ){
+    $('#oledContrastValue').html( data );
+    $('#oledContrastSlider').val( data );
+  })
+  .fail( function( data ){
+    if ( data.status != 501 ) $( '#deviceStatus' ).html( data.statusText );
+  })
+  .always( function( data ){
+    if ( getAllValues )
+    {
+      getTftOrientation();
+    }
+  });
 }
 
 function getTftOrientation(){
   $.get( "/api/getdevice?tftorientation=")
-    .done( function( data ){
-      $('.tftBar' ).show();
-      $('#tftOrientation').html( data );
-      if ( data == 'normal' ) {
-        $('#tftOrientationSlider').val(0);
-      }
-      if ( data == 'upsidedown' ) {
-        $('#tftOrientationSlider').val(1);
-      }
-    })
-    .fail( function( data ){
-      if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft orientation." );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getTftMaxBrightness();
-      }
-    });
+  .done( function( data ){
+    $('.tftBar' ).show();
+    $('#tftOrientation').html( data );
+    if ( data == 'normal' ) {
+      $('#tftOrientationSlider').val(0);
+    }
+    if ( data == 'upsidedown' ) {
+      $('#tftOrientationSlider').val(1);
+    }
+  })
+  .fail( function( data ){
+    if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft orientation." );
+  })
+  .always( function( data ){
+    if ( getAllValues )
+    {
+      getTftMaxBrightness();
+    }
+  });
 }
 
 function getTftMaxBrightness(){
   $.get( "/api/getdevice?tftbrightness=")
-    .done( function( data ){
-      $('#tftBrightnessValue').html( parseInt( data ) + "%"  );
-      $('#tftBrightnessSlider').val( data );
-    })
-    .fail( function( data ){
-      if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft brightness.");
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getTimeZone();
-      }
-    });
+  .done( function( data ){
+    $('#tftBrightnessValue').html( parseInt( data ) + "%"  );
+    $('#tftBrightnessSlider').val( data );
+  })
+  .fail( function( data ){
+    if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft brightness.");
+  })
+  .always( function( data ){
+    if ( getAllValues )
+    {
+      getTimeZone();
+    }
+  });
 }
 
 function getTimeZone(){
   $.get( "/api/getdevice?timezone=")
-    .done( function( data ){
-      $('#timeZoneTextBox').val( data );
-    })
-    .fail( function( data ){
-      $( '#deviceStatus' ).html( data.statusText );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getLightStatus();
-      }
-    });
+  .done( function( data ){
+    $('#timeZoneTextBox').val( data );
+  })
+  .fail( function( data ){
+    $( '#deviceStatus' ).html( data.statusText );
+  })
+  .always( function( data ){
+    if ( getAllValues )
+    {
+      getLightStatus();
+    }
+  });
 }
 
 function getLightStatus(){
   $.get( "/api/getdevice?status=")
-    .done( function( data ){
-      var item = data.split('\n');
-      $('#lightStatus').html( item[6] );
-      var sensor = 0;
-      while ( item[7 + sensor] ){
-        $('.sensorBar').eq( sensor ).show();
-        var temp = item[7 + sensor].split(',');
-        $('.sensorBar .itemName').eq( sensor ).prepend( temp[1].substring( 0,  temp[1].indexOf( "." ) + 2 ) + "°C - " );
-        $('.sensorNameInput').eq( sensor ).val( temp[0] );
-        sensor++;
-      }
-    })
-    .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting lightstatus." );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getWifiSSID();
-      }
-    });
+  .done( function( data ){
+    var item = data.split('\n');
+    $('#lightStatus').html( item[6] );
+    var sensor = 0;
+    while ( item[7 + sensor] ){
+      $('.sensorBar').eq( sensor ).show();
+      var temp = item[7 + sensor].split(',');
+      $('.sensorBar .itemName').eq( sensor ).prepend( temp[1].substring( 0,  temp[1].indexOf( "." ) + 2 ) + "°C - " );
+      $('.sensorNameInput').eq( sensor ).val( temp[0] );
+      sensor++;
+    }
+  })
+  .fail( function( data ){
+    $( '#deviceStatus' ).html( "Error getting lightstatus." );
+  })
+  .always( function( data ){
+    if ( getAllValues ) getWifiSSID();
+  });
 }
 
 function getWifiSSID(){
   $.get( "/api/getdevice?wifissid=")
-    .done( function( data ){
-      $('#wifissid').html( "WIFI NETWORK: " + data );
-    })
-    .fail( function( data ){
-      $( '#wifissid' ).html( "Error getting wifi SSID: " + data.statusText );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getBootTime();
-      }
-    });
+  .done( function( data ){
+    $('#wifissid').html( "WIFI NETWORK: " + data );
+  })
+  .fail( function( data ){
+    $( '#wifissid' ).html( "Error getting wifi SSID: " + data.statusText );
+  })
+  .always( function( data ){
+    if ( getAllValues ) getBootTime();
+  });
 }
 
 function getBootTime(){
   $.get( "/api/getdevice?boottime=")
-    .done( function( data ){
-      $('#bootTime').html( data );
-    })
-    .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting boottime: " + data.statusText );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getDiskSpace();
-      }
-    });
+  .done( function( data ){
+    $('#bootTime').html( data );
+  })
+  .fail( function( data ){
+    $( '#deviceStatus' ).html( "Error getting boottime: " + data.statusText );
+  })
+  .always( function( data ){
+    if ( getAllValues ) getDiskSpace();
+  });
 }
 
 function getDiskSpace(){
   $.get( "/api/getdevice?diskspace=")
-    .done( function( data ){
-      $('#diskSpaceBar').show();
-      $('#freeDiskSpace').html( formatBytes( data ) );
-    })
-    .fail( function( data ){
-      if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting diskspace: " + data.responseText );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getPwmDepth();
-      }
-    });
+  .done( function( data ){
+    $('#diskSpaceBar').show();
+    $('#freeDiskSpace').html( formatBytes( data ) );
+  })
+  .fail( function( data ){
+    if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting diskspace: " + data.responseText );
+  })
+  .always( function( data ){
+    if ( getAllValues ) getPwmDepth();
+  });
 }
 
 function getPwmDepth(){
   $.get( "/api/getdevice?pwmdepth=")
-    .done( function( data ){
-      $('#pwmStatus').html( data + "bit - ");
-    })
-    .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting pwmdepth " + data.responseText );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getVersion();
-      }
-    });
+  .done( function( data ){
+    $('#pwmStatus').html( data + "bit - ");
+  })
+  .fail( function( data ){
+    $( '#deviceStatus' ).html( "Error getting pwmdepth " + data.responseText );
+  })
+  .always( function( data ){
+    if ( getAllValues ) getVersion();
+  });
 }
 
 function getVersion()
 {
   $.get( "/api/getdevice?version=")
-    .done( function( data ){
-      $('#version').html( data );
-    })
-    .fail( function( data ){
-      $( '#deviceStatus' ).html( "Error getting version: " + data.responseText );
-    })
-    .always( function( data ){
-      if ( getAllValues )
-      {
-        getPwmFrequency();
-      }
+  .done( function( data ){
+    $('#version').html( data );
+    var sketchVersion = data.substr( 0, data.search("-") );
+    $.getJSON("https://api.github.com/repos/CelliesProjects/aquacontrol32/releases/latest", function(data, status) {
+      if (  status === "success" && sketchVersion != data.tag_name ) $( '#version' ).append( ' -<a href="https://github.com/CelliesProjects/aquacontrol32/releases/latest"  target="_blank">Latest release ' + data.tag_name + " on GitHub.</a>" );
     });
+  })
+  .fail( function( data ){
+    $( '#deviceStatus' ).html( "Error getting version: " + data.responseText );
+  })
+  .always( function( data ){
+    if ( getAllValues ) getPwmFrequency();
+  });
 }
 function getPwmFrequency(){
   $.get( "/api/getdevice?pwmfrequency=")
@@ -537,16 +516,16 @@ $('#hostNameInput').on('change', function( data ) {
   {
     hostname : $(this).val()
   })
-    .done(function( data ){
-      $( '#deviceStatus' ).html( "Hostname changed. <a href=\"http://" + data + ".local\">Click here to go to " + data + "</a>");
-      $( '#hostNameInput' ).css({'background':'lightgreen'});
-      $( '#hostName').html( data );
-    })
-    .fail(function( data ){
-      console.log( data );
-      checkAuth( data );
-      $( '#hostNameInput' ).css({'background':'red'});
-    });
+  .done(function( data ){
+    $( '#deviceStatus' ).html( "Hostname changed. <a href=\"http://" + data + ".local\">Click here to go to " + data + "</a>");
+    $( '#hostNameInput' ).css({'background':'lightgreen'});
+    $( '#hostName').html( data );
+  })
+  .fail(function( data ){
+    console.log( data );
+    checkAuth( data );
+    $( '#hostNameInput' ).css({'background':'red'});
+  });
 });
 
 $('#oledContrastSlider').on('input', function() {
@@ -558,14 +537,14 @@ $('#oledContrastSlider').on('change', function() {
   {
     oledcontrast : $(this).val()
   })
-    .done(function( data ){
-      $('#oledContrastValue').html( data );
-      $('#oledContrastSlider').val( data );
-    })
-    .fail(function( data ){
-      checkAuth( data );
-      getOledContrast();
-    });
+  .done(function( data ){
+    $('#oledContrastValue').html( data );
+    $('#oledContrastSlider').val( data );
+  })
+  .fail(function( data ){
+    checkAuth( data );
+    getOledContrast();
+  });
 });
 
 $('#tftBrightnessSlider').on('input', function() {
@@ -577,13 +556,13 @@ $('#tftBrightnessSlider').on('change', function() {
   {
     tftbrightness : $(this).val()
   })
-    .done(function( data ){
-      $('#tftBrightnessSlider').val( data );
-    })
-    .fail(function( data ){
-      checkAuth( data );
-      getTftMaxBrightness();
-    });
+  .done(function( data ){
+    $('#tftBrightnessSlider').val( data );
+  })
+  .fail(function( data ){
+    checkAuth( data );
+    getTftMaxBrightness();
+  });
 });
 
 $('#timeZoneTextBox').on('change', function( data ) {
@@ -608,23 +587,23 @@ $('.sensorNameInput').on('change', function( data ) {
     sensorname : $(this).val(),
     number     : sensor
   })
-    .done(function( data ){
-      $( '#deviceStatus' ).html( "Sensorname changed to '" + data + "'" );
-      $( '.sensorNameInput' ).eq( sensor ).css({'background':'lightgreen'});
-    })
-    .fail(function( data ){
-      checkAuth( data );
-      $( '.sensorNameInput' ).eq( sensor ).css({'background':'red'});
-    });
+  .done(function( data ){
+    $( '#deviceStatus' ).html( "Sensorname changed to '" + data + "'" );
+    $( '.sensorNameInput' ).eq( sensor ).css({'background':'lightgreen'});
+  })
+  .fail(function( data ){
+    checkAuth( data );
+    $( '.sensorNameInput' ).eq( sensor ).css({'background':'red'});
+  });
 });
 
 $('#clearwifi').on('click', function( data ) {
   if ( confirm( "Are you sure to reset the WiFi data?\nAfter clicking yes you will not be able to access this web interface." ) )
   {
-  $.post( "/api/setdevice",
-  {
-    clearwifi : 0
-  })
+    $.post( "/api/setdevice",
+    {
+      clearwifi : 0
+    })
     .done(function( data ){
       $( '#deviceStatus' ).html( "You can now reset the ESP32." );
     })

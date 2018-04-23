@@ -10,8 +10,6 @@
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/ESPAsyncTCP */
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
 
 #include "gitTagVersion.h"
 #include "deviceSetup.h"

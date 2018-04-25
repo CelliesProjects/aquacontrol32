@@ -388,7 +388,7 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
   drawButton( EXIT_BUTTON,         ILI9341_YELLOW, ILI9341_BLUE, 0, 2 );
 }
 
-static inline __attribute__((always_inline)) bool buttonPressed( const struct button_t button, const struct tftPoint_t clickedLocation )
+static inline __attribute__((always_inline)) bool buttonPressed( const struct button_t &button, const struct tftPoint_t &clickedLocation )
 {
   return ( clickedLocation.x > button.x && clickedLocation.x < button.x + button.w ) && ( clickedLocation.y > button.y && clickedLocation.y < button.y + button.h );
 }
@@ -425,7 +425,7 @@ static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const u
   return { x, y };
 }
 
-static inline __attribute__((always_inline)) void drawBacklightSlider( const button_t area, const char * label )
+static inline __attribute__((always_inline)) void drawBacklightSlider( const button_t &area, const char * label )
 {
   const uint8_t SLIDER_KNOB_HEIGHT = 10;
 

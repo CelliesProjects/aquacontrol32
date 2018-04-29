@@ -89,7 +89,14 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
         /* check if channel has a minimum set */
         if ( newPercentage < channel[channelNumber].minimumLevel )
         {
-          newPercentage = channel[channelNumber].minimumLevel;
+          if ( MOON_SIMULATOR )
+          {
+            newPercentage = channel[channelNumber].minimumLevel * moonData.percentLit;
+          }
+          else
+          {
+            newPercentage = channel[channelNumber].minimumLevel;
+          }
         }
 
         /* done, set the channel */

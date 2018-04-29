@@ -10,6 +10,7 @@
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/ESPAsyncTCP */
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
+#include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
 
 #include "gitTagVersion.h"
 #include "deviceSetup.h"
@@ -99,6 +100,8 @@ SSD1306  OLED( OLED_ADDRESS, I2C_SDA_PIN, I2C_SCL_PIN );
 
 AsyncWebServer server(80);
 
+MoonPhase MoonPhase;
+
 /**************************************************************************
        type definitions
 **************************************************************************/
@@ -156,7 +159,7 @@ const uint8_t oledTaskPriority         = 3;
 const uint8_t wifiTaskPriority         = 2;
 const uint8_t loggerTaskPriority       = 1;
 const uint8_t spiffsTaskPriority       = 0;
-
+const uint8_t moonSimtaskPriority      = 0;
 
 /**************************************************************************
        start of global variables
@@ -166,6 +169,8 @@ channelData_t           channel[NUMBER_OF_CHANNELS];
 sensorData_t            sensor[MAX_NUMBER_OF_SENSORS];
 
 lightStatus_t           lightStatus;
+
+MoonPhase::moonData     moonData;
 
 TaskHandle_t            xDimmerTaskHandle            = NULL;
 TaskHandle_t            xTftTaskHandle               = NULL;

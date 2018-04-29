@@ -4,12 +4,14 @@ Aquacontrol32 is software used to program and control 5 led strips to create mor
 
 Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32).
 <br><br>With some modifications and provided there are enough pins broken out, Aquacontrol32 should run on basically any ESP32 based board.
-<br><br>The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 330R gate resistors to 5 NPN mosfets. I use IRLZ44N mosfets as these are very cheap.
-<br><br>You can connect a cheap 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s).
+<br><br>The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 330R gate resistors to 5 NPN mosfets. I use IRLZ44N mosfets as these are cheap and have the right ratings for my setup.
+<br><br>You can connect a 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s).
 <br>The ILI9341 displays optionally come with a XPT2046 touch controller which is supported.
 #### Features:
 
 - 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
+
+- Moon cycle following night light.
 
 - 50 timers per channel.
 
@@ -86,6 +88,11 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 - Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
 <br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 330R resistor in series to prevent burning up your ESP32.
+
+#### Moon cycle night light
+
+when enabled, the settings for the minimum levels in the channel section of the webinterface are effectively the maximum or full moon value.
+Can be disabled in `deviceSetup.h`.
 
 #### SmartConfig:
 

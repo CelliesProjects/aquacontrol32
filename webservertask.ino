@@ -191,6 +191,17 @@ void webServerTask ( void * pvParameters )
       return request->send( response );
     }
 
+    else if ( request->hasArg( "moonphase" ) )
+    {
+      if ( !MOON_SIMULATOR )
+      {
+        return request->send( 501, textHtmlHeader, "Not present." );
+      }
+      response = request->beginResponseStream( textHtmlHeader );
+      response->printf( "%i\n%.3f\n", moonData.angle, moonData.percentLit );
+      return request->send( response );
+    }
+
     else if ( request->hasArg( "oledcontrast" ) )
     {
       if ( !xOledTaskHandle )

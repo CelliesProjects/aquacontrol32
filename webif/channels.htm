@@ -14,71 +14,76 @@ html, body{
   font-size:20px;
   font-family: monospace;
 }
-
 body{
   opacity:0.4;
 }
-
 h3{
   margin:10px;
 }
-
 p{
   margin:0;
 }
-
+.infobar{
+  width:625px;
+  margin:10px auto;
+  //background-color:beige;
+}
 a {
   color: black;
   text-decoration: none;
   margin: 0 10px;
 }
-
+#hostName {
+  text-transform: uppercase;
+  margin: 10px;
+}
+#lunarPhase{
+  width:625px;
+  margin:auto;
+}
+#copyright{
+  font-size:15px;
+  display:none;
+}
+img {
+  margin:10px;
+}
 .systemLink{
   padding: 3px 10px;
 }
-
 .systemLink:hover {
   background:grey;
 }
-
 .fileName a{
   display:block;
 }
-
 .shadowedBox  {
   box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
   border:solid 1px black;
   border-radius: 15px;
   margin:10px 0;
 }
-
 .item{
   width:625px;
-  margin:auto;
-  text-align:justify;
+  margin:10px auto;
   background-color:beige;
 }
-
 .item:hover {
   background-color:yellow;
 }
-
 .itemName, .itemValue {
   vertical-align:middle;
 }
-
 .itemName{
-    display: inline-block;
-    margin: 8px;
-    padding: 2px 2px;
+  display: inline-block;
+  margin: 8px;
+  padding: 2px 2px;
 }
-
 .itemValue{
-    display: inline-block;
-    width: 80px;
-    text-align: center;
+  display: inline-block;
+  width: 80px;
+  text-align: center;
 }
-
 input{
   margin:5px ;
   vertical-align:middle;
@@ -87,7 +92,6 @@ input{
   border-radius: 5px;
   font-family: monospace;
 }
-
 input[type="text"]{
   width:150px;
   margin:5px;
@@ -95,7 +99,6 @@ input[type="text"]{
   text-align: center;
   font-size: 20px;
 }
-
 input[type="range"]{
   width:150px;
   height:10px;
@@ -103,7 +106,6 @@ input[type="range"]{
   border: none;
   box-shadow: unset;
 }
-
 input[type="color"] {
   width:60px;
   margin: 0 15px 0 30px;
@@ -114,16 +116,19 @@ input[type="color"] {
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div class="shadowedBox">
-  <h3 id="hostName">&nbsp;</h3>
-  <p>Set up channelnames, interface colors and minimum levels.</p>
+  <h2 id="hostName">&nbsp;</h2>
+  <p class="infobar">Set up channels</p>
 </div>
 <div class="shadowedBox"><p id="statusBox">&nbsp;</p></div>
 <div class="shadowedBox">
-    <div class="item"><p class="itemName">1</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-    <div class="item"><p class="itemName">2</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-    <div class="item"><p class="itemName">3</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-    <div class="item"><p class="itemName">4</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-    <div class="item"><p class="itemName">5</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div id="lunarPhase"></div>
+    <div class="item channelbar"><p class="itemName">1</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item channelbar"><p class="itemName">2</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item channelbar"><p class="itemName">3</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item channelbar"><p class="itemName">4</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+    <div class="item channelbar"><p class="itemName">5</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">MIN:</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+</div>
+<div class="shadowedBox" id="copyright">
 </div>
 <script>
 
@@ -171,9 +176,26 @@ function getChannelNames(){
   })
   .always( function() {
     if ( loadAll ) {
-      getChannelColors();
+      getLunarPhase();
     }
   });
+}
+
+function getLunarPhase(){
+  $.get( "/api/getdevice?moonphase=" )
+    .done( function( data ) {
+      var phase = data.split("\n");
+      $( '#lunarPhase' ).html( '<p class="infobar">Moon is ' + parseFloat( phase[1] ) * 100 + '% illuminated.</p><img src="https://celliesprojects.github.io/aquacontrol32/near_side_256x256x8/' + phase[0] + '.png">' );
+      $( '#copyright').html( '<p class="copyright">Lunar images author: Jay Tanner</p><p><a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode" target="_blank">Image license: Creative Commons 3.0</a>-<a href="http://www.neoprogrammics.com/lunar_phase_images/" target="_blank">Original image set</a></p>').show();
+    })
+    .fail( function( data ) {
+      console.log( data );
+    })
+    .always( function() {
+      if ( loadAll ) {
+        getChannelColors();
+      }
+    });
 }
 
 function getChannelColors(){
@@ -203,14 +225,14 @@ $('input').on( 'input', function() {
 });
 
 $( '.minLevel' ).on( 'input', function( ) {
-  var thisChannel = $(this).parent().index();
+  var thisChannel = $(this).parent(".channelbar").index() - 1;
   $('.minimumPercent').eq( thisChannel ).html( $(this).val() +'%' );
  });
 
 $( '.minLevel' ).on( 'change', function() {
   $.post( "/api/setchannel",
   {
-    channel : $(this).parent().index() + 1,
+    channel : $(this).parent(".channelbar").index(),
     minimum : $(this).val()
   })
   .done(function( data ) {
@@ -223,14 +245,14 @@ $( '.minLevel' ).on( 'change', function() {
 });
 
 $( '.channelName' ).on( 'input', function( ) {
-  $('.channelName').eq( $(this).parent().index() ).css({ 'background' : '#fffe75' } );  
+  $('.channelName').eq( $(this).parent(".channelbar").index() ).css({ 'background' : '#fffe75' } );
 });
 
 $( '.channelName' ).on( 'change', function( ) {
-  var thisChannel = $(this).parent().index();
+  var thisChannel = $(this).parent(".channelbar").index();
   $.post( "/api/setchannel",
   {
-    channel : thisChannel + 1,
+    channel : thisChannel,
     name    : $(this).val()
   })
   .done(function( data ) {
@@ -245,15 +267,15 @@ $( '.channelName' ).on( 'change', function( ) {
 });
 
 $( '.colorPicker' ).on( 'change', function() {
-  var thisChannel = $(this).parent().index();
+  var thisChannel = $(this).parent(".channelbar").index();
   var thisColor = $(this).val().substr(1);
   $.post( "/api/setchannel",
   {
-    channel : thisChannel + 1,
+    channel : thisChannel,
     color   : thisColor
   })
   .done(function( data ) {
-    $('#statusBox').html( "Channel " + ( thisChannel + 1 ) + " color set to <span style=\"color:#" + thisColor + ";\">#" + thisColor + "</span>" );
+    $('#statusBox').html( "Channel " + ( thisChannel ) + " color set to <span style=\"color:#" + thisColor + ";\">#" + thisColor + "</span>" );
   })
   .fail(function( data ) {
     $('#statusBox').html( data.statusText );

@@ -380,7 +380,9 @@ function getVersion()
   $.get( "/api/getdevice?version=")
   .done( function( data ){
     $('#version').html( data );
-    var sketchVersion = data.substr( 0, data.search("-") );
+    var sketchVersion;
+    if ( !data.substr( 0, data.search("-") ) ) sketchVersion = data;
+    else sketchVersion = data.substr( 0, data.search("-") );
     $.getJSON("https://api.github.com/repos/CelliesProjects/aquacontrol32/releases/latest", function(data, status) {
       if (  status === "success" && sketchVersion != data.tag_name ) $( '#version' ).append( ' -<a href="https://github.com/CelliesProjects/aquacontrol32/releases/latest"  target="_blank">Latest release ' + data.tag_name + " on GitHub.</a>" );
     });

@@ -1,4 +1,3 @@
 gitTagVersion.h
-deviceSetup.h
 
-docs/
+docs/*/*

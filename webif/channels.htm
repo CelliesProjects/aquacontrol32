@@ -187,8 +187,8 @@ function getLunarPhase(){
       var phase = data.split("\n");
       if ( phase[1] > 0.9995 ) phase[1] = 1;
       if ( phase[1] < 0.0005 ) phase[1] = 0;
-      phase[1] = Math.round(phase[1]*1000)/1000;
-      var truncated = ( parseFloat( phase[1] ) * 100 ).toString();
+      var truncated = ( parseFloat( phase[1] ) * 100.0 ).toString();
+      if ( truncated.indexOf( ".") != -1 ) truncated = truncated.substr( 0, truncated.indexOf( ".") + 2);
       $( '#lunarPhase' ).html( '<p class="infobar">Moon is ' + truncated  + '% illuminated</p><img src="https://celliesprojects.github.io/aquacontrol32/near_side_256x256x8/' + phase[0] + '.png">' );
       $( '#copyright').html( '<p class="copyright">Lunar images author: Jay Tanner</p><p><a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode" target="_blank">Image license: Creative Commons 3.0</a>-<a href="http://www.neoprogrammics.com/lunar_phase_images/" target="_blank">Original image set</a></p>').show();
     })

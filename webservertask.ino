@@ -198,7 +198,7 @@ void webServerTask ( void * pvParameters )
         return request->send( 501, textHtmlHeader, "Not present." );
       }
       response = request->beginResponseStream( textHtmlHeader );
-      response->printf( "%i\n%.3f\n", moonData.angle, moonData.percentLit );
+      response->printf( "%i\n%.4f\n", moonData.angle, moonData.percentLit );
       return request->send( response );
     }
 

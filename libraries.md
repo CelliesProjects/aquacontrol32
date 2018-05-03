@@ -26,8 +26,4 @@ Using library WiFi at version 1.0 in folder: ~/Arduino/hardware/espressif/esp32/
 <br>
 Using library XPT2046_Touchscreen at version 1.2 in folder: ~/Arduino/libraries/XPT2046_Touchscreen
 <br>
-Using library HTTPClient at version 1.1 in folder: /home/cellie/Arduino/hardware/espressif/esp32/libraries/HTTPClient 
-<br>
-Using library WiFiClientSecure at version 1.0 in folder: /home/cellie/Arduino/hardware/espressif/esp32/libraries/WiFiClientSecure 
-<br>
-Using library ArduinoJson at version 5.13.1 in folder: /home/cellie/Arduino/libraries/ArduinoJson 
+Using library MoonPhase at version 0.0.1 in folder: /home/cellie/Arduino/libraries/MoonPhase

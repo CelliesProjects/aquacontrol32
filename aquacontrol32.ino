@@ -1,5 +1,7 @@
-#include <rom/rtc.h>
+#include <rom/rtc.h>               /* should be installed together with ESP32 Arduino install */
 #include <SPI.h>                   /* should be installed together with ESP32 Arduino install */
+#include <FS.h>                    /* should be installed together with ESP32 Arduino install */
+#include <SD.h>                    /* should be installed together with ESP32 Arduino install */
 #include <SPIFFS.h>                /* should be installed together with ESP32 Arduino install */
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
@@ -194,6 +196,7 @@ uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
 uint8_t                 oledContrast;                                               /* 0 .. 15 */
 uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 
+
 /*****************************************************************************************
 
        end of global variables
@@ -215,14 +218,36 @@ void setup()
   preferences.begin( "aquacontrol32", false );
 
   btStop();
-  //Serial.begin( 115200 );
+
   ESP_LOGI( TAG, "aquacontrol32 %s", sketchVersion );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
-  SPI.setFrequency( 80000000 );
 
   tft.begin( 20000000, SPI );
+
+  if( STORAGE_MEDIUM )
+  {
+    if (!SD.begin( SPI_SD_CS_PIN ))
+    {
+      ESP_LOGE( TAG, "SD Card Mount Failed" );
+    }
+    else
+    {
+      ESP_LOGI( TAG, "SD started." );
+    }
+  }
+  else
+  {
+    if ( !SPIFFS.begin( true ) )
+    {
+      ESP_LOGE( TAG, "Error starting SPIFFS." );
+    }
+    else
+    {
+      ESP_LOGI( TAG, "SPIFFS started." );
+    }
+  }
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
   {
@@ -279,15 +304,6 @@ void setup()
     4000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     tempTaskPriority,               /* Priority of the task */
-    NULL,                           /* Task handle. */
-    1);                             /* Core where the task should run */
-
-  xTaskCreatePinnedToCore(
-    spiffsTask,                     /* Function to implement the task */
-    "spiffsTask",                   /* Name of the task */
-    2000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    spiffsTaskPriority,             /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 }

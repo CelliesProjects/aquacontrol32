@@ -11,6 +11,12 @@ void loggerTask ( void * pvParameters )
     time_t                  now;
     struct tm          timeinfo;
     char           fileName[17];
+    fs::FS                  &fs = SPIFFS;
+
+    if ( STORAGE_MEDIUM )
+    {
+      fs = SD;
+    }
 
     time( &now );
     localtime_r( &now, &timeinfo );
@@ -19,14 +25,14 @@ void loggerTask ( void * pvParameters )
     if ( systemHasBooted )
     {
       snprintf( content, sizeof( content ), "#%i Aquacontrol32 start", now );
-      if ( !writelnFile( SPIFFS, fileName, content ) )
+      if ( !writelnFile( fs, fileName, content ) )
       {
         ESP_LOGE( TAG, "%s", appendError );
       }
       systemHasBooted = false;
       /* add reset reasons for both cores to log file */
       snprintf( content, sizeof( content ), "#Reset reasons: CPU0:%s CPU1:%s ", reset_reason( rtc_get_reset_reason(0) ), reset_reason( rtc_get_reset_reason(1) ) );
-      if ( !writelnFile( SPIFFS, fileName, content ) )
+      if ( !writelnFile( fs, fileName, content ) )
       {
         ESP_LOGE( TAG, "%s", appendError );
       }
@@ -41,7 +47,7 @@ void loggerTask ( void * pvParameters )
       {
         charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%3.2f", sensor[ sensorNumber ].tempCelcius );
       }
-      if ( !writelnFile( SPIFFS, fileName, content ) )
+      if ( !writelnFile( fs, fileName, content ) )
       {
         ESP_LOGE( TAG, "%s", appendError );
       }

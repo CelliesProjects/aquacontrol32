@@ -6,8 +6,8 @@
 
 
 /**************************************************************************
-       set to 1 to produce log files
        set to 0 to produce no log files
+       set to 1 to produce log files
 **************************************************************************/
 #define LOG_FILES                          0
 
@@ -19,16 +19,17 @@
 
 
 /**************************************************************************
-       1 = show system data on oled   0 = show light and temps on oled
+       0 = show light and temps on oled
+       1 = show system data on oled
 **************************************************************************/
 #define OLED_SHOW_SYSTEMDATA               0
 
 
 /**************************************************************************
        Some tft/sdcard breakout boards have their TFT MISO pin unconnected.
-       These displays will not be detected by aquacontrol.
-       Set TFT_HAS_NO_MISO to 1 to override detection and use these tft boards.
+       These displays will not be auto-detected by aquacontrol.
        Set TFT_HAS_NO_MISO to 0 to use device detection.
+       Set TFT_HAS_NO_MISO to 1 to override detection and use these tft boards.
 **************************************************************************/
 #define TFT_HAS_NO_MISO                    0
 
@@ -45,3 +46,10 @@
 **************************************************************************/
 #define MOON_SIMULATOR                     1
 
+
+/**************************************************************************
+       select a storage medium for files
+       0   = store on SPIFFS
+       1   = store on SD
+**************************************************************************/
+#define STORAGE_MEDIUM                     0

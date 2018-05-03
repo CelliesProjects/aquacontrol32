@@ -22,7 +22,14 @@ const char* textHtmlHeader   = "text/html";
 
 void webServerTask ( void * pvParameters )
 {
+  static fs::FS &fs = SPIFFS;
+
   ESP_LOGI( TAG, "Starting webserver setup. " );
+
+  if( STORAGE_MEDIUM )
+  {
+    fs = SD;
+  }
 
   server.on( "/robots.txt", HTTP_GET, []( AsyncWebServerRequest * request )
   {
@@ -103,12 +110,12 @@ void webServerTask ( void * pvParameters )
       path = request->arg( "filename" );
     }
 
-    if ( !SPIFFS.exists( path ) )
+    if ( !fs.exists( path ) )
     {
       path = request->arg( "filename" ) + " not found.";
       return request->send( 404, textHtmlHeader, path );
     }
-    SPIFFS.remove( path );
+    fs.remove( path );
     path = request->arg( "filename" ) + " deleted.";
     request->send( 200, textHtmlHeader, path );
   });
@@ -144,20 +151,21 @@ void webServerTask ( void * pvParameters )
     else if ( request->hasArg( "diskspace" ) )
     {
       response = request->beginResponseStream( textHtmlHeader );
-      response->printf( "%i" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
+      if ( STORAGE_MEDIUM ) response->printf( "%llu" , SD.totalBytes() - SD.usedBytes() );
+      else response->printf( "%i" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
       return request->send( response );
     }
 
     else if ( request->hasArg( "files" ) )
     {
-      File root = SPIFFS.open( "/" );
+      File root = fs.open( "/" );
       if ( !root )
       {
-        return request->send( 503, textHtmlHeader, "SPIFFS not available." );
+        return request->send( 503, textHtmlHeader, "Storage not available." );
       }
       if ( !root.isDirectory() )
       {
-        return request->send( 400, textHtmlHeader, "No root on SPIFFS.");
+        return request->send( 400, textHtmlHeader, "No root on Storage.");
       }
       File file = root.openNextFile();
       if ( !file )
@@ -674,7 +682,7 @@ void webServerTask ( void * pvParameters )
         {
           filename = "/" + filename;
         }
-        request->_tempFile = SPIFFS.open( filename, "w" );
+        request->_tempFile = fs.open( filename, "w" );
         _authenticated = true;
       }
       else
@@ -693,7 +701,6 @@ void webServerTask ( void * pvParameters )
     {
       if ( request->_tempFile )
       {
-        request->_tempFile.flush();
         request->_tempFile.close();
       }
       if ( filename == defaultTimerFile )
@@ -704,7 +711,7 @@ void webServerTask ( void * pvParameters )
     }
   });
 
-  server.serveStatic( "/", SPIFFS, "/" );
+  server.serveStatic( "/", fs, "/" );
 
   server.onNotFound( []( AsyncWebServerRequest * request )
   {

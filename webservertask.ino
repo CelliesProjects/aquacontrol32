@@ -24,13 +24,6 @@ void webServerTask ( void * pvParameters )
 {
   static fs::FS &fs = SPIFFS;
 
-  ESP_LOGI( TAG, "Starting webserver setup. " );
-
-  if( STORAGE_MEDIUM )
-  {
-    fs = SD;
-  }
-
   server.on( "/robots.txt", HTTP_GET, []( AsyncWebServerRequest * request )
   {
     request->send( 200, textHtmlHeader, "User-agent: *\nDisallow: /" );
@@ -151,8 +144,7 @@ void webServerTask ( void * pvParameters )
     else if ( request->hasArg( "diskspace" ) )
     {
       response = request->beginResponseStream( textHtmlHeader );
-      if ( STORAGE_MEDIUM ) response->printf( "%llu" , SD.totalBytes() - SD.usedBytes() );
-      else response->printf( "%i" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
+      response->printf( "%i" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
       return request->send( response );
     }
 
@@ -707,6 +699,7 @@ void webServerTask ( void * pvParameters )
       {
         defaultTimersLoaded();
       }
+
       ESP_LOGI( TAG, "Upload %iBytes in %.2fs which is %.2ikB/s.\n", index, ( millis() - startTimer ) / 1000.0, index / ( millis() - startTimer ) );
     }
   });

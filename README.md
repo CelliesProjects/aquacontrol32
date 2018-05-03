@@ -7,6 +7,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 <br><br>The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 330R gate resistors to 5 NPN mosfets. I use IRLZ44N mosfets as these are cheap and have the right ratings for my setup.
 <br><br>You can connect a 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s).
 <br>The ILI9341 displays optionally come with a XPT2046 touch controller which is supported.
+
 #### Features:
 
 - 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
@@ -30,9 +31,9 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - XPT2046 touchscreen support.
 
-- SPIFFS or SPI SD card storage support.
+- SPIFFS storage support.
 
-- Temperature logging on SPIFFS or SPI SD card.
+- Temperature logging on SPIFFS.
 
 - All device settings are saved in NVS.
 
@@ -52,6 +53,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
+
 - Check your device options in `deviceSetup.h`.
 - Compiling from the Arduino IDE does not work if you just cloned the repo.
 <br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
@@ -74,6 +76,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>Backup your `default.aqu` in the file manager before erasing and upload it after you flash your controller.
 
 #### Connecting the hardware:
+
 - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
 
 - Read the [file](tft_board_pins.md) on connecting a ILI9341 display. Pull-ups are not optional!
@@ -107,8 +110,6 @@ Can be disabled in `deviceSetup.h`. (set it to 0)
 By default log files are not generated.
 <br>Log files saved on SPIFFS could reduce the lifetime of the flash memory.
 <br>To log the temperature sensor values enable `LOG_FILES` (set it to 1) in `deviceSetup.h`.
-<br>If you have a SPI SD card reader connected, you can save the log files to the SD card.
-<br>Set `STORAGE_MEDIUM` to 1 in `deviceSetup.h` to save logs (and the timer file) to SD card.
 
 #### Known issues:
 

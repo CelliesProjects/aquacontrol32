@@ -165,18 +165,10 @@ bool defaultTimersLoaded()
   //return true on success
   //return false on error
 
-  File f;
+  File f = SPIFFS.open( defaultTimerFile, "r" );
 
-  if ( STORAGE_MEDIUM )
-  {
-    f = SD.open( defaultTimerFile, "r" );
-    ESP_LOGI( TAG, "Reading SD." );
-  }
-  else
-  {
-    f = SPIFFS.open( defaultTimerFile, "r" );
-    ESP_LOGI( TAG, "Reading SPIFFS." );
-  }
+  ESP_LOGI( TAG, "Reading SPIFFS." );
+
   if (!f)
   {
     ESP_LOGI( TAG, "No default timer file found." );

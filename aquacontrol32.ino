@@ -196,7 +196,6 @@ uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
 uint8_t                 oledContrast;                                               /* 0 .. 15 */
 uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 
-
 /*****************************************************************************************
 
        end of global variables
@@ -226,27 +225,13 @@ void setup()
 
   tft.begin( 20000000, SPI );
 
-  if( STORAGE_MEDIUM )
+  if ( !SPIFFS.begin( true ) )
   {
-    if (!SD.begin( SPI_SD_CS_PIN ))
-    {
-      ESP_LOGE( TAG, "SD Card Mount Failed" );
-    }
-    else
-    {
-      ESP_LOGI( TAG, "SD started." );
-    }
+    ESP_LOGE( TAG, "Error starting SPIFFS." );
   }
   else
   {
-    if ( !SPIFFS.begin( true ) )
-    {
-      ESP_LOGE( TAG, "Error starting SPIFFS." );
-    }
-    else
-    {
-      ESP_LOGI( TAG, "SPIFFS started." );
-    }
+    ESP_LOGI( TAG, "SPIFFS started." );
   }
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )

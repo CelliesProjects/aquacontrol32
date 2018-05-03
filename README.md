@@ -30,11 +30,11 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - XPT2046 touchscreen support.
 
-- SPIFFS storage support.
+- SPIFFS or SPI SD card storage support.
 
-- Temperature logging on SPIFFS.
+- Temperature logging on SPIFFS or SPI SD card.
 
-- All settings are saved in NVS.
+- All device settings are saved in NVS.
 
 - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
 
@@ -105,8 +105,10 @@ Can be disabled in `deviceSetup.h`. (set it to 0)
 #### Log files:
 
 By default log files are not generated.
-<br>Log files are saved on SPIFFS and could reduce the lifetime of the flash memory.
-<br>To log the temperature sensor values on SPIFFS enable `LOG_FILES` (set it to 1) in `deviceSetup.h`.  
+<br>Log files saved on SPIFFS could reduce the lifetime of the flash memory.
+<br>To log the temperature sensor values enable `LOG_FILES` (set it to 1) in `deviceSetup.h`.
+<br>If you have a SPI SD card reader connected, you can save the log files to the SD card.
+<br>Set `STORAGE_MEDIUM` to 1 in `deviceSetup.h` to save logs (and the timer file) to SD card.
 
 #### Known issues:
 

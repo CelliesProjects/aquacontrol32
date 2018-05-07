@@ -1,7 +1,5 @@
 #include <rom/rtc.h>               /* should be installed together with ESP32 Arduino install */
 #include <SPI.h>                   /* should be installed together with ESP32 Arduino install */
-#include <FS.h>                    /* should be installed together with ESP32 Arduino install */
-#include <SD.h>                    /* should be installed together with ESP32 Arduino install */
 #include <SPIFFS.h>                /* should be installed together with ESP32 Arduino install */
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */

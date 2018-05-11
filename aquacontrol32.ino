@@ -110,14 +110,14 @@ enum lightStatus_t
   LIGHTS_OFF, LIGHTS_ON, LIGHTS_AUTO
 };
 
-static inline __attribute__((always_inline)) const char *ToString( const lightStatus_t status )
+const char *lightStatusToString( const lightStatus_t status )
 {
   switch ( status )
   {
-    case LIGHTS_OFF:   return " LIGHTS OFF";
-    case LIGHTS_ON:    return " LIGHTS ON ";
-    case LIGHTS_AUTO:  return "LIGHTS AUTO";
-    default:           return " UNDEFINED ";
+    case LIGHTS_OFF:   return PSTR(" LIGHTS OFF");
+    case LIGHTS_ON:    return PSTR(" LIGHTS ON ");
+    case LIGHTS_AUTO:  return PSTR("LIGHTS AUTO");
+    default:           return PSTR(" UNDEFINED ");
   }
 }
 

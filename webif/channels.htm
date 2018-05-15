@@ -180,6 +180,8 @@ function getLunarPhase(){
   .done( function( data ) {
     $('.lighttype').html('FULL MOON:');
     var phase = data.split("\n");
+    if( phase[0] < 100 ) phase[0] = "0" + phase[0];
+    if( phase[0] < 10 ) phase[0] = "0" + phase[0];
     if ( phase[1] > 0.9995 ) phase[1] = 1;
     if ( phase[1] < 0.0005 ) phase[1] = 0;
     var truncated = ( parseFloat( phase[1] ) * 100.0 ).toString();

@@ -236,15 +236,6 @@ void webServerTask ( void * pvParameters )
       return request->send( response );
     }
 
-    else if ( request->hasArg( "tftorientation" ) )
-    {
-      if ( !xTftTaskHandle )
-      {
-        return request->send( 501, textHtmlHeader, "Not present." );
-      }
-      return request->send( 200, textHtmlHeader, ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
-    }
-
     else if ( request->hasArg( "sensor" ) )
     {
       if ( !numberOfFoundSensors )
@@ -322,6 +313,15 @@ void webServerTask ( void * pvParameters )
       return request->send( response );
     }
 
+    else if ( request->hasArg( "tftorientation" ) )
+    {
+      if ( !xTftTaskHandle )
+      {
+        return request->send( 501, textHtmlHeader, "Not present." );
+      }
+      return request->send( 200, textHtmlHeader, ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+    }
+
     else if ( request->hasArg( "timezone" ) )
     {
       response = request->beginResponseStream( textHtmlHeader );
@@ -336,8 +336,6 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "wifissid" ) )
     {
-      //response = request->beginResponseStream( textHtmlHeader );
-      //response->printf( "%s", WiFi.SSID().c_str() );
       return request->send( 200, textHtmlHeader, WiFi.SSID().c_str() );
     }
 

@@ -1,6 +1,5 @@
 
-==============================================================================
-LUNAR NEAR SIDE PHASE IMAGE SET
+### LUNAR NEAR SIDE PHASE IMAGE SET
 
 Near side lunar phase image set rendered using POV-Ray v3.7 and
 the Lunar Phase Series Generator program v7, by Jay Tanner.
@@ -18,24 +17,24 @@ License  : These images are released under the provisions of the
            Creative Commons Attribution-ShareAlike 3.0 license.
            http://creativecommons.org/licenses/by-sa/3.0/legalcode
 
-==============================================================================
 Imagine the sun traveling clockwise around a giant circle with the moon fixed
 in the center and directly to the front is zero degrees.  The phase angle is
-the same as the position of the sun on this circle, measured from 0 to 360°.
+the same as the position of the sun on this circle, measured from 0 to 360Â°.
 When the sun is 90 degrees to the right, we see the first quarter phase.
 As the sun traverses the circle, the moon goes through all its phases.
 
--------------------------------------------------------------
-LUNAR PHASE ANGLE LEGEND
+#### LUNAR PHASE ANGLE LEGEND
 
 Moon directly to front.  North is upward.
 Sun moves clockwise around lunacentric phase circle.
 
-ANGLE    PHASE             EYE VIEW
-0°       New Moon          Sun horizontally aligned with Moon
-90°      First Quarter     Sun directly to right
-180°     Full Moon         Sun directly behind
-270°     Last Quarter      Sun directly to left
-360°     New Moon          Sun horizontally aligned with Moon
--------------------------------------------------------------
+| ANGLE |   PHASE          |   EYE VIEW                               |
+|:-----:|:----------------:| ---------------------------------------- |
+| 0Â°    |   New Moon       |   Sun horizontally aligned with Moon     |
+| 90Â°   |   First Quarter  |   Sun directly to right                  |
+| 180Â°  |   Full Moon      |   Sun directly behind                    |
+| 270Â°  |   Last Quarter   |   Sun directly to left                   |
+| 360Â°  |   New Moon       |   Sun horizontally aligned with Moon     |
+
+[Original images set can be found here](http://www.neoprogrammics.com/lunar_phase_images/)
 

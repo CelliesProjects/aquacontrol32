@@ -190,6 +190,7 @@ function getLunarPhase(){
     if ( truncated.indexOf( ".") != -1 ) truncated = truncated.substr( 0, truncated.indexOf( ".") + 2);
     $( '#lunarPhase' ).html( '<p class="infobar">Moon is ' + truncated  + '% illuminated</p><img src="https://aquacontrol.wasietsmet.nl/near_side_256x256x8/' + phase[0] + '.png">' );
     $( '#copyright').html( '<p class="copyright">Lunar images author: Jay Tanner</p><p><a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode" target="_blank">Image license: Creative Commons 3.0</a>-<a href="http://www.neoprogrammics.com/lunar_phase_images/" target="_blank">Original image set</a></p>').show();
+    setTimeout( getLunarPhase, 180 * 1000 );
   })
   .fail( function( data ) {
     $('.lighttype').html('MINIMUM:');

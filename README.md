@@ -12,7 +12,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
 
-- Moon cycle night light.
+- Lunar cycle night light.
 
 - 50 timers per channel.
 
@@ -92,10 +92,14 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 330R resistor in series to prevent burning up your ESP32.
 
-#### Moon cycle night light:
+#### Lunar cycle night light:
 
-When enabled, the settings for the minimum levels in the channel section of the webinterface are effectively the maximum or full moon value.
+When enabled, the settings for the minimum levels in the channel section of the webinterface become the full moon light value.
 Can be disabled in `deviceSetup.h`. (set it to 0)
+
+The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
+
+The lunar cycle library is adapted from code kindly licensed by Hugh from [voidware.com](http://www.voidware.com/). Thanks Hugh!
 
 #### SmartConfig:
 

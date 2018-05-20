@@ -151,8 +151,7 @@ static inline __attribute__((always_inline)) void showMenu()
   {
     TS_Point p = touch.getPoint();
 
-    tftPoint_t clickedLocation;
-    clickedLocation = mapToTft( p.x, p.y );
+    tftPoint_t clickedLocation = mapToTft( p.x, p.y );
 
     if ( buttonPressed( LIGHTSON_BUTTON , clickedLocation ) )
     {

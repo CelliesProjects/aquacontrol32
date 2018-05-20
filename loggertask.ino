@@ -16,6 +16,10 @@ void loggerTask ( void * pvParameters )
     localtime_r( &now, &timeinfo );
     strftime( fileName , sizeof( fileName ), "/%F.log", &timeinfo );
 
+    ESP_LOGI( TAG, "Logger task writing to %s", fileName );
+
+    deleteOldLogfiles( SPIFFS, "/", 0 );
+
     if ( systemHasBooted )
     {
       snprintf( content, sizeof( content ), "#%i Aquacontrol32 start", now );
@@ -51,6 +55,65 @@ void loggerTask ( void * pvParameters )
       vTaskDelete( NULL );
     }
     vTaskDelay( loggerTaskdelayTime );
+  }
+}
+
+void deleteOldLogfiles( fs::FS &fs, const char * dirname, uint8_t levels )
+{
+  File root = fs.open( dirname );
+
+  if ( !root )
+  {
+    ESP_LOGI( TAG, "Failed to open %s", dirname );
+    return;
+  }
+
+  if ( !root.isDirectory() )
+  {
+    ESP_LOGI( TAG, "Not a directory" );
+    return;
+  }
+
+  std::list<String> logFiles;
+
+  File file = root.openNextFile();
+
+  while ( file )
+  {
+    if ( file.isDirectory() )
+    {
+      if ( levels )
+      {
+        deleteOldLogfiles( fs, file.name(), levels - 1 );
+      }
+    }
+    else
+    {
+      if ( strstr( file.name(), ".log" ) )
+      {
+        logFiles.push_back( file.name() );
+      }
+    }
+    file = root.openNextFile();
+  }
+
+  if ( logFiles.size() > SAVED_LOGFILES )
+  {
+    logFiles.sort();
+  }
+
+  while ( logFiles.size() > SAVED_LOGFILES )
+  {
+    std::list<String>::iterator thisFile;
+
+    thisFile = logFiles.begin();
+
+    String filename = *thisFile;
+
+    ESP_LOGI( TAG, "Deleting oldest (by numeric compare) log file %s", filename.c_str() );
+
+    fs.remove( filename.c_str() );
+    logFiles.erase( thisFile );
   }
 }
 

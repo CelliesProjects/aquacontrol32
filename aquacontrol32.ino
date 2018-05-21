@@ -276,7 +276,7 @@ void setup()
   xTaskCreatePinnedToCore(
     wifiTask,                       /* Function to implement the task */
     "wifiTask",                     /* Name of the task */
-    2000,                           /* Stack size in words */
+    3000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     wifiTaskPriority,               /* Priority of the task */
     NULL,                           /* Task handle. */

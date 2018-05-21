@@ -222,7 +222,7 @@ void setup()
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
 
-  tft.begin( 20000000, SPI );
+  tft.begin( TFT_SPI_CLOCK, SPI );
 
   if ( !SPIFFS.begin( true ) )
   {

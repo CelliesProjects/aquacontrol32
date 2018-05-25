@@ -8,7 +8,7 @@ const uint8_t  TFT_BACKLIGHT_CHANNEL  = NUMBER_OF_CHANNELS;
 const uint16_t TFT_BUTTON_WIDTH       = 100;
 const uint16_t TFT_BUTTON_HEIGHT      =  40;
 
-enum fontsize_t
+enum tftFontsize_t
 {
   size0, size1, size2
 };
@@ -30,25 +30,28 @@ class tftButton
 
     struct button_t
     {
-      int16_t     x;
-      int16_t     y;
-      uint16_t     w;
-      uint16_t     h;
-      uint16_t    color;
-      uint16_t    bordercolor;
-      uint16_t    labelcolor;
-      fontsize_t  fontsize;
-      char        text[15];
-      char        label[15];
+      int16_t        x;
+      int16_t        y;
+      uint16_t       w;
+      uint16_t       h;
+      uint16_t       color;
+      uint16_t       bordercolor;
+      uint16_t       labelcolor;
+      tftFontsize_t  fontsize;
+      char           text[15];
+      char           label[15];
     };
 
     void draw( const button_t &button );
 
-    bool pressed( const button_t &button, const tftPoint_t location );
+    inline bool pressed( const button_t &button, const tftPoint_t &location )
+    {
+      return ( location.x > button.x && location.x < button.x + button.w ) && ( location.y > button.y && location.y < button.y + button.h );
+    }
 
     void drawSlider( const button_t &area );
 
-    void updateSlider( const button_t &area, const float value, const float rangeLow, const float rangeHigh );
+    void updateSlider( const button_t &area, const float &value, const float &rangeLow, const float &rangeHigh );
 };
 
 tftButton button;
@@ -306,17 +309,17 @@ static inline __attribute__((always_inline)) void showStatus()
       }
       else
       {
-        snprintf( label.text, sizeof( label.text ), " %.1f%% ", channel[channelNumber].currentPercentage );
+        //make a three digit percentage
+        threeDigitPercentage( channel[channelNumber].currentPercentage, label.text, sizeof( label.text ) );
       }
-
       label.x = channelNumber * BARS_WIDTH;
       label.y = BARS_BOTTOM + 4;
       label.w = BARS_WIDTH;
       label.h = 10;
       label.fontsize = size0;
+      label.color = 0;
       label.bordercolor = 0;
       label.labelcolor = channelColor565[channelNumber];
-
       int16_t x, y;
       uint16_t w, h;
 
@@ -324,10 +327,8 @@ static inline __attribute__((always_inline)) void showStatus()
       tft.getTextBounds( label.text, 0, 0, &x, &y, &w, &h);
       tft.setCursor( ( label.x + label.w / 2 ) - w / 2,
                      ( label.y + label.h / 2 ) - h / 2 );
+      tft.setTextColor( channelColor565[channelNumber], 0 );
       tft.print(label.text);
-
-
-      //button.draw( label );
     }
     oldColor565[ channelNumber ] = channelColor565[ channelNumber];
     oldPercentage[ channelNumber ] = channel[channelNumber].currentPercentage;
@@ -366,6 +367,7 @@ static inline __attribute__((always_inline)) void showStatus()
     tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
     tft.setCursor( ( clockArea.x + clockArea.w / 2 ) - w / 2,
                    ( clockArea.y + clockArea.h / 2 ) - h / 2 );
+    tft.setTextColor( ILI9341_YELLOW, ILI9341_BLACK );
     tft.print( buff );
 
     oldtimeinfo = timeinfo.tm_sec;
@@ -486,7 +488,7 @@ static inline __attribute__((always_inline)) void drawSensors( const bool forceD
   }
 }
 
-//tftButton functions
+//tftButton:: functions
 
 void tftButton::drawSlider( const button_t &area )
 {
@@ -518,41 +520,37 @@ void tftButton::drawSlider( const button_t &area )
   }
 }
 
-void tftButton::updateSlider( const button_t &area, const float value, const float rangeLow, const float rangeHigh )
+void tftButton::updateSlider( const button_t &area, const float &value, const float &rangeLow, const float &rangeHigh )
 {
-  static uint16_t oldpos = 0;
+  static int16_t oldpos = 0;
 
   //delete (overwrite) old knob
-  ESP_LOGI( TAG, "Old knob pos: %i", oldpos );
-  tftButton::button_t knob = { area.x, oldpos - 5, 40, 10, ILI9341_BLACK };
+  tftButton::button_t knob = { area.x, 0, BL_SLIDER_WIDTH, 10, ILI9341_BLACK };
+  knob.y = oldpos - 5;
   button.draw( knob );
 
+  //redraw vertical slider bar
   tft.startWrite();
   tft.writeFillRect( area.x + area.w / 2  - 1, area.y, 2, area.h, ILI9341_YELLOW );
   tft.endWrite();
 
-  uint16_t ypos = mapFloat( value, rangeLow, rangeHigh, area.h + area.y, area.y );
-  ESP_LOGI( TAG, "New knob pos: %i", ypos );
-  knob = { area.x, ypos - 5, 40, 10, ILI9341_YELLOW };
+  int16_t ypos = mapFloat( value, rangeLow, rangeHigh, area.h + area.y, area.y );
+  knob = { area.x, 0, BL_SLIDER_WIDTH, 10, ILI9341_YELLOW };
+  knob.y = ypos - 5;
   button.draw( knob );
   oldpos = ypos;
 
-  snprintf( knob.text, sizeof( knob.text ), "%f", value );
+  snprintf( knob.text, sizeof( knob.text ), " %i%% ", int(value) );
 
   int16_t x, y;
   uint16_t w, h;
 
-  tft.setTextSize(size1);
-  tft.getTextBounds( (char *)area.label, 0, 0, &x, &y, &w, &h );
+  tft.setTextSize(size2);
+  tft.getTextBounds( (char *)knob.text, 0, 0, &x, &y, &w, &h );
   tft.setCursor( ( area.x + area.w / 2 ) - w / 2,
-                 ( area.y - 10 ) );
+                 ( area.y - 20 ) );
   tft.setTextColor( area.labelcolor, area.color );
   tft.print( knob.text );
-}
-
-bool tftButton::pressed( const button_t &button, const tftPoint_t location )
-{
-  return ( location.x > button.x && location.x < button.x + button.w ) && ( location.y > button.y && location.y < button.y + button.h );
 }
 
 void tftButton::draw( const tftButton::button_t &button )
@@ -570,11 +568,11 @@ void tftButton::draw( const tftButton::button_t &button )
 
   if ( button.text )
   {
+    tft.setTextSize( button.fontsize );
     tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );
     tft.setCursor( ( button.x + button.w / 2 ) - w / 2,
                    ( button.y + button.h / 2 ) - h / 2 );
     tft.setTextColor( button.labelcolor, button.color );
-    tft.setTextSize( button.fontsize );
     tft.print( button.text );
   }
 
@@ -583,8 +581,6 @@ void tftButton::draw( const tftButton::button_t &button )
     tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );
     tft.setCursor( ( button.x + button.w / 2 ) - w / 2,
                    ( button.y - 10 ) );
-    tft.setTextColor( button.labelcolor, button.color );
-    tft.setTextSize( button.fontsize );
     tft.print( button.label );
   }
 }

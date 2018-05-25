@@ -24,38 +24,27 @@ struct tftPoint_t
   uint16_t y;
 };
 
-struct button_t
-{
-  uint16_t x;
-  uint16_t y;
-  int16_t  w;
-  int16_t  h;
-  char     text[15];
-};
-
-
-
 class tftButton
 {
   public:
 
     struct button_t
     {
-      uint16_t   x;
-      uint16_t   y;
-      uint16_t    w;
-      uint16_t    h;
+      int16_t     x;
+      int16_t     y;
+      uint16_t     w;
+      uint16_t     h;
       uint16_t    color;
       uint16_t    bordercolor;
       uint16_t    labelcolor;
-      fontsize_t fontsize;
-      char       text[15];
-      char       label[15];
+      fontsize_t  fontsize;
+      char        text[15];
+      char        label[15];
     };
 
-    void draw( const button_t button );
+    void draw( const button_t &button );
 
-    bool pressed( const button_t button, const tftPoint_t location );
+    bool pressed( const button_t &button, const tftPoint_t location );
 
     void drawSlider( const button_t &area );
 
@@ -102,7 +91,7 @@ const tftButton::button_t MENU_BUTTON
   210, 10, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, ILI9341_BLUE, ILI9341_YELLOW, ILI9341_YELLOW, size0, "MENU"
 };
 
-button_t tempArea[MAX_NUMBER_OF_SENSORS];
+tftButton::button_t tempArea[MAX_NUMBER_OF_SENSORS];
 
 uint16_t backlightMaxvalue;
 
@@ -159,8 +148,9 @@ static inline __attribute__((always_inline)) void showMenu()
   if ( tftClearScreen )
   {
     tft.fillScreen( ILI9341_BLACK );
-    button.drawSlider( BL_SLIDER_AREA );
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
+    button.drawSlider( BL_SLIDER_AREA );
+    button.updateSlider( BL_SLIDER_AREA, tftBrightness, 0, 100 );
     tftLightStatus = lightStatus;
     tftClearScreen = false;
     drawMenuButtons();
@@ -170,7 +160,7 @@ static inline __attribute__((always_inline)) void showMenu()
   if ( map( tftBrightness, 0, 100, 0, backlightMaxvalue ) != ledcRead( TFT_BACKLIGHT_CHANNEL ) )
   { /* set new backlight value */
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
-    button.drawSlider( BL_SLIDER_AREA );
+    button.updateSlider( BL_SLIDER_AREA, tftBrightness, 0, 100 );
   }
 
   /* check if light status has changed */
@@ -226,16 +216,6 @@ static inline __attribute__((always_inline)) void showStatus()
   static wl_status_t   currentWiFiStatus;
   static lightStatus_t tftLightStatus;
 
-  button_t networkArea
-  {
-    140, 205, 170, 30
-  };
-
-  button_t clockArea
-  {
-    10, 205, 110, 30
-  };
-
   uint16_t channelColor565[NUMBER_OF_CHANNELS];
 
   if ( tftClearScreen )
@@ -243,7 +223,7 @@ static inline __attribute__((always_inline)) void showStatus()
     tft.fillScreen( ILI9341_BLACK );
     button.draw( MENU_BUTTON );
 
-    showIPAddress( networkArea );
+    showIPAddress(  );
     currentWiFiStatus = WiFi.status();
 
     //tft.startWrite();
@@ -318,7 +298,7 @@ static inline __attribute__((always_inline)) void showStatus()
     /* only write percentage if changed */
     if ( tftClearScreen || channel[channelNumber].currentPercentage != oldPercentage[channelNumber] )
     {
-      button_t label;
+      tftButton::button_t label;
 
       if ( TFT_SHOW_RAW )
       {
@@ -333,8 +313,21 @@ static inline __attribute__((always_inline)) void showStatus()
       label.y = BARS_BOTTOM + 4;
       label.w = BARS_WIDTH;
       label.h = 10;
-      //tft.setTextColor( channelColor565[channelNumber] , TFT_BACK_COLOR );
-      drawButton( label, channelColor565[channelNumber], 0, 0, 0 );
+      label.fontsize = size0;
+      label.bordercolor = 0;
+      label.labelcolor = channelColor565[channelNumber];
+
+      int16_t x, y;
+      uint16_t w, h;
+
+      tft.setTextSize( size0 );
+      tft.getTextBounds( label.text, 0, 0, &x, &y, &w, &h);
+      tft.setCursor( ( label.x + label.w / 2 ) - w / 2,
+                     ( label.y + label.h / 2 ) - h / 2 );
+      tft.print(label.text);
+
+
+      //button.draw( label );
     }
     oldColor565[ channelNumber ] = channelColor565[ channelNumber];
     oldPercentage[ channelNumber ] = channel[channelNumber].currentPercentage;
@@ -356,16 +349,31 @@ static inline __attribute__((always_inline)) void showStatus()
 
   static uint16_t oldtimeinfo;
 
+  const tftButton::button_t clockArea
+  {
+    10, 205, 110, 30, ILI9341_BLACK, ILI9341_YELLOW, ILI9341_YELLOW, size2
+  };
+
   if ( timeinfo.tm_sec != oldtimeinfo );
   {
-    strftime( clockArea.text, sizeof( clockArea.text ), "%T", &timeinfo );
-    drawButton( clockArea, ILI9341_YELLOW, 0, 0, 2 );
+    char buff[15];
+    strftime( buff, sizeof( buff ), "%T", &timeinfo );
+
+    int16_t x, y;
+    uint16_t w, h;
+
+    tft.setTextSize( clockArea.fontsize );
+    tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
+    tft.setCursor( ( clockArea.x + clockArea.w / 2 ) - w / 2,
+                   ( clockArea.y + clockArea.h / 2 ) - h / 2 );
+    tft.print( buff );
+
     oldtimeinfo = timeinfo.tm_sec;
   }
 
   if ( currentWiFiStatus != WiFi.status() )
   {
-    showIPAddress( networkArea );
+    showIPAddress( );
     currentWiFiStatus = WiFi.status();
   }
 
@@ -381,35 +389,6 @@ static inline __attribute__((always_inline)) void showStatus()
       tftClearScreen = true;
     }
   }
-}
-
-static inline __attribute__((always_inline)) void drawButton( struct button_t button, const uint16_t labelcolor, const uint16_t color, const uint16_t bordercolor, const uint8_t fontsize )
-{
-  if ( color || bordercolor )
-  {
-    tft.startWrite();
-    if ( color )
-    {
-      tft.writeFillRect( button.x, button.y, button.w, button.h, color );
-    }
-    if ( bordercolor )
-    {
-      tft.writeFastHLine( button.x, button.y, button.w, bordercolor );
-      tft.writeFastHLine( button.x, button.y + button.h, button.w, bordercolor );
-      tft.writeFastVLine( button.x, button.y, button.h, bordercolor );
-      tft.writeFastVLine( button.x + button.w, button.y, button.h, bordercolor );
-    }
-    tft.endWrite();
-  }
-
-  int16_t x, y;
-  uint16_t w, h;
-  tft.setTextSize( fontsize );
-  tft.getTextBounds( button.text, 0, 0, &x, &y, &w, &h);
-  tft.setCursor( ( button.x + button.w / 2 ) - w / 2,
-                 ( button.y + button.h / 2 ) - h / 2 );
-  tft.setTextColor( labelcolor, color );
-  tft.print( button.text );
 }
 
 static inline __attribute__((always_inline)) void drawMenuButtons()
@@ -463,50 +442,30 @@ static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const u
   return { x, y };
 }
 
-static inline __attribute__((always_inline)) void drawBacklightSlider( const button_t &area, const char * label )
+
+
+static inline __attribute__((always_inline)) void showIPAddress( )
 {
-  const uint8_t SLIDER_KNOB_HEIGHT = 10;
 
-  static button_t sliderKnob = { area.x, area.y, area.w, SLIDER_KNOB_HEIGHT };
-
-  tft.startWrite();
-  tft.writeFillRect( sliderKnob.x, sliderKnob.y, sliderKnob.w, sliderKnob.h, ILI9341_BLACK);
-  tft.writeFillRect( area.x + area.w / 2  - 1, area.y, 2, area.h, ILI9341_YELLOW );
-  tft.endWrite();
-
-  //drawButton( area, 0, 0, ILI9341_GREEN, 0 ); //debug
-
-  if ( label )
+  const tftButton::button_t networkArea
   {
-    //print label under the slider
-    sliderKnob.y = area.y + area.h + 8;
-    snprintf( sliderKnob.text, sizeof( sliderKnob.text ), "%s", label );
-    drawButton( sliderKnob, ILI9341_YELLOW, 0, 0, 0 );
-  }
-
-  //print percentage above the slider
-  sliderKnob.y = area.y - 17;
-  snprintf( sliderKnob.text, sizeof( sliderKnob.text ), " %.0f%% ", tftBrightness ); /* extra spaces to overwrite old value */
-  drawButton( sliderKnob, ILI9341_YELLOW, 0, 0, 2 );
-
-  //draw the slider knob
-  uint16_t ypos = map( tftBrightness, 0, 100, area.h + area.y, area.y );
-  sliderKnob.y = ypos;
-  sliderKnob.text[0] = 0;
-  drawButton( sliderKnob, 0, ILI9341_BLUE, 0, 0 );
-}
-
-static inline __attribute__((always_inline)) void showIPAddress( button_t area )
-{
-  tft.startWrite();
-  tft.writeFillRect( area.x, area.y, area.w, area.h, ILI9341_BLACK );
-  tft.endWrite();
+    140, 205, 170, 30, 0, ILI9341_YELLOW, ILI9341_YELLOW, size2, "", ""
+  };
 
   tcpip_adapter_ip_info_t ip_info;
 
   ESP_ERROR_CHECK( tcpip_adapter_get_ip_info( TCPIP_ADAPTER_IF_STA, &ip_info ) );
-  snprintf( area.text, sizeof( area.text ), "%s", ip4addr_ntoa( &ip_info.ip ) );
-  drawButton( area, ILI9341_YELLOW, 0, 0, 2 );
+  char buff[15];
+  snprintf( buff, sizeof( buff ), "%s", ip4addr_ntoa( &ip_info.ip ) );
+
+  int16_t x, y;
+  uint16_t w, h;
+  tft.setTextSize( networkArea.fontsize );
+  tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
+  tft.setCursor( ( networkArea.x + networkArea.w / 2 ) - w / 2,
+                 ( networkArea.y + ( networkArea.h / 2 ) - h / 2 ) );
+  tft.setTextColor( networkArea.labelcolor, networkArea.color );
+  tft.print( buff );
 }
 
 static inline __attribute__((always_inline)) void drawSensors( const bool forceDraw )
@@ -520,7 +479,7 @@ static inline __attribute__((always_inline)) void drawSensors( const bool forceD
       if ( sensor[ thisSensor ].tempCelcius != currentTemp[ thisSensor ] || forceDraw )
       {
         snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), "%.1f%c", sensor[thisSensor].tempCelcius, char(247) );
-        drawButton( tempArea[thisSensor], TFT_TEMP_COLOR, 0, 0, 2 );
+        button.draw( tempArea[thisSensor] );
         currentTemp[ thisSensor ] = sensor[ thisSensor ].tempCelcius;
       }
     }
@@ -533,7 +492,7 @@ void tftButton::drawSlider( const button_t &area )
 {
   tft.startWrite();
   tft.writeFillRect( area.x, area.y, area.w, area.h, ILI9341_BLACK);
-  tft.writeFillRect( area.x + area.w / 2  - 1, area.y, 2, area.h, ILI9341_YELLOW );
+  //tft.writeFillRect( area.x + area.w / 2  - 1, area.y, 2, area.h, ILI9341_YELLOW );
   tft.endWrite();
 
   int16_t x, y;
@@ -557,19 +516,23 @@ void tftButton::drawSlider( const button_t &area )
                    ( area.y - 17 ) );
     tft.print( area.text );
   }
-
-  updateSlider( area, tftBrightness, 0, 100 );
 }
 
 void tftButton::updateSlider( const button_t &area, const float value, const float rangeLow, const float rangeHigh )
 {
-  static int16_t oldpos = 0;
-  int16_t ypos = mapFloat( value, rangeLow, rangeHigh, area.h + area.y, area.y );
+  static uint16_t oldpos = 0;
 
   //delete (overwrite) old knob
+  ESP_LOGI( TAG, "Old knob pos: %i", oldpos );
   tftButton::button_t knob = { area.x, oldpos - 5, 40, 10, ILI9341_BLACK };
   button.draw( knob );
 
+  tft.startWrite();
+  tft.writeFillRect( area.x + area.w / 2  - 1, area.y, 2, area.h, ILI9341_YELLOW );
+  tft.endWrite();
+
+  uint16_t ypos = mapFloat( value, rangeLow, rangeHigh, area.h + area.y, area.y );
+  ESP_LOGI( TAG, "New knob pos: %i", ypos );
   knob = { area.x, ypos - 5, 40, 10, ILI9341_YELLOW };
   button.draw( knob );
   oldpos = ypos;
@@ -587,32 +550,24 @@ void tftButton::updateSlider( const button_t &area, const float value, const flo
   tft.print( knob.text );
 }
 
-bool tftButton::pressed( const button_t button, const tftPoint_t location )
+bool tftButton::pressed( const button_t &button, const tftPoint_t location )
 {
   return ( location.x > button.x && location.x < button.x + button.w ) && ( location.y > button.y && location.y < button.y + button.h );
 }
 
-void tftButton::draw( const tftButton::button_t button )
+void tftButton::draw( const tftButton::button_t &button )
 {
-  if ( button.color || button.bordercolor )
-  {
-    tft.startWrite();
-    if ( button.color )
-    {
-      tft.writeFillRect( button.x, button.y, button.w, button.h, button.color );
-    }
-    if ( button.bordercolor )
-    {
-      tft.writeFastHLine( button.x, button.y, button.w, button.bordercolor );
-      tft.writeFastHLine( button.x, button.y + button.h, button.w, button.bordercolor );
-      tft.writeFastVLine( button.x, button.y, button.h, button.bordercolor );
-      tft.writeFastVLine( button.x + button.w, button.y, button.h, button.bordercolor );
-    }
-    tft.endWrite();
-  }
+  tft.startWrite();
+  tft.writeFillRect( button.x, button.y, button.w, button.h, button.color );
+  tft.writeFastHLine( button.x, button.y, button.w, button.bordercolor );
+  tft.writeFastHLine( button.x, button.y + button.h, button.w, button.bordercolor );
+  tft.writeFastVLine( button.x, button.y, button.h, button.bordercolor );
+  tft.writeFastVLine( button.x + button.w, button.y, button.h, button.bordercolor );
+  tft.endWrite();
 
   int16_t x, y;
   uint16_t w, h;
+
   if ( button.text )
   {
     tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );

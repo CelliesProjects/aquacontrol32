@@ -39,7 +39,7 @@ class tftButton
       uint16_t       bordercolor;
       uint16_t       labelcolor;
       tftFontsize_t  fontsize;
-      char           text[15];
+      char           text[20];
       char           label[15];
     };
 
@@ -158,6 +158,11 @@ static inline __attribute__((always_inline)) void showMenu()
     drawMenuButtons();
     button.drawSlider( BL_SLIDER_AREA );
     button.updateSlider( BL_SLIDER_AREA, tftBrightness, 0, 100 );
+
+    tftButton::button_t versionString = { 0, ILI9341_TFTWIDTH - 20, ILI9341_TFTHEIGHT, 20, ILI9341_BLACK, ILI9341_RED, ILI9341_YELLOW, size2 };
+
+    snprintf( versionString.text, sizeof( versionString.text ), sketchVersion );
+    button.updateText( versionString );
     tftLightStatus = lightStatus;
     tftClearScreen = false;
   }

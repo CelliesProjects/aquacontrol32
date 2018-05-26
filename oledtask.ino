@@ -49,10 +49,8 @@ void oledTask( void * pvParameters )
       snprintf( content, sizeof( content ), "%i Dallas sensors", numberOfFoundSensors );
       OLED.drawString( 64, 30, content );
 
-      snprintf( content, sizeof( content ), "PWM: %.2f Khz - %i bits", ledcActualFrequency / 1000, ledcNumberOfBits );
-      OLED.drawString( 64, 40, content );
-
-      OLED.drawString( 64, 50, asctime( localtime( &systemStart.tv_sec ) ) );
+      snprintf( content, sizeof( content ), "%s", sketchVersion );
+      OLED.drawString( 64, 45, content );
     }
     else
     {

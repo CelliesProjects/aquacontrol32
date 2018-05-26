@@ -44,6 +44,8 @@ class tftButton
 
     void draw( const button_t &button );
 
+    void updateText( const button_t &button );
+
     inline bool pressed( const button_t &button, const tftPoint_t &location )
     {
       return ( location.x > button.x && location.x < button.x + button.w ) && ( location.y > button.y && location.y < button.y + button.h );
@@ -152,11 +154,11 @@ static inline __attribute__((always_inline)) void showMenu()
   {
     tft.fillScreen( ILI9341_BLACK );
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
+    drawMenuButtons();
     button.drawSlider( BL_SLIDER_AREA );
     button.updateSlider( BL_SLIDER_AREA, tftBrightness, 0, 100 );
     tftLightStatus = lightStatus;
     tftClearScreen = false;
-    drawMenuButtons();
   }
 
   /* check if tftBrightness has changed */
@@ -229,32 +231,26 @@ static inline __attribute__((always_inline)) void showStatus()
     showIPAddress(  );
     currentWiFiStatus = WiFi.status();
 
-    //tft.startWrite();
+    tft.setTextSize( 0 );
     for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
     {
       tempArea[thisSensor].x = 220;
       tempArea[thisSensor].y = 70 + thisSensor * 50;
       tempArea[thisSensor].w = TFT_BUTTON_WIDTH - 20;
       tempArea[thisSensor].h = 30;
-      //tft.writeFastHLine( tempArea[thisSensor].x, tempArea[thisSensor].y, tempArea[thisSensor].w, ILI9341_GREEN );
-      //tft.writeFastHLine( tempArea[thisSensor].x, tempArea[thisSensor].y + tempArea[thisSensor].h, tempArea[thisSensor].w, ILI9341_GREEN );
-      //tft.writeFastVLine( tempArea[thisSensor].x, tempArea[thisSensor].y, tempArea[thisSensor].h, ILI9341_GREEN );
-      //tft.writeFastVLine( tempArea[thisSensor].x + tempArea[thisSensor].w, tempArea[thisSensor].y, tempArea[thisSensor].h, ILI9341_GREEN );
-    }
-    //tft.endWrite();
+      tempArea[thisSensor].labelcolor = ILI9341_WHITE;
+      tempArea[thisSensor].fontsize = size2;
 
-    /* draw temp sensor names */
-    tft.setTextSize( 0 );
-    for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
-    {
       int16_t x, y;
       uint16_t w, h;
+
       tft.getTextBounds( sensor[thisSensor].name, 0, 0, &x, &y, &w, &h);
       tft.setCursor( ( tempArea[thisSensor].x + tempArea[thisSensor].w / 2 ) - w / 2,
                      ( tempArea[thisSensor].y - 6 ) );
       tft.print( sensor[thisSensor].name );
     }
     drawSensors( true );
+    tftClearScreen = false;
   }
 
   static uint16_t oldPercentage[NUMBER_OF_CHANNELS];
@@ -267,7 +263,7 @@ static inline __attribute__((always_inline)) void showStatus()
     channelColor565[channelNumber] = tft.color565( ( color & 0xFF0000 ) >> 16, ( color & 0x00FF00 ) >> 8, color & 0x0000FF  );
 
     /* only draw channels that changed percentage or color */
-    if ( tftClearScreen || oldPercentage[ channelNumber ] != channel[channelNumber].currentPercentage ||
+    if ( oldPercentage[ channelNumber ] != channel[channelNumber].currentPercentage ||
          oldColor565[ channelNumber ] != channelColor565[ channelNumber ] )
     {
       // redraw the top part of the bar
@@ -299,7 +295,7 @@ static inline __attribute__((always_inline)) void showStatus()
   for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
     /* only write percentage if changed */
-    if ( tftClearScreen || channel[channelNumber].currentPercentage != oldPercentage[channelNumber] )
+    if ( channel[channelNumber].currentPercentage != oldPercentage[channelNumber] )
     {
       tftButton::button_t label;
 
@@ -334,7 +330,6 @@ static inline __attribute__((always_inline)) void showStatus()
     oldPercentage[ channelNumber ] = channel[channelNumber].currentPercentage;
     averageLedBrightness += ledcRead( channelNumber );
   }
-  tftClearScreen = false;
 
   averageLedBrightness = averageLedBrightness / NUMBER_OF_CHANNELS;
 
@@ -481,7 +476,7 @@ static inline __attribute__((always_inline)) void drawSensors( const bool forceD
       if ( sensor[ thisSensor ].tempCelcius != currentTemp[ thisSensor ] || forceDraw )
       {
         snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), "%.1f%c", sensor[thisSensor].tempCelcius, char(247) );
-        button.draw( tempArea[thisSensor] );
+        button.updateText( tempArea[thisSensor] );
         currentTemp[ thisSensor ] = sensor[ thisSensor ].tempCelcius;
       }
     }
@@ -494,7 +489,6 @@ void tftButton::drawSlider( const button_t &area )
 {
   tft.startWrite();
   tft.writeFillRect( area.x, area.y, area.w, area.h, ILI9341_BLACK);
-  //tft.writeFillRect( area.x + area.w / 2  - 1, area.y, 2, area.h, ILI9341_YELLOW );
   tft.endWrite();
 
   int16_t x, y;
@@ -553,6 +547,19 @@ void tftButton::updateSlider( const button_t &area, const float &value, const fl
   tft.print( knob.text );
 }
 
+void tftButton::updateText( const button_t &button )
+{
+  int16_t x, y;
+  uint16_t w, h;
+
+  tft.setTextSize( button.fontsize );
+  tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );
+  tft.setCursor( ( button.x + button.w / 2 ) - w / 2,
+                 ( button.y + button.h / 2 ) - h / 2 );
+  tft.setTextColor( button.labelcolor, button.color );
+  tft.print( button.text );
+}
+
 void tftButton::draw( const tftButton::button_t &button )
 {
   tft.startWrite();
@@ -563,21 +570,16 @@ void tftButton::draw( const tftButton::button_t &button )
   tft.writeFastVLine( button.x + button.w, button.y, button.h, button.bordercolor );
   tft.endWrite();
 
-  int16_t x, y;
-  uint16_t w, h;
-
   if ( button.text )
   {
-    tft.setTextSize( button.fontsize );
-    tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );
-    tft.setCursor( ( button.x + button.w / 2 ) - w / 2,
-                   ( button.y + button.h / 2 ) - h / 2 );
-    tft.setTextColor( button.labelcolor, button.color );
-    tft.print( button.text );
+    updateText( button );
   }
 
   if ( button.label )
   {
+    int16_t x, y;
+    uint16_t w, h;
+
     tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );
     tft.setCursor( ( button.x + button.w / 2 ) - w / 2,
                    ( button.y - 10 ) );

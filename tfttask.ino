@@ -223,7 +223,6 @@ static inline __attribute__((always_inline)) void showStatus()
   static lightStatus_t tftLightStatus;
 
   uint16_t channelColor565[NUMBER_OF_CHANNELS];
-  bool forceBarUpdate = true;
 
   if ( tftClearScreen )
   {
@@ -253,7 +252,6 @@ static inline __attribute__((always_inline)) void showStatus()
       tft.print( sensor[thisSensor].name );
     }
     drawSensors( true );
-    tftClearScreen = false;
   }
 
   static uint16_t oldPercentage[NUMBER_OF_CHANNELS];
@@ -266,7 +264,7 @@ static inline __attribute__((always_inline)) void showStatus()
     channelColor565[channelNumber] = tft.color565( ( color & 0xFF0000 ) >> 16, ( color & 0x00FF00 ) >> 8, color & 0x0000FF  );
 
     /* only draw channels that changed percentage or color */
-    if ( forceBarUpdate || oldPercentage[ channelNumber ] != channel[channelNumber].currentPercentage ||
+    if ( tftClearScreen || oldPercentage[ channelNumber ] != channel[channelNumber].currentPercentage ||
          oldColor565[ channelNumber ] != channelColor565[ channelNumber ] )
     {
       // redraw the top part of the bar
@@ -298,7 +296,7 @@ static inline __attribute__((always_inline)) void showStatus()
   for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
   {
     /* only write percentage if changed */
-    if ( forceBarUpdate || channel[channelNumber].currentPercentage != oldPercentage[channelNumber] )
+    if ( tftClearScreen || channel[channelNumber].currentPercentage != oldPercentage[channelNumber] )
     {
       tftButton::button_t label;
 
@@ -332,7 +330,7 @@ static inline __attribute__((always_inline)) void showStatus()
     oldPercentage[ channelNumber ] = channel[channelNumber].currentPercentage;
     averageLedBrightness += ledcRead( channelNumber );
   }
-  forceBarUpdate = false;
+  tftClearScreen = false;
 
   averageLedBrightness = averageLedBrightness / NUMBER_OF_CHANNELS;
 

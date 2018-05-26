@@ -202,9 +202,10 @@ static inline __attribute__((always_inline)) void showMenu()
     else if ( button.pressed( BL_SLIDER_AREA , clickedLocation ) )
     {
       static uint16_t oldLocation;
-      if ( !( clickedLocation.y == oldLocation ) )
+      if (  clickedLocation.y != oldLocation )
       {
         tftBrightness = map( clickedLocation.y , BL_SLIDER_YPOS, BL_SLIDER_HEIGHT + BL_SLIDER_YPOS, 100, 0 );
+        preferences.putFloat( "tftbrightness", tftBrightness );
         oldLocation = clickedLocation.y;
       }
     }

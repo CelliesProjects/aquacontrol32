@@ -14,37 +14,29 @@ html, body{
   font-size:20px;
   font-family: monospace;
 }
-
 body{
   opacity:0.4;
 }
-
 h3{
   margin:10px;
 }
-
 a {
   color: black;
   text-decoration: none;
   margin: 0 10px;
 }
-
 .systemLink{
   padding: 3px 10px;
 }
-
 .systemLink:hover {
   background:grey;
 }
-
 p{
   margin:0;
 }
-
 hr{
   margin:auto;
 }
-
 input{
   margin:5px auto;
   vertical-align:middle;
@@ -52,14 +44,11 @@ input{
   border-radius: 5px;
   font-family: monospace;
 }
-
 input[type="button"] {
   height: 30px;
   padding: 5px 20px;
   margin: 10px;
-  border: solid 1px black;
 }
-
 input[type="button"]:hover {
   background:darkgray;
 }
@@ -75,39 +64,21 @@ input[type="button"]:hover {
   -ms-user-select: none;
   user-select: none;
 }
-
-#confirmWindow{
-  box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
-  border:solid 1px black;  position:absolute;
-  border-radius: 15px;
-  overflow:hidden;
-  width:500px;
-  height:400px;
-  background:beige;
-  margin: auto;
-  top: 0; left: 0; bottom: 0; right: 0;
-  display:none;
-}
-
 #confirmMessage{
   padding:20px;
 }
-
-.shadowedBox {
+.shadowedBox  {
   box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
-  border:solid 1px black;
   border-radius: 15px;
   margin:10px 0;
+  padding:2px;
+  overflow:hidden;
 }
-
 .buttonBar{
   background:beige;
 }
-
-
 #editorCanvas{
 }
-
 #timerList{
   height: 150px;
   width: 600px;
@@ -115,35 +86,27 @@ input[type="button"]:hover {
   margin: auto;
   overflow:auto;
 }
-
 .timerEntry{
   width:100%;
   overflow:auto;
 }
-
 .timerEntry:hover{
   background:yellow;
 }
-
 .timerEntryTime, .timerEntryPercentage{
   width:40%;
   float:left;
 }
-
-
 .timerEntryDelete{
   width:20%;
   float:left;
 }
-
 .timerEntryDelete:hover{
   background:red;
 }
-
 .earlierButton, .laterButton, .upButton, .downButton{
   vertical-align:text-bottom;
 }
-
 .itemValue{
   width:60px;
   display:inline-block;
@@ -156,14 +119,13 @@ input[type="button"]:hover {
 var githubLink = '<a href="https://github.com/CelliesProjects/aquacontrol32">Aquacontrol32 on GitHub</a>';
 </script>
 <body>
-<div id="confirmWindow"><div id="confirmMessage">A message</div></div>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div class="shadowedBox">
   <h3 id="hostName">&nbsp;</h3>
   <p>Program and upload timers to the controller.</p>
 </div>
 <div class="shadowedBox"><p id="statusBox"><a href="https://github.com/CelliesProjects/aquacontrol32">Aquacontrol32 on GitHub</a></p></div>
-<div class="shadowedBox" style="background-color:black;">
+<div class="shadowedBox" style="background-color:black;padding:0;">
 <p class="buttonBar"><input id="clearButton" type="button" value="CLEAR"><input id="reloadButton" type="button" value="RELOAD"><input type="button" id="uploadButton" value="UPLOAD"></p>
 <canvas id="editorCanvas" width="1000px" height="200px"></canvas>
 <p class="buttonBar"><input class="channelButton" type="button" value="CHANNEL 1"><input class="channelButton" type="button" value="CHANNEL 2"><input class="channelButton" type="button" value="CHANNEL 3"><input class="channelButton" type="button" value="CHANNEL 4"><input class="channelButton" type="button" value="CHANNEL 5"></p>

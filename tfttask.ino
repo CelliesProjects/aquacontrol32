@@ -149,7 +149,7 @@ void tftTask( void * pvParameters )
 
 static inline __attribute__((always_inline)) void showMenu()
 {
-  static lightStatus_t tftLightStatus;
+  static lightStatus_t lastLightStatus;
 
   if ( tftClearScreen )
   {
@@ -163,7 +163,7 @@ static inline __attribute__((always_inline)) void showMenu()
 
     snprintf( versionString.text, sizeof( versionString.text ), sketchVersion );
     button.updateText( versionString );
-    tftLightStatus = lightStatus;
+    lastLightStatus = lightStatus;
     tftClearScreen = false;
   }
 
@@ -175,10 +175,10 @@ static inline __attribute__((always_inline)) void showMenu()
   }
 
   /* check if light status has changed */
-  if ( tftLightStatus != lightStatus )
+  if ( lastLightStatus != lightStatus )
   {
     drawMenuButtons();
-    tftLightStatus = lightStatus;
+    lastLightStatus = lightStatus;
   }
 
   if ( touch.tirqTouched() )
@@ -225,8 +225,8 @@ static inline __attribute__((always_inline)) void showStatus()
   const uint16_t BARS_WIDTH       = 210 / 5; /* note: total width is 210 px */
   const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
 
-  static wl_status_t   currentWiFiStatus;
-  static lightStatus_t tftLightStatus;
+  static wl_status_t   lastWiFiStatus;
+  static lightStatus_t lastLightStatus;
 
   uint16_t channelColor565[NUMBER_OF_CHANNELS];
 
@@ -237,7 +237,7 @@ static inline __attribute__((always_inline)) void showStatus()
     button.draw( MENU_BUTTON );
 
     showIPAddress(  );
-    currentWiFiStatus = WiFi.status();
+    lastWiFiStatus = WiFi.status();
 
     tft.setTextSize( 0 );
     for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
@@ -312,7 +312,7 @@ static inline __attribute__((always_inline)) void showStatus()
       }
       else
       {
-        threeDigitPercentage( channel[channelNumber].currentPercentage, label.text, sizeof( label.text ) );
+        threeDigitPercentage( channel[channelNumber].currentPercentage, label.text, sizeof( label.text ), true );
       }
       label.x = channelNumber * BARS_WIDTH;
       label.y = BARS_BOTTOM + 4;
@@ -326,9 +326,9 @@ static inline __attribute__((always_inline)) void showStatus()
       uint16_t w, h;
 
       tft.setTextSize( size0 );
-      tft.getTextBounds( label.text, 0, 0, &x, &y, &w, &h);
-      tft.setCursor( ( label.x + label.w / 2 ) - w / 2,
-                     ( label.y + label.h / 2 ) - h / 2 );
+      tft.getTextBounds( label.text, 0, 0, &x, &y, &w, &h );
+      tft.setCursor( ( label.x + label.w / 2 ) - ( w / 2 ),
+                     ( label.y + label.h / 2 ) - ( h / 2 ) );
       tft.setTextColor( channelColor565[channelNumber], 0 );
       tft.print(label.text);
     }
@@ -367,18 +367,18 @@ static inline __attribute__((always_inline)) void showStatus()
 
     tft.setTextSize( clockArea.fontsize );
     tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
-    tft.setCursor( ( clockArea.x + clockArea.w / 2 ) - w / 2,
-                   ( clockArea.y + clockArea.h / 2 ) - h / 2 );
+    tft.setCursor( ( clockArea.x + clockArea.w / 2 ) - ( w / 2 ),
+                   ( clockArea.y + clockArea.h / 2 ) - ( h / 2 ) );
     tft.setTextColor( ILI9341_YELLOW, ILI9341_BLACK );
     tft.print( buff );
 
     oldtimeinfo = timeinfo.tm_sec;
   }
 
-  if ( currentWiFiStatus != WiFi.status() )
+  if ( lastWiFiStatus != WiFi.status() )
   {
     showIPAddress( );
-    currentWiFiStatus = WiFi.status();
+    lastWiFiStatus = WiFi.status();
   }
 
   if ( touch.tirqTouched() )
@@ -414,7 +414,7 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
   button.draw( EXIT_BUTTON );
 }
 
-static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const uint16_t touchX, const uint16_t touchY )
+static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const uint16_t &touchX, const uint16_t &touchY )
 {
   uint16_t x, y;
   if ( !TOUCH_IS_INVERTED )
@@ -548,7 +548,7 @@ void tftButton::updateSlider( const button_t &area, const float &value, const fl
 
   tft.setTextSize(size2);
   tft.getTextBounds( (char *)knob.text, 0, 0, &x, &y, &w, &h );
-  tft.setCursor( ( area.x + area.w / 2 ) - w / 2,
+  tft.setCursor( ( area.x + area.w / 2 ) - ( w / 2 ),
                  ( area.y - 20 ) );
   tft.setTextColor( area.labelcolor, area.color );
   tft.print( knob.text );
@@ -561,8 +561,8 @@ void tftButton::updateText( const button_t &button )
 
   tft.setTextSize( button.fontsize );
   tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );
-  tft.setCursor( ( button.x + button.w / 2 ) - w / 2,
-                 ( button.y + button.h / 2 ) - h / 2 );
+  tft.setCursor( ( button.x + button.w / 2 ) - ( w / 2 ),
+                 ( button.y + button.h / 2 ) - ( h / 2 ) );
   tft.setTextColor( button.labelcolor, button.color );
   tft.print( button.text );
 }

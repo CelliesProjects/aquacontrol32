@@ -69,18 +69,7 @@ void oledTask( void * pvParameters )
         uint8_t y2 = BARS_BOTTOM - y1;
         OLED.fillRect( x1, y1, x2, y2 );
 
-        if ( channel[thisChannel].currentPercentage == 0 || channel[thisChannel].currentPercentage == 100 )
-        {
-          snprintf( content, sizeof( content ), "%.0f", channel[thisChannel].currentPercentage );
-        }
-        else if ( channel[thisChannel].currentPercentage < 10 )
-        {
-          snprintf( content, sizeof( content ), "%.2f", channel[thisChannel].currentPercentage );
-        }
-        else
-        {
-          snprintf( content, sizeof( content ), "%.1f", channel[thisChannel].currentPercentage );
-        }
+        threeDigitPercentage( channel[thisChannel].currentPercentage, content, sizeof( content ), false );
 
         OLED.drawString( x1 + ( BARS_WIDTH / 2 ) - 1, y1 - 11, content );
       }

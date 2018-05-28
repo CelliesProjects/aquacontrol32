@@ -281,7 +281,9 @@ void webServerTask ( void * pvParameters )
       response = request->beginResponseStream( textHtmlHeader );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        response->printf( "%.2f\n", channel[channelNumber].currentPercentage );
+        char content[8];
+        threeDigitPercentage( channel[channelNumber].currentPercentage, content, sizeof( content ), true );
+        response->printf( "%s\n", content );
       }
       static char timeStr[6];
       static time_t then, now;
@@ -600,8 +602,8 @@ void webServerTask ( void * pvParameters )
       {
         return request->send( 400, textHtmlHeader, "Invalid tft orientation." );
       }
-      tft.setRotation( tftOrientation );
       tft.fillScreen( ILI9341_BLACK );
+      tft.setRotation( tftOrientation );
       tftClearScreen = true;
       preferences.putString( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
       response = request->beginResponseStream( textHtmlHeader );

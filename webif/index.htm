@@ -113,14 +113,8 @@ function updateBargraph() {
   .done(function( data ){
     var channelValue = data.split( '\n' );
     for ( i=0; i < 5; i++ ) {
-      $( '.bar:eq(' + i + ')' ).css( 'height', String( channelValue[i]*.75) + '%' ).css( 'opacity', Math.max( channelValue[i]/100, 0.15 ) );
-      if ( channelValue[i] <= 0.00 ) {
-        channelValue[i] = 0;
-      }
-      if ( channelValue[i] >= 100.00 ) {
-        channelValue[i] = 100;
-      }
-      $( '.pct p:eq(' + i + ')' ).html( String( channelValue[i] ) +'%' );
+      $( '.bar:eq(' + i + ')' ).css( 'height', parseFloat( channelValue[i] )*.75 + '%' ).css( 'opacity', Math.max( parseFloat( channelValue[i] )/100, 0.15 ) );
+      $( '.pct p:eq(' + i + ')' ).html( channelValue[i] );
     }
     $( '#sysTime' ).html( "system time<br>" + channelValue[5] );
     $( '#lightStatus').html( "light status<br>" + channelValue[6] );

@@ -16,6 +16,7 @@
 #include "gitTagVersion.h"
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
+#include "mapFloat.h"
 
 /**************************************************************************
        defines for OLED display orientation

@@ -1,7 +1,5 @@
 void wifiTask( void * pvParameters )
 {
-  const uint16_t rebootSeconds = 60 * 5;
-
   /* trying last accesspoint */
   WiFi.mode( WIFI_STA );
   WiFi.begin();
@@ -19,8 +17,6 @@ void wifiTask( void * pvParameters )
 
   if ( WiFi.status() != WL_CONNECTED )
   {
-    ESP_LOGI( TAG, "Waiting %i seconds for SmartConfig.", rebootSeconds );
-
     if ( xTftTaskHandle )
     {
       tft.println( "\nNo WiFi connection.\nWaiting for SmartConfig." );
@@ -30,9 +26,14 @@ void wifiTask( void * pvParameters )
     WiFi.mode( WIFI_AP_STA );
     WiFi.beginSmartConfig();
 
-    const time_t rebootTime = millis() + ( rebootSeconds * 1000 );
+    const unsigned long rebootDelayMs = 60 * 5 * 1000;
 
-    while ( !WiFi.smartConfigDone() && millis() < rebootTime )
+    const unsigned long smartConfigStartMs = millis();
+
+    ESP_LOGI( TAG, "Waiting %i seconds for SmartConfig.", rebootDelayMs / 1000 );
+
+
+    while ( !WiFi.smartConfigDone() && ( (unsigned long) millis() - smartConfigStartMs ) < rebootDelayMs )
     {
       char remainingSCTime[12];
       if ( xOledTaskHandle )
@@ -40,7 +41,7 @@ void wifiTask( void * pvParameters )
         OLED.clear();
         OLED.setFont( ArialMT_Plain_10 );
         OLED.drawString( 64, 10, "Waiting for SmartConfig." );
-        snprintf( remainingSCTime, sizeof( remainingSCTime), "%i seconds",  ( 100 + rebootTime - millis() ) / 1000 );
+        snprintf( remainingSCTime, sizeof( remainingSCTime), "%i seconds", ( (unsigned long) ( smartConfigStartMs + rebootDelayMs ) - millis() ) / 1000 );
         OLED.drawString( 64, 30, remainingSCTime );
         OLED.invertDisplay();
         OLED.display();

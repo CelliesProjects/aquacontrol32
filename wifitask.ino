@@ -33,7 +33,7 @@ void wifiTask( void * pvParameters )
     ESP_LOGI( TAG, "Waiting %i seconds for SmartConfig.", rebootDelayMs / 1000 );
 
 
-    while ( !WiFi.smartConfigDone() && ( (unsigned long) millis() - smartConfigStartMs ) < rebootDelayMs )
+    while ( !WiFi.smartConfigDone() && ( (unsigned long)millis() - smartConfigStartMs ) < rebootDelayMs )
     {
       char remainingSCTime[12];
       if ( xOledTaskHandle )
@@ -41,7 +41,7 @@ void wifiTask( void * pvParameters )
         OLED.clear();
         OLED.setFont( ArialMT_Plain_10 );
         OLED.drawString( 64, 10, "Waiting for SmartConfig." );
-        snprintf( remainingSCTime, sizeof( remainingSCTime), "%i seconds", ( (unsigned long) ( smartConfigStartMs + rebootDelayMs ) - millis() ) / 1000 );
+        snprintf( remainingSCTime, sizeof( remainingSCTime), "%i seconds", ( (unsigned long)( smartConfigStartMs + rebootDelayMs ) - millis() ) / 1000 );
         OLED.drawString( 64, 30, remainingSCTime );
         OLED.invertDisplay();
         OLED.display();

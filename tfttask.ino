@@ -256,15 +256,15 @@ static inline __attribute__((always_inline)) void showStatus()
     drawSensors( true );
   }
 
-  struct savedSensor_t
-  {
-    char name[ sizeof( sensor->name ) ];
-  };
-
-  savedSensor_t savedSensor[numberOfFoundSensors];
-
   if ( numberOfFoundSensors && !tftClearScreen )
   {
+    struct savedSensor_t
+    {
+      char name[ sizeof( sensor->name ) ];
+    };
+
+    static savedSensor_t savedSensor[MAX_NUMBER_OF_SENSORS];
+
     for ( auto thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
     {
       if ( strcmp( sensor[thisSensor].name, savedSensor[thisSensor].name ) != 0 )

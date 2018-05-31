@@ -583,7 +583,7 @@ void webServerTask ( void * pvParameters )
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "%02x%02x%02x%02x%02x%02x%02x", sensor[sensorNumber].addr[1], sensor[sensorNumber].addr[2], sensor[sensorNumber].addr[3], sensor[sensorNumber].addr[4], sensor[sensorNumber].addr[5], sensor[sensorNumber].addr[6], sensor[sensorNumber].addr[7] );
       preferences.putString( nvsKeyname, request->arg( "sensorname" ).c_str() );
 
-      ESP_LOGI( TAG, " Saved '%s' as '%s'\n", request->arg( "sensorname" ).c_str(), nvsKeyname );
+      ESP_LOGI( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), nvsKeyname );
 
       request->send( 200, textHtmlHeader, request->arg( "sensorname" ).c_str() );
     }

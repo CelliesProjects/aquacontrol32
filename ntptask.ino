@@ -58,14 +58,17 @@ void ntpTask( void * pvParameters )
     ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
   }
 
-  xReturned = xTaskCreatePinnedToCore(
-                moonSimtask,                    /* Function to implement the task */
-                "moonSimtask",                  /* Name of the task */
-                2000,                           /* Stack size in words */
-                NULL,                           /* Task input parameter */
-                moonSimtaskPriority,            /* Priority of the task */
-                NULL,                           /* Task handle. */
-                1);                             /* Core where the task should run */
+  if ( MOON_SIMULATOR )
+  {
+    xReturned = xTaskCreatePinnedToCore(
+                  moonSimtask,                    /* Function to implement the task */
+                  "moonSimtask",                  /* Name of the task */
+                  2000,                           /* Stack size in words */
+                  NULL,                           /* Task input parameter */
+                  moonSimtaskPriority,            /* Priority of the task */
+                  NULL,                           /* Task handle. */
+                  1);                             /* Core where the task should run */
+  }
 
   ESP_LOGI( TAG, "moonSimtask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
 

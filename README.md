@@ -48,7 +48,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - The latest [Arduino IDE](https://arduino.cc/).
 
-- The [ESP32 Arduino Core @ commit 9570b77abda4a8cac0caee354a14f5e4a35a7a04](https://github.com/espressif/arduino-esp32/commit/9570b77abda4a8cac0caee354a14f5e4a35a7a04).
+- The [ESP32 Arduino Core @ commit 89859f7f4c07ce3e5d487a4b689dbda78f5d5c3a](https://github.com/espressif/arduino-esp32/commit/89859f7f4c07ce3e5d487a4b689dbda78f5d5c3a).
 
 
 Aquacontrol32 can run happily with or without OLED or TFT display.

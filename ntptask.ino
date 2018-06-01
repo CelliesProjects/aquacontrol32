@@ -69,7 +69,10 @@ void ntpTask( void * pvParameters )
                   NULL,                           /* Task handle. */
                   1);                             /* Core where the task should run */
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 397bb0093c3653858c9c5577b573f916171d0b39
   ESP_LOGI( TAG, "moonSimtask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
 
   vTaskDelete( NULL );

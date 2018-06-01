@@ -151,7 +151,7 @@ void tftTask( void * pvParameters )
 
 static inline __attribute__((always_inline)) void showMenu()
 {
-  static lightStatus_t lastLightStatus;
+  static lightStatus_t displayedLightStatus;
 
   if ( tftClearScreen )
   {
@@ -164,7 +164,7 @@ static inline __attribute__((always_inline)) void showMenu()
 
     snprintf( versionString.text, sizeof( versionString.text ), sketchVersion );
     button.updateText( versionString );
-    lastLightStatus = lightStatus;
+    displayedLightStatus = lightStatus;
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
     tftClearScreen = false;
   }
@@ -177,10 +177,10 @@ static inline __attribute__((always_inline)) void showMenu()
   }
 
   /* check if light status has changed */
-  if ( lastLightStatus != lightStatus )
+  if ( displayedLightStatus != lightStatus )
   {
     drawMenuButtons();
-    lastLightStatus = lightStatus;
+    displayedLightStatus = lightStatus;
   }
 
   if ( touch.tirqTouched() )
@@ -228,8 +228,8 @@ static inline __attribute__((always_inline)) void showStatus()
   const uint16_t BARS_WIDTH       = 210 / 5; /* note: total width is 210 px */
   const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
 
-  static wl_status_t   lastWiFiStatus;
-  static lightStatus_t lastLightStatus;
+  static wl_status_t   displayedWiFiStatus;
+  static lightStatus_t displayedLightStatus;
 
   uint16_t channelColor565[NUMBER_OF_CHANNELS];
 
@@ -240,7 +240,7 @@ static inline __attribute__((always_inline)) void showStatus()
     button.draw( MENU_BUTTON );
 
     showIPAddress(  );
-    lastWiFiStatus = WiFi.status();
+    displayedWiFiStatus = WiFi.status();
 
     tft.setTextSize( 0 );
     for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
@@ -273,7 +273,7 @@ static inline __attribute__((always_inline)) void showStatus()
 
         button.updateSensorLabel( tempArea[thisSensor], sensor[thisSensor].name );
 
-        strncpy( savedSensor[thisSensor].name, sensor[thisSensor].name, sizeof( savedSensor[thisSensor].name ) );
+        strncpy( savedSensor[thisSensor].name, sensor[thisSensor].name, sizeof( sensor->name ) );
       }
     }
   }
@@ -393,10 +393,10 @@ static inline __attribute__((always_inline)) void showStatus()
     oldtimeinfo = timeinfo.tm_sec;
   }
 
-  if ( lastWiFiStatus != WiFi.status() )
+  if ( displayedWiFiStatus != WiFi.status() )
   {
     showIPAddress( );
-    lastWiFiStatus = WiFi.status();
+    displayedWiFiStatus = WiFi.status();
   }
 
   if ( touch.tirqTouched() )
@@ -504,6 +504,7 @@ static inline __attribute__((always_inline)) void drawSensors( const bool &force
         if ( sensor[ thisSensor ].tempCelcius < -55 || sensor[ thisSensor ].tempCelcius > 125 )    /* temp is outside DS18B20 specs */
         {
           tempArea[thisSensor].labelcolor = ILI9341_RED;                                           /* show temp as in error */
+          ESP_LOGE( TAG, "Out of range temperature." );
           sensor[ thisSensor ].tempCelcius = currentTemp[ thisSensor ];                            /* show previous temp */
         }
         snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), "%.1f%c", sensor[thisSensor].tempCelcius, char(247) );

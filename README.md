@@ -118,7 +118,7 @@ By default log files are not generated.
 
 #### Known issues:
 
-No issues at the moment.
+Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
 
 #### The test hardware:
 

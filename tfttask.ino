@@ -278,7 +278,7 @@ static inline __attribute__((always_inline)) void showStatus()
     }
   }
 
-  static uint16_t oldPercentage[NUMBER_OF_CHANNELS];
+  static float oldPercentage[NUMBER_OF_CHANNELS];
   static uint16_t oldColor565[NUMBER_OF_CHANNELS];
 
   tft.startWrite();

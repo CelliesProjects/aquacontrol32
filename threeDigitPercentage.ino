@@ -1,4 +1,4 @@
-static inline __attribute__((always_inline)) void threeDigitPercentage( const float &percentage, char *buffer, const uint8_t &bufferSize, const bool &addPercentSign )
+static inline __attribute__((always_inline)) void threeDigitPercentage( char *buffer, const uint8_t &bufferSize, const float &percentage, const bool &addPercentSign )
 {
   if ( percentage < 0.005 )
   {

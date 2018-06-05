@@ -282,7 +282,7 @@ void webServerTask ( void * pvParameters )
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         char content[8];
-        threeDigitPercentage( channel[channelNumber].currentPercentage, content, sizeof( content ), true );
+        threeDigitPercentage( content, sizeof( content ), channel[channelNumber].currentPercentage, true );
         response->printf( "%s\n", content );
       }
       static char timeStr[6];

@@ -330,7 +330,7 @@ static inline __attribute__((always_inline)) void showStatus()
       }
       else
       {
-        threeDigitPercentage( channel[channelNumber].currentPercentage, label.text, sizeof( label.text ), true );
+        threeDigitPercentage( label.text, sizeof( label.text ), channel[channelNumber].currentPercentage, true );
       }
       label.x = channelNumber * BARS_WIDTH;
       label.y = BARS_BOTTOM + 4;

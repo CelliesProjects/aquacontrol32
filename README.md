@@ -118,8 +118,8 @@ By default log files are not generated.
 
 #### Known issues:
 
-1. The isr for the touch library is not placed in IRAM memory which can cause a sporadic reboot with a `Guru Meditation Error: Core 1 panic'ed (Cache disabled but cached memory region accessed)` error.
-<br>Until this is resolved in [PaulStoffregen's library](https://PaulStoffregen/XPT2046_Touchscreen) use [my fork with the fix](https://github.com/CelliesProjects/XPT2046_Touchscreen).
+1. Use the master branch from [PaulStoffregen's XPT2046 Touchscreen library](https://PaulStoffregen/XPT2046_Touchscreen) until the next release.
+<br>See [this issue](https://github.com/PaulStoffregen/XPT2046_Touchscreen/issues/14).
 
 2. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
 

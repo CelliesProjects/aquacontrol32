@@ -68,9 +68,9 @@ void ntpTask( void * pvParameters )
                   moonSimtaskPriority,            /* Priority of the task */
                   NULL,                           /* Task handle. */
                   1);                             /* Core where the task should run */
-  }
 
-  ESP_LOGI( TAG, "moonSimtask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
+    ESP_LOGI( TAG, "moonSimtask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
+  }
 
   vTaskDelete( NULL );
 }

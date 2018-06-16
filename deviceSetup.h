@@ -6,10 +6,10 @@
 
 
 /**************************************************************************
-       set to 0 to produce no log files
+       set to false to produce no log files
        set to 1 to produce log files
 **************************************************************************/
-#define LOG_FILES                          0
+#define LOG_FILES                          false
 
 
 /**************************************************************************
@@ -25,19 +25,19 @@
 
 
 /**************************************************************************
-       0 = show light and temps on oled
-       1 = show system data on oled
+       false = show light and temps on oled
+       true = show system data on oled
 **************************************************************************/
-#define OLED_SHOW_SYSTEMDATA               0
+#define OLED_SHOW_SYSTEMDATA               false
 
 
 /**************************************************************************
        Some tft/sdcard breakout boards have their TFT MISO pin unconnected.
        These displays will not be auto-detected by aquacontrol.
-       Set TFT_HAS_NO_MISO to 0 to use device detection.
-       Set TFT_HAS_NO_MISO to 1 to override detection and use these tft boards.
+       Set TFT_HAS_NO_MISO to false to use device detection.
+       Set TFT_HAS_NO_MISO to true to override detection and use these tft boards.
 **************************************************************************/
-#define TFT_HAS_NO_MISO                    0
+#define TFT_HAS_NO_MISO                    false
 
 
 /**************************************************************************
@@ -48,13 +48,13 @@
 
 /**************************************************************************
        Some tft/sdcard breakout boards have their touch coordinates reversed.
-       Set to 1 if your touchscreen has reversed coordinates.
+       Set to true if your touchscreen has reversed coordinates.
 **************************************************************************/
-#define TOUCH_IS_INVERTED                  0
+#define TOUCH_IS_INVERTED                  false
 
 
 /**************************************************************************
-       Set to 0 to disable the moon simulator.
+       Set to false to disable the moon simulator.
 **************************************************************************/
-#define MOON_SIMULATOR                     1
+#define MOON_SIMULATOR                     true
 

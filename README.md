@@ -118,7 +118,7 @@ By default log files are not generated.
 
 #### Known issues:
 
-1. Use the master branch from [PaulStoffregen's XPT2046 Touchscreen library](https://PaulStoffregen/XPT2046_Touchscreen) until the next release.
+1. Use the master branch from [PaulStoffregen's XPT2046 Touchscreen library](https://github.com/paulstoffregen/XPT2046_Touchscreen) until the next release.
 <br>See [this issue](https://github.com/PaulStoffregen/XPT2046_Touchscreen/issues/14).
 
 2. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.

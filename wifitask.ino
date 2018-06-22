@@ -9,7 +9,7 @@ void wifiTask( void * pvParameters )
 
   if ( xTftTaskHandle )
   {
-    tft.setTextColor( ILI9341_WHITE , ILI9341_BLACK );
+    tft.setTextColor( TFT_TEXT_COLOR , TFT_BACK_COLOR );
     tft.println( "Connecting WiFi");
   }
 
@@ -134,8 +134,9 @@ void wifiTask( void * pvParameters )
     {
       ESP_LOGI( TAG, "No Wifi. Reconnecting.." );
       WiFi.reconnect();
+      vTaskDelay( 9000 / portTICK_PERIOD_MS );
     }
-    vTaskDelay( 10000 / portTICK_PERIOD_MS );
+    vTaskDelay( 1000 / portTICK_PERIOD_MS );
   }
 }
 

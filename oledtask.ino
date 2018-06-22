@@ -69,7 +69,7 @@ void oledTask( void * pvParameters )
         uint8_t y2 = BARS_BOTTOM - y1;
         OLED.fillRect( x1, y1, x2, y2 );
 
-        threeDigitPercentage( content, sizeof( content ), channel[thisChannel].currentPercentage, false );
+        threeDigitPercentage( content, sizeof( content ), channel[thisChannel].currentPercentage, NO_PERCENTSIGN );
 
         OLED.drawString( x1 + ( BARS_WIDTH / 2 ) - 1, y1 - 11, content );
       }

@@ -1,5 +1,5 @@
-const uint16_t TFT_BACK_COLOR         = ILI9341_BLACK;
-const uint16_t TFT_TEXT_COLOR         = ILI9341_YELLOW;
+const uint16_t TFT_BACK_COLOR         = ILI9341_MAROON;
+const uint16_t TFT_TEXT_COLOR         = ILI9341_WHITE;
 const uint16_t TFT_DATE_COLOR         = ILI9341_WHITE;
 const uint16_t TFT_TEMP_COLOR         = ILI9341_WHITE;
 const uint8_t  TFT_BACKLIGHT_BITDEPTH = 16;               /*min 11 bits, max 16 bits */
@@ -8,6 +8,7 @@ const uint16_t TFT_BUTTON_WIDTH       = 100;
 const uint16_t TFT_BUTTON_HEIGHT      =  40;
 
 const bool     TFT_SHOW_RAW           = false;            /* show raw PWM values */
+const bool     HIGH_VIZ               = true;
 
 enum tftFontsize_t
 {
@@ -155,12 +156,12 @@ static inline __attribute__((always_inline)) void showMenu()
 
   if ( tftClearScreen )
   {
-    tft.fillScreen( ILI9341_BLACK );
+    tft.fillScreen( TFT_BACK_COLOR );
     drawMenuButtons();
     button.drawSlider( BL_SLIDER_AREA );
     button.updateSlider( BL_SLIDER_AREA, tftBrightness, 0, 100 );
 
-    tftButton::button_t versionString = { 0, ILI9341_TFTWIDTH - 20, ILI9341_TFTHEIGHT, 20, ILI9341_BLACK, ILI9341_RED, ILI9341_YELLOW, size2 };
+    tftButton::button_t versionString = { 0, ILI9341_TFTWIDTH - 20, ILI9341_TFTHEIGHT, 20, TFT_BACK_COLOR, ILI9341_RED, ILI9341_YELLOW, size2 };
 
     snprintf( versionString.text, sizeof( versionString.text ), sketchVersion );
     button.updateText( versionString );
@@ -236,7 +237,7 @@ static inline __attribute__((always_inline)) void showStatus()
 
   if ( tftClearScreen )
   {
-    tft.fillScreen( ILI9341_BLACK );
+    tft.fillScreen( TFT_BACK_COLOR );
     button.draw( MENU_BUTTON );
 
     showIPAddress(  );
@@ -330,14 +331,14 @@ static inline __attribute__((always_inline)) void showStatus()
       }
       else
       {
-        threeDigitPercentage( label.text, sizeof( label.text ), channel[channelNumber].currentPercentage, true );
+        threeDigitPercentage( label.text, sizeof( label.text ), channel[channelNumber].currentPercentage, SHOW_PERCENTSIGN );
       }
       label.x = channelNumber * BARS_WIDTH;
       label.y = BARS_BOTTOM + 4;
       label.w = BARS_WIDTH;
       label.h = 10;
       label.fontsize = size0;
-      label.color = 0;
+      label.color = TFT_BACK_COLOR;
       label.bordercolor = 0;
       label.labelcolor = channelColor565[channelNumber];
       int16_t x, y;
@@ -347,7 +348,14 @@ static inline __attribute__((always_inline)) void showStatus()
       tft.getTextBounds( label.text, 0, 0, &x, &y, &w, &h );
       tft.setCursor( ( label.x + label.w / 2 ) - ( w / 2 ),
                      ( label.y + label.h / 2 ) - ( h / 2 ) );
-      tft.setTextColor( channelColor565[channelNumber], 0 );
+      if ( HIGH_VIZ )
+      {
+        tft.setTextColor( TFT_TEXT_COLOR, TFT_BACK_COLOR );
+      }
+      else
+      {
+        tft.setTextColor( channelColor565[channelNumber], TFT_BACK_COLOR );
+      }
       tft.print(label.text);
     }
     oldColor565[ channelNumber ] = channelColor565[ channelNumber];
@@ -368,12 +376,12 @@ static inline __attribute__((always_inline)) void showStatus()
 
   getLocalTime( &timeinfo );
 
-  static uint16_t oldtimeinfo;
-
   const tftButton::button_t clockArea
   {
-    10, 205, 110, 30, ILI9341_BLACK, ILI9341_YELLOW, ILI9341_YELLOW, size2
+    10, 205, 110, 30, TFT_BACK_COLOR, ILI9341_YELLOW, TFT_TEXT_COLOR, size2
   };
+
+  static uint16_t oldtimeinfo;
 
   if ( timeinfo.tm_sec != oldtimeinfo );
   {
@@ -387,7 +395,7 @@ static inline __attribute__((always_inline)) void showStatus()
     tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
     tft.setCursor( ( clockArea.x + clockArea.w / 2 ) - ( w / 2 ),
                    ( clockArea.y + clockArea.h / 2 ) - ( h / 2 ) );
-    tft.setTextColor( ILI9341_YELLOW, ILI9341_BLACK );
+    tft.setTextColor( TFT_TEXT_COLOR, TFT_BACK_COLOR );
     tft.print( buff );
 
     oldtimeinfo = timeinfo.tm_sec;
@@ -487,7 +495,7 @@ static inline __attribute__((always_inline)) void showIPAddress( )
   tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
   tft.setCursor( ( networkArea.x + networkArea.w / 2 ) - w / 2,
                  ( networkArea.y + ( networkArea.h / 2 ) - h / 2 ) );
-  tft.setTextColor( networkArea.labelcolor, networkArea.color );
+  tft.setTextColor( TFT_TEXT_COLOR, TFT_BACK_COLOR );
   tft.print( buff );
 }
 
@@ -520,7 +528,7 @@ static inline __attribute__((always_inline)) void drawSensors( const bool &force
 inline __attribute__((always_inline)) void tftButton::drawSlider( const button_t &area )
 {
   tft.startWrite();
-  tft.writeFillRect( area.x, area.y, area.w, area.h, ILI9341_BLACK);
+  tft.writeFillRect( area.x, area.y, area.w, area.h, TFT_BACK_COLOR );
   tft.endWrite();
 
   int16_t x, y;
@@ -532,7 +540,7 @@ inline __attribute__((always_inline)) void tftButton::drawSlider( const button_t
     tft.getTextBounds( (char *)area.label, 0, 0, &x, &y, &w, &h );
     tft.setCursor( ( area.x + area.w / 2 ) - w / 2,
                    ( area.y + area.h + 3 ) );
-    tft.setTextColor( area.labelcolor, area.color );
+    tft.setTextColor( area.labelcolor, TFT_BACK_COLOR );
     tft.print( area.label );
   }
 
@@ -542,6 +550,7 @@ inline __attribute__((always_inline)) void tftButton::drawSlider( const button_t
     tft.getTextBounds( (char *)area.text, 0, 0, &x, &y, &w, &h );
     tft.setCursor( ( area.x + area.w / 2 ) - w / 2,
                    ( area.y - 17 ) );
+    tft.setTextColor( area.labelcolor, area.color );
     tft.print( area.text );
   }
 }
@@ -551,7 +560,7 @@ inline __attribute__((always_inline)) void tftButton::updateSlider( const button
   static int16_t oldpos = 0;
 
   //delete (overwrite) old knob
-  tftButton::button_t knob = { area.x, 0, BL_SLIDER_WIDTH, 10, ILI9341_BLACK };
+  tftButton::button_t knob = { area.x, 0, BL_SLIDER_WIDTH, 10, TFT_BACK_COLOR, TFT_BACK_COLOR };
   knob.y = oldpos - 5;
   button.draw( knob );
 
@@ -575,7 +584,7 @@ inline __attribute__((always_inline)) void tftButton::updateSlider( const button
   tft.getTextBounds( (char *)knob.text, 0, 0, &x, &y, &w, &h );
   tft.setCursor( ( area.x + area.w / 2 ) - ( w / 2 ),
                  ( area.y - 20 ) );
-  tft.setTextColor( area.labelcolor, area.color );
+  tft.setTextColor( TFT_TEXT_COLOR, TFT_BACK_COLOR );
   tft.print( knob.text );
 }
 
@@ -624,7 +633,7 @@ inline __attribute__((always_inline)) void tftButton::updateSensorLabel( const t
   int16_t x, y;
   uint16_t w, h;
 
-  tft.fillRect( tempArea.x - 2, tempArea.y - 6, tempArea.w + 4, 8, ILI9341_BLACK );
+  tft.fillRect( tempArea.x - 2, tempArea.y - 6, tempArea.w + 4, 8, TFT_BACK_COLOR );
   tft.setTextSize( size0 );
   tft.getTextBounds( newLabel, 0, 0, &x, &y, &w, &h);
   tft.setCursor( ( tempArea.x + tempArea.w / 2 ) - w / 2,

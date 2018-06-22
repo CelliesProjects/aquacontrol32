@@ -1,5 +1,3 @@
-//include all web interface header files
-//https://stackoverflow.com/questions/8707183/script-tool-to-convert-file-to-c-c-source-code-array/8707241#8707241
 #include "webif/index_htm.h"
 #include "webif/channels_htm.h"
 #include "webif/setup_htm.h"
@@ -9,29 +7,27 @@
 
 #define INVALID_CHANNEL 100
 
-/**************************************************************************
-       Username and password for web interface
- *************************************************************************/
-const char* www_username       = "admin";
-const char* www_default_passw  = "esp32";
-
-//the (changed) admin password is saved in NVS under this key
-const char* passwordKeyNVS   = "wwwpassword";
-
-const char* textHtmlHeader   = "text/html";
+const char* HTML_HEADER                       = "text/html";
 
 void webServerTask ( void * pvParameters )
 {
+  static const char* WWW_USERNAME             = "admin";
+  static const char* WWW_DEFAULT_PASSWD       = "esp32";
+
+  static const char* NOT_PRESENT_ERROR_501    = "Not present";
+
+  static const char* PASSWD_KEY_NVS           = "wwwpassword";  //the (changed) admin password is saved in NVS under this key
+
   static fs::FS &fs = SPIFFS;
 
   server.on( "/robots.txt", HTTP_GET, []( AsyncWebServerRequest * request )
   {
-    request->send( 200, textHtmlHeader, "User-agent: *\nDisallow: /" );
+    request->send( 200, HTML_HEADER, "User-agent: *\nDisallow: /\n" );
   });
 
   server.on( "/api/login", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -40,42 +36,42 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, index_htm, index_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HTML_HEADER, index_htm, index_htm_len );
     request->send( response );
   });
 
   //  /channels or 'channels.htm'
   server.on( "/channels", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, channels_htm, channels_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HTML_HEADER, channels_htm, channels_htm_len );
     request->send( response );
   });
 
   //  /editor or 'editor.htm'
   server.on( "/editor", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, editor_htm, editor_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HTML_HEADER, editor_htm, editor_htm_len );
     request->send( response );
   });
 
   //  /logs or 'logs.htm'
   server.on( "/logs", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, logs_htm, logs_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HTML_HEADER, logs_htm, logs_htm_len );
     request->send( response );
   });
 
   //  /setup or 'setup.htm'
   server.on( "/setup", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, setup_htm, setup_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HTML_HEADER, setup_htm, setup_htm_len );
     request->send( response );
   });
 
   //  /filemanager or 'fileman.htm'
   server.on( "/filemanager", HTTP_GET, [] ( AsyncWebServerRequest * request )
   {
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, textHtmlHeader, fileman_htm, fileman_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HTML_HEADER, fileman_htm, fileman_htm_len );
     request->send( response );
   });
 
@@ -85,13 +81,13 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/deletefile", HTTP_POST, []( AsyncWebServerRequest * request)
   {
-    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) )
     {
       return request->requestAuthentication();
     }
     if ( !request->hasArg( "filename" ) )
     {
-      return request->send( 400, textHtmlHeader, "Invalid filename." );
+      return request->send( 400, HTML_HEADER, "Invalid filename." );
     }
     String path;
     if ( !request->arg( "filename" ).startsWith( "/" ) )
@@ -106,11 +102,11 @@ void webServerTask ( void * pvParameters )
     if ( !fs.exists( path ) )
     {
       path = request->arg( "filename" ) + " not found.";
-      return request->send( 404, textHtmlHeader, path );
+      return request->send( 404, HTML_HEADER, path );
     }
     fs.remove( path );
     path = request->arg( "filename" ) + " deleted.";
-    request->send( 200, textHtmlHeader, path );
+    request->send( 200, HTML_HEADER, path );
   });
 
   server.on( "/api/getdevice", HTTP_GET, []( AsyncWebServerRequest * request)
@@ -118,12 +114,12 @@ void webServerTask ( void * pvParameters )
     AsyncResponseStream *response;
     if ( request->hasArg( "boottime" ) )
     {
-      return request->send( 200, textHtmlHeader, asctime( localtime( &systemStart.tv_sec ) ) );
+      return request->send( 200, HTML_HEADER, asctime( localtime( &systemStart.tv_sec ) ) );
     }
 
     else if ( request->hasArg( "channelcolors" ) )
     {
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         response->printf( "%s\n", channel[channelNumber].color );
@@ -133,7 +129,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "channelnames" ) )
     {
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         response->printf( "%s\n", channel[channelNumber].name );
@@ -143,7 +139,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "diskspace" ) )
     {
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%i" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
       return request->send( response );
     }
@@ -153,18 +149,18 @@ void webServerTask ( void * pvParameters )
       File root = fs.open( "/" );
       if ( !root )
       {
-        return request->send( 503, textHtmlHeader, "Storage not available." );
+        return request->send( 503, HTML_HEADER, "Storage not available." );
       }
       if ( !root.isDirectory() )
       {
-        return request->send( 400, textHtmlHeader, "No root on Storage.");
+        return request->send( 400, HTML_HEADER, "No root on Storage.");
       }
       File file = root.openNextFile();
       if ( !file )
       {
         return request->send( 404 );
       }
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       while ( file )
       {
         if ( !file.isDirectory() )
@@ -178,12 +174,12 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "hostname" ) )
     {
-      return request->send( 200, textHtmlHeader, hostName );
+      return request->send( 200, HTML_HEADER, hostName );
     }
 
     else if ( request->hasArg( "minimumlevels" ) )
     {
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         response->printf( "%.2f\n", channel[channelNumber].minimumLevel );
@@ -195,9 +191,9 @@ void webServerTask ( void * pvParameters )
     {
       if ( !MOON_SIMULATOR )
       {
-        return request->send( 501, textHtmlHeader, "Not present." );
+        return request->send( 501, HTML_HEADER, NOT_PRESENT_ERROR_501 );
       }
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%i\n%.4f\n", moonData.angle, moonData.percentLit );
       return request->send( response );
     }
@@ -206,9 +202,9 @@ void webServerTask ( void * pvParameters )
     {
       if ( !xOledTaskHandle )
       {
-        return request->send( 501, textHtmlHeader, "Not present." );
+        return request->send( 501, HTML_HEADER, NOT_PRESENT_ERROR_501 );
       }
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%i", oledContrast );
       return request->send( response );
     }
@@ -217,21 +213,21 @@ void webServerTask ( void * pvParameters )
     {
       if ( !xOledTaskHandle )
       {
-        return request->send( 501, textHtmlHeader, "Not present." );
+        return request->send( 501, HTML_HEADER, NOT_PRESENT_ERROR_501 );
       }
-      return request->send( 200, textHtmlHeader, oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
+      return request->send( 200, HTML_HEADER, oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
     }
 
     else if ( request->hasArg( "pwmdepth" ) )
     {
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%i", ledcNumberOfBits );
       return request->send( response );
     }
 
     else if ( request->hasArg( "pwmfrequency" ) )
     {
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%.0f", ledcActualFrequency );
       return request->send( response );
     }
@@ -240,21 +236,22 @@ void webServerTask ( void * pvParameters )
     {
       if ( !numberOfFoundSensors )
       {
-        return request->send( 501, textHtmlHeader, "No sensors present." );
+        return request->send( 501, HTML_HEADER, NOT_PRESENT_ERROR_501 );
       }
       if ( !request->hasArg( "number" ) )
       {
-        return request->send( 400, textHtmlHeader, "No sensornumber" );
+        return request->send( 400, HTML_HEADER, "No sensornumber" );
       }
       uint8_t sensorNumber = request->arg( "number" ).toInt();
       if ( sensorNumber >= numberOfFoundSensors )
       {
-        return request->send( 400, textHtmlHeader, "Invalid sensornumber" );
+        return request->send( 400, HTML_HEADER, "Invalid sensornumber" );
       }
-      response = request->beginResponseStream( textHtmlHeader );
-      response->printf( "%s\n", sensor[sensorNumber].name );
-      response->printf( "%f\n", sensor[sensorNumber].tempCelcius );
-      response->printf( "%x\n", sensor[sensorNumber].addr );
+      response = request->beginResponseStream( HTML_HEADER );
+      response->printf( "%s\n%.3f\n%x\n",
+                        sensor[sensorNumber].name,
+                        sensor[sensorNumber].tempCelcius,
+                        sensor[sensorNumber].addr );
       return request->send( response );
     }
 
@@ -262,27 +259,27 @@ void webServerTask ( void * pvParameters )
     {
       if ( !numberOfFoundSensors )
       {
-        return request->send( 501, textHtmlHeader, "No sensors present." );
+        return request->send( 501, HTML_HEADER, "No sensors present." );
       }
       if ( !request->hasArg( "number" ) )
       {
-        return request->send( 400, textHtmlHeader, "No sensornumber" );
+        return request->send( 400, HTML_HEADER, "No sensornumber" );
       }
       uint8_t sensorNumber = request->arg( "number" ).toInt();
       if ( sensorNumber >= numberOfFoundSensors )
       {
-        return request->send( 400, textHtmlHeader, "Invalid sensornumber" );
+        return request->send( 400, HTML_HEADER, "Invalid sensornumber" );
       }
-      return request->send( 200, textHtmlHeader, sensor[sensorNumber].name );
+      return request->send( 200, HTML_HEADER, sensor[sensorNumber].name );
     }
 
     else if ( request->hasArg( "status" ) )
     {
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         char content[8];
-        threeDigitPercentage( content, sizeof( content ), channel[channelNumber].currentPercentage, true );
+        threeDigitPercentage( content, sizeof( content ), channel[channelNumber].currentPercentage, SHOW_PERCENTSIGN );
         response->printf( "%s\n", content );
       }
       static char timeStr[6];
@@ -308,9 +305,9 @@ void webServerTask ( void * pvParameters )
     {
       if ( !xTftTaskHandle )
       {
-        return request->send( 501, textHtmlHeader, "Not present." );
+        return request->send( 501, HTML_HEADER, NOT_PRESENT_ERROR_501 );
       }
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%.2f", tftBrightness );
       return request->send( response );
     }
@@ -319,37 +316,37 @@ void webServerTask ( void * pvParameters )
     {
       if ( !xTftTaskHandle )
       {
-        return request->send( 501, textHtmlHeader, "Not present." );
+        return request->send( 501, HTML_HEADER, NOT_PRESENT_ERROR_501 );
       }
-      return request->send( 200, textHtmlHeader, ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
+      return request->send( 200, HTML_HEADER, ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
     }
 
     else if ( request->hasArg( "timezone" ) )
     {
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%s", getenv( "TZ" ) );
       return request->send( response );
     }
 
     else if ( request->hasArg( "version" ) )
     {
-      return request->send( 200, textHtmlHeader, sketchVersion );
+      return request->send( 200, HTML_HEADER, sketchVersion );
     }
 
     else if ( request->hasArg( "wifissid" ) )
     {
-      return request->send( 200, textHtmlHeader, WiFi.SSID().c_str() );
+      return request->send( 200, HTML_HEADER, WiFi.SSID().c_str() );
     }
 
     else
     {
-      return request->send( 400, textHtmlHeader, "Invalid option" );
+      return request->send( 400, HTML_HEADER, "Invalid option" );
     }
   });
 
   server.on( "/api/setchannel", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -359,7 +356,7 @@ void webServerTask ( void * pvParameters )
     channelNumber = checkChannelNumber( request);
     if ( channelNumber == INVALID_CHANNEL )
     {
-      return request->send( 400, textHtmlHeader, "Invalid channel" );
+      return request->send( 400, HTML_HEADER, "Invalid channel" );
     }
     if ( request->hasArg( "color" ) )
     {
@@ -367,13 +364,13 @@ void webServerTask ( void * pvParameters )
       {
         if ( !isxdigit( request->arg( "color" )[currentChar] ) )
         {
-          return request->send( 400, textHtmlHeader, "Invalid char" );
+          return request->send( 400, HTML_HEADER, "Invalid char" );
         }
       }
       snprintf( channel[ channelNumber ].color, sizeof( channel[ channelNumber ].color ), "#%s", request->arg( "color" ).c_str() );
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelcolor%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].color );
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color );
       return request->send( response );
     }
@@ -383,12 +380,12 @@ void webServerTask ( void * pvParameters )
       float minLevel = request->arg( "minimum" ).toFloat();
       if ( minLevel < 0 || minLevel > 0.991 )
       {
-        return request->send( 400, textHtmlHeader, "Invalid level" );
+        return request->send( 400, HTML_HEADER, "Invalid level" );
       }
       channel[ channelNumber ].minimumLevel = minLevel;
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelminimum%i", channelNumber );
       preferences.putFloat( nvsKeyname, channel[channelNumber].minimumLevel );
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].minimumLevel );
       return request->send( response );
     }
@@ -399,7 +396,7 @@ void webServerTask ( void * pvParameters )
       {
         if ( request->arg( "name" )[currentChar] != 0x20  && !isalnum( request->arg( "name" )[currentChar] ) )
         {
-          response = request->beginResponseStream( textHtmlHeader );
+          response = request->beginResponseStream( HTML_HEADER );
           response->printf( "Invalid character '%c'.", request->arg( "name" )[currentChar] );
           return request->send( response );
         }
@@ -414,21 +411,21 @@ void webServerTask ( void * pvParameters )
       }
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelname%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].name );
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name );
       return request->send( response );
     }
 
     else
     {
-      return request->send( 400, textHtmlHeader, "Invalid option" );
+      return request->send( 400, HTML_HEADER, "Invalid option" );
     }
   });
 
   server.on( "/api/setdevice", HTTP_POST, []( AsyncWebServerRequest * request )
   {
     AsyncResponseStream *response;
-    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) )
     {
       return request->requestAuthentication();
     }
@@ -436,12 +433,12 @@ void webServerTask ( void * pvParameters )
     if ( request->hasArg( "clearnvs" ) )
     {
       preferences.clear();
-      return request->send( 200, textHtmlHeader, "NVS cleared" );
+      return request->send( 200, HTML_HEADER, "NVS cleared" );
     }
 
     if ( request->hasArg( "clearwifi" ) )
     {
-      request->send( 200, textHtmlHeader, "WiFi data erased" );
+      request->send( 200, HTML_HEADER, "WiFi data erased" );
       WiFi.disconnect(true);
       return;
     }
@@ -452,34 +449,34 @@ void webServerTask ( void * pvParameters )
       {
         char wrongName[81];
         snprintf( wrongName , sizeof( wrongName ), "ERROR: %s is already present.", request->arg( "hostname" ).c_str() );
-        return request->send( 400, textHtmlHeader, wrongName );
+        return request->send( 400, HTML_HEADER, wrongName );
       }
       snprintf( hostName , sizeof( hostName ), "%s", request->arg( "hostname" ).c_str() );
       preferences.putString( "hostname", hostName );
-      return request->send( 200, textHtmlHeader, hostName );
+      return request->send( 200, HTML_HEADER, hostName );
     }
 
     else if ( request->hasArg( "lightsoff" ) )
     {
       lightsOff();
-      return request->send( 200, textHtmlHeader, lightStatusToString( lightStatus ) );
+      return request->send( 200, HTML_HEADER, lightStatusToString( lightStatus ) );
     }
 
     else if ( request->hasArg( "lightson" ) )
     {
       lightsOn();
-      return request->send( 200, textHtmlHeader, lightStatusToString( lightStatus ) );
+      return request->send( 200, HTML_HEADER, lightStatusToString( lightStatus ) );
     }
 
     else if ( request->hasArg( "lightsprogram" ) )
     {
       lightsAuto();
-      return request->send( 200, textHtmlHeader, lightStatusToString( lightStatus ) );
+      return request->send( 200, HTML_HEADER, lightStatusToString( lightStatus ) );
     }
 
     else if ( request->hasArg( "loadtimers" ) )
     {
-      return request->send( 200, textHtmlHeader, defaultTimersLoaded() ? "Timers loaded." : "Not loaded." );
+      return request->send( 200, HTML_HEADER, defaultTimersLoaded() ? "Timers loaded." : "Not loaded." );
     }
 
     else if ( request->hasArg( "oledcontrast" ) )
@@ -488,12 +485,12 @@ void webServerTask ( void * pvParameters )
       uint8_t contrast = request->arg( "oledcontrast" ).toInt();
       if ( contrast < 0 || contrast > 15 )
       {
-        return request->send( 400, textHtmlHeader, "Invalid contrast." );
+        return request->send( 400, HTML_HEADER, "Invalid contrast." );
       }
       oledContrast = contrast;
       OLED.setContrast( contrast << 4 );
       preferences.putUInt( "oledcontrast", oledContrast );
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%i", contrast );
       return request->send( response );
     }
@@ -510,14 +507,14 @@ void webServerTask ( void * pvParameters )
       }
       else
       {
-        return request->send( 400, textHtmlHeader, "Invalid orientation" );
+        return request->send( 400, HTML_HEADER, "Invalid orientation" );
       }
       OLED.end();
       OLED.init();
       OLED.setContrast( oledContrast << 0x04 );
       oledOrientation == OLED_ORIENTATION_NORMAL ? OLED.normalDisplay() : OLED.flipScreenVertically();
       preferences.putString( "oledorientation", ( oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" ) );
-      return request->send( 200, textHtmlHeader, preferences.getString( "oledorientation" ) );
+      return request->send( 200, HTML_HEADER, preferences.getString( "oledorientation" ) );
     }
 
     else if ( request->hasArg( "password" ) )
@@ -525,11 +522,11 @@ void webServerTask ( void * pvParameters )
       //TODO:check password is valid
       if ( request->arg( "password") == "" )
       {
-        return request->send( 400, textHtmlHeader, "Supply a password. Password not changed." );
+        return request->send( 400, HTML_HEADER, "Supply a password. Password not changed." );
       }
       //some more tests...
-      preferences.putString( passwordKeyNVS, request->arg( "password") );
-      return request->send( 200, textHtmlHeader, "Password saved." );
+      preferences.putString( PASSWD_KEY_NVS, request->arg( "password") );
+      return request->send( 200, HTML_HEADER, "Password saved." );
     }
 
     else if ( request->hasArg( "pwmdepth" ) )
@@ -537,14 +534,14 @@ void webServerTask ( void * pvParameters )
       uint8_t newPWMDepth = request->arg( "pwmdepth" ).toInt();
       if ( newPWMDepth < 11 || newPWMDepth > 16 )
       {
-        return request->send( 400, textHtmlHeader, "Invalid PWM depth" );
+        return request->send( 400, HTML_HEADER, "Invalid PWM depth" );
       }
       if ( ledcNumberOfBits != newPWMDepth )
       {
         setupDimmerPWMfrequency( LEDC_MAXIMUM_FREQ, newPWMDepth );
         preferences.putUInt( "pwmdepth" , ledcNumberOfBits );
       }
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%i", ledcNumberOfBits );
       return request->send( response );
     }
@@ -554,14 +551,14 @@ void webServerTask ( void * pvParameters )
       double tempPWMfrequency = request->arg( "pwmfrequency" ).toFloat();
       if ( tempPWMfrequency < 100 || tempPWMfrequency > LEDC_MAXIMUM_FREQ )
       {
-        return request->send( 400, textHtmlHeader, "Invalid PWM frequency" );;
+        return request->send( 400, HTML_HEADER, "Invalid PWM frequency" );;
       }
       if ( tempPWMfrequency != ledcActualFrequency )
       {
         setupDimmerPWMfrequency( tempPWMfrequency, ledcNumberOfBits );
         preferences.putDouble( "pwmfrequency", ledcActualFrequency );
       }
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%.0f", ledcActualFrequency );
       return request->send( response );
     }
@@ -570,18 +567,18 @@ void webServerTask ( void * pvParameters )
     {
       if ( request->arg( "sensorname" ).length() >= sizeof( sensor->name ) )
       {
-        return request->send( 400, textHtmlHeader, "Sensorname too long" );
+        return request->send( 400, HTML_HEADER, "Sensorname too long" );
       }
       if ( !request->hasArg( "number" ) )
       {
-        return request->send( 400, textHtmlHeader, "No sensornumber" );
+        return request->send( 400, HTML_HEADER, "No sensornumber" );
       }
 
       uint8_t sensorNumber = request->arg( "number" ).toInt();
 
       if ( sensorNumber > numberOfFoundSensors )
       {
-        return request->send( 400, textHtmlHeader, "Invalid sensornumber" );
+        return request->send( 400, HTML_HEADER, "Invalid sensornumber" );
       }
       snprintf( sensor[sensorNumber].name, sizeof( sensor->name ), "%s", request->arg( "sensorname" ).c_str() );
 
@@ -593,7 +590,7 @@ void webServerTask ( void * pvParameters )
 
       ESP_LOGI( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), nvsKeyname );
 
-      return request->send( 200, textHtmlHeader, request->arg( "sensorname" ).c_str() );
+      return request->send( 200, HTML_HEADER, request->arg( "sensorname" ).c_str() );
     }
 
     else if ( request->hasArg( "tftorientation" ) )
@@ -608,13 +605,13 @@ void webServerTask ( void * pvParameters )
       }
       else
       {
-        return request->send( 400, textHtmlHeader, "Invalid tft orientation." );
+        return request->send( 400, HTML_HEADER, "Invalid tft orientation." );
       }
       tft.fillScreen( ILI9341_BLACK );
       tft.setRotation( tftOrientation );
       tftClearScreen = true;
       preferences.putString( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%s", preferences.getString( "tftorientation", "" ).c_str() );
       return request->send( response );
     }
@@ -624,57 +621,55 @@ void webServerTask ( void * pvParameters )
       float brightness = request->arg( "tftbrightness" ).toFloat();
       if ( brightness < 0 || brightness > 100 )
       {
-        return request->send( 400, textHtmlHeader, "Invalid tft brightness." );
+        return request->send( 400, HTML_HEADER, "Invalid tft brightness." );
       }
       tftBrightness = brightness;
       preferences.putFloat( "tftbrightness", brightness );
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%.2f", tftBrightness );
       return request->send( response );
     }
 
     else if ( request->hasArg( "timezone" ) )
     {
-      urlDecode( request->arg( "timezone" ) );
       if ( 0 == setenv( "TZ",  request->arg( "timezone" ).c_str(), 1 )  )
       {
         preferences.putString( "timezone", getenv( "TZ" ) );
       }
       else
       {
-        return request->send( 400, textHtmlHeader, "Error setting timezone." );
+        return request->send( 400, HTML_HEADER, "Error setting timezone." );
       }
-      response = request->beginResponseStream( textHtmlHeader );
+      response = request->beginResponseStream( HTML_HEADER );
       response->printf( "%s", getenv( "TZ" ) );
       return request->send( response );
     }
 
     else
     {
-      return request->send( 400, textHtmlHeader, "Invalid option" );
+      return request->send( 400, HTML_HEADER, "Invalid option" );
     }
   });
 
   server.on( "/api/upload", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    if ( !request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
+    if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) )
     {
       return request->requestAuthentication();
     }
-    AsyncWebServerResponse *response = request->beginResponse( 200, textHtmlHeader );
-    response->addHeader("Connection", "close");
+    AsyncWebServerResponse *response = request->beginResponse( 200, HTML_HEADER );
+    //response->addHeader("Connection", "close");
     request->send(response);
   },
   []( AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final )
   {
-    static File   newFile;
     static bool   _authenticated;
     static time_t startTimer;
 
     if ( !index )
     {
       _authenticated = false;
-      if ( request->authenticate( www_username, preferences.getString( passwordKeyNVS, www_default_passw ).c_str() ) )
+      if ( request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) )
       {
         startTimer = millis();
         ESP_LOGI( TAG, "Starting upload. filename = %s\n", filename.c_str() );
@@ -716,25 +711,7 @@ void webServerTask ( void * pvParameters )
 
   server.onNotFound( []( AsyncWebServerRequest * request )
   {
-    const char* notFound = "NOT_FOUND: ";
-
-    if ( request->method() == HTTP_GET )
-      ESP_LOGI( TAG, "%s GET", notFound );
-    else if (request->method() == HTTP_POST)
-      ESP_LOGI( TAG, "%s POST", notFound );
-    else if (request->method() == HTTP_DELETE)
-      ESP_LOGI( TAG, "%s DELETE", notFound );
-    else if (request->method() == HTTP_PUT)
-      ESP_LOGI( TAG, "%s PUT", notFound );
-    else if (request->method() == HTTP_PATCH)
-      ESP_LOGI( TAG, "%s PATCH", notFound );
-    else if (request->method() == HTTP_HEAD)
-      ESP_LOGI( TAG, "%s HEAD", notFound );
-    else if (request->method() == HTTP_OPTIONS)
-      ESP_LOGI( TAG, "%s OPTIONS", notFound );
-    else
-      ESP_LOGI( TAG, "%s UNKNOWN", notFound );
-    ESP_LOGI( TAG, " http://%s%s\n", request->host().c_str(), request->url().c_str());
+    ESP_LOGI( TAG, "Not found http://%s%s\n", request->host().c_str(), request->url().c_str());
     request->send( 404 );
   });
 
@@ -746,7 +723,7 @@ void webServerTask ( void * pvParameters )
   vTaskDelete( NULL );
 }
 
-static inline __attribute__((always_inline)) int8_t checkChannelNumber( const AsyncWebServerRequest *request )
+static inline __attribute__((always_inline)) uint8_t checkChannelNumber( const AsyncWebServerRequest *request )
 {
   if ( !request->hasArg( "channel" ) )
   {
@@ -754,74 +731,13 @@ static inline __attribute__((always_inline)) int8_t checkChannelNumber( const As
   }
   else
   {
-    int8_t channelNumber = request->arg( "channel" ).toInt();
+    uint8_t channelNumber = request->arg( "channel" ).toInt();
     if ( channelNumber < 1 || channelNumber > NUMBER_OF_CHANNELS )
     {
       return INVALID_CHANNEL;
     }
     return channelNumber - 1;
   }
-}
-
-/* DOES NOT RETURN IF INVALID str OFFERED!    */
-/* valid str contain only alphanumeric en spaces */
-void abortOnInvalidChar( const String str, AsyncWebServerRequest * request )
-{
-  for ( uint8_t currentChar = 0; currentChar < str.length(); currentChar++ )
-  {
-    if ( str[currentChar] != 0x20  && !isalnum( str[currentChar] ) )
-    {
-      char content[25];
-      snprintf( content, sizeof( content ), "Invalid character '%c'.", str[currentChar] );
-      return request->send( 400, textHtmlHeader, content );
-    }
-  }
-}
-/*
-  Copyright (c) 2015 Ivan Grokhotkov. All rights reserved.
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-  Modified 8 May 2015 by Hristo Gochkov (proper post and file upload handling)
-*/
-
-static inline __attribute__((always_inline)) String urlDecode( const String& text )
-{
-  String decoded = "";
-  char temp[] = "0x00";
-  unsigned int len = text.length();
-  unsigned int i = 0;
-  while (i < len)
-  {
-    char decodedChar;
-    char encodedChar = text.charAt(i++);
-    if ( ( encodedChar == '%' ) && ( i + 1 < len ) )
-    {
-      temp[2] = text.charAt(i++);
-      temp[3] = text.charAt(i++);
-
-      decodedChar = strtol( temp, NULL, 16 );
-    }
-    else {
-      if ( encodedChar == '+')
-      {
-        decodedChar = ' ';
-      }
-      else {
-        decodedChar = encodedChar;  // normal ascii char
-      }
-    }
-    decoded += decodedChar;
-  }
-  return decoded;
 }
 
 /* format bytes as KB, MB or GB string */
@@ -841,19 +757,21 @@ static inline __attribute__((always_inline)) String humanReadableSize( const siz
   }
 }
 
-/* https://github.com/espressif/esp-idf/blob/master/docs/en/api-reference/protocols/mdns.rst */
-/* https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/blob/master/MicroPython_BUILD/components/micropython/esp32/network_mdns.c */
-/* https://www.avahi.org/doxygen/html/client-publish-service_8c-example.html */
 bool setupMDNS( const char *hostname )
 {
+  for ( uint8_t currentChar = 0; currentChar < strlen( hostname ); currentChar++ )
+  {
+    if ( hostname[currentChar] != 0x20  && !isalnum( hostname[currentChar] ) )
+      return false;
+  }
+
   struct ip4_addr addr;
   addr.addr = 0;
-  esp_err_t res;
   ESP_LOGI( TAG, "Looking for: %s.local...", hostname );
-  res = mdns_query_a( hostname, 2000, &addr );
+  esp_err_t res = mdns_query_a( hostname, 2000, &addr );
   if ( res == ESP_ERR_NOT_FOUND )
   {
-    ESP_LOGI( TAG, "Host %s.local was not found!", hostname );
+    ESP_LOGI( TAG, "Setting up %s in mDNS.", hostname );
     mdns_hostname_set( hostname );
     mdns_service_add( NULL, "_http", "_tcp", 80, NULL, 0 );
     mdns_service_instance_name_set( "_http", "_tcp", hostname );

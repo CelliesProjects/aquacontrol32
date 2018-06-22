@@ -89,6 +89,12 @@
 
 
 /**************************************************************************
+       defines for threeDigitPercentage()
+**************************************************************************/
+#define SHOW_PERCENTSIGN                    true
+#define NO_PERCENTSIGN                      false
+
+/**************************************************************************
       Setup included libraries
  *************************************************************************/
 XPT2046_Touchscreen touch( TOUCH_CS_PIN, TOUCH_IRQ_PIN );
@@ -257,8 +263,12 @@ void setup()
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 400000 );
 
   Wire.beginTransmission( OLED_ADDRESS );
-  uint8_t err = Wire.endTransmission();
-  if ( err == 0 )
+  uint8_t error = Wire.endTransmission();
+  if ( error )
+  {
+    ESP_LOGI( TAG, "No I2C device found." );
+  }
+  else
   {
     ESP_LOGI( TAG, "Found I2C device at address 0x%x.", OLED_ADDRESS );
     xTaskCreatePinnedToCore(
@@ -269,10 +279,6 @@ void setup()
       oledTaskPriority,               /* Priority of the task */
       &xOledTaskHandle,               /* Task handle. */
       1);                             /* Core where the task should run */
-  }
-  else
-  {
-    ESP_LOGI( TAG, "No I2C device found." );
   }
 
   xTaskCreatePinnedToCore(

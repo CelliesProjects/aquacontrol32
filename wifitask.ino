@@ -1,4 +1,4 @@
-void wifiTask( void * pvParameters )
+void IRAM_ATTR wifiTask( void * pvParameters )
 {
   /* trying last accesspoint */
   WiFi.mode( WIFI_STA );

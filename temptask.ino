@@ -1,4 +1,4 @@
-void tempTask( void * pvParameters )
+void IRAM_ATTR tempTask( void * pvParameters )
 {
   numberOfFoundSensors = 0;
   byte currentAddr[8];
@@ -57,19 +57,19 @@ void tempTask( void * pvParameters )
       switch ( sensor[thisSensor].addr[0] )
       {
         case 0x10:
-          //ESP_LOGD( TAG, "Chip = DS18S20");  /* or old DS1820 */
+         ESP_LOGD( TAG, "Dallas sensor type : DS18S20" );  /* or old DS1820 */
           type_s = 1;
           break;
         case 0x28:
-          //ESP_LOGD( TAG, "Chip = DS18B20");
+          ESP_LOGD( TAG, "Dallas sensor type : DS18B20");
           type_s = 0;
           break;
         case 0x22:
-          //ESP_LOGD( TAG, "Chip = DS1822");
+          ESP_LOGD( TAG, "Dallas sensor type : DS1822");
           type_s = 0;
           break;
         default:
-          ESP_LOGE( TAG, "Device is not a DS18x20 family device.");
+          ESP_LOGE( TAG, "OneWire device is not a DS18x20 family device.");
           return;
       }
 

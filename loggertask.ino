@@ -1,4 +1,4 @@
-void loggerTask ( void * pvParameters )
+void IRAM_ATTR loggerTask ( void * pvParameters )
 {
   const TickType_t loggerTaskdelayTime  = ( 1000 * 120 ) / portTICK_PERIOD_MS;
 

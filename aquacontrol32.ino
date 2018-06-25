@@ -208,6 +208,10 @@ uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
        end of global variables
 
 *****************************************************************************************/
+void tftTask( void * pvParameters );
+void oledTask( void * pvParameters );
+void tempTask( void * pvParameters );
+void wifiTask( void * pvParameters );
 
 void setup()
 {

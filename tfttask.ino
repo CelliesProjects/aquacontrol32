@@ -108,7 +108,7 @@ displayState tftState = normal;
 
 bool tftClearScreen = true;
 
-void tftTask( void * pvParameters )
+void IRAM_ATTR tftTask( void * pvParameters )
 {
   const TickType_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
 

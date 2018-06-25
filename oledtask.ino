@@ -1,4 +1,4 @@
-void oledTask( void * pvParameters )
+void IRAM_ATTR oledTask( void * pvParameters )
 {
   const TickType_t oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED / portTICK_PERIOD_MS;
 

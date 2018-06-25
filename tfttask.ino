@@ -8,7 +8,7 @@ const uint16_t TFT_BUTTON_WIDTH       = 100;
 const uint16_t TFT_BUTTON_HEIGHT      =  40;
 
 const bool     TFT_SHOW_RAW           = false;            /* show raw PWM values */
-const bool     HIGH_VIZ               = true;
+const bool     HIGH_VIZ_PERCENTAGE    = true;             /* show channel percent values in TFT_BACK_COLOR instead of the channel color to improve visibility */
 
 enum tftFontsize_t
 {
@@ -348,7 +348,7 @@ static inline __attribute__((always_inline)) void showStatus()
       tft.getTextBounds( label.text, 0, 0, &x, &y, &w, &h );
       tft.setCursor( ( label.x + label.w / 2 ) - ( w / 2 ),
                      ( label.y + label.h / 2 ) - ( h / 2 ) );
-      if ( HIGH_VIZ )
+      if ( HIGH_VIZ_PERCENTAGE )
       {
         tft.setTextColor( TFT_TEXT_COLOR, TFT_BACK_COLOR );
       }

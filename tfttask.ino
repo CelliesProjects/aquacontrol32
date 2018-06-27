@@ -250,6 +250,7 @@ static inline __attribute__((always_inline)) void showStatus()
       tempArea[thisSensor].y = 70 + thisSensor * 50;
       tempArea[thisSensor].w = TFT_BUTTON_WIDTH - 20;
       tempArea[thisSensor].h = 30;
+      tempArea[thisSensor].color = TFT_BACK_COLOR;
       tempArea[thisSensor].labelcolor = ILI9341_WHITE;
       tempArea[thisSensor].fontsize = size2;
       button.updateSensorLabel( tempArea[thisSensor], sensor[thisSensor].name );

@@ -84,10 +84,10 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 - The ILI9341 boards from AliExpress, DealExtreme or any other supplier are not all equal.
 <br>Among the tested boards I encountered some that have no MISO pin connected, so they can't respond to read commands.
-<br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to 1) in `deviceSetup.h`.
+<br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to `true`) in `deviceSetup.h`.
 
 - Some ILI9341 boards have their touch coordinates inverted.
-<br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to 1) in `deviceSetup.h`.
+<br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to `true`) in `deviceSetup.h`.
 
 - Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
 <br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
@@ -96,7 +96,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 #### Lunar cycle night light:
 
 When enabled, the settings for the minimum levels in the channel section of the webinterface become the full moon light value.
-Can be disabled in `deviceSetup.h`. (set it to 0)
+Can be disabled in `deviceSetup.h`. (set it to `false`)
 
 The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
 
@@ -110,16 +110,18 @@ The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapte
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
 
+- If after 5 minutes SmartConfig has not connected your device will reboot. This way Aquacontrol32 will reconnect after a powerout when the modem is not yet online when Aquacontrol32 has booted the first time.
+
 #### Log files:
 
 By default log files are not generated.
 <br>Log files saved on SPIFFS could reduce the lifetime of the flash memory.
-<br>To log the temperature sensor values enable `LOG_FILES` (set it to 1) in `deviceSetup.h`.
+<br>To log the temperature sensor values enable `LOG_FILES` (set it to `true`) in `deviceSetup.h`.
 
 #### Known issues:
 
-1. Use the master branch from [PaulStoffregen's XPT2046 Touchscreen library](https://github.com/paulstoffregen/XPT2046_Touchscreen) until the next release.
-<br>See [this issue](https://github.com/PaulStoffregen/XPT2046_Touchscreen/issues/14).
+1. Use the master branch from [PaulStoffregen's XPT2046 Touchscreen library](https://github.com/paulstoffregen/XPT2046_Touchscreen) until the next release. 
+<br>( Current release is 1.2, which does not have the IRAM fix.) See [this issue](https://github.com/PaulStoffregen/XPT2046_Touchscreen/issues/14).
 
 2. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
 

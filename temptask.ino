@@ -1,11 +1,13 @@
 void IRAM_ATTR tempTask( void * pvParameters )
 {
+  OneWire  ds( ONEWIRE_PIN );  /* a 4.7K pull-up resistor is necessary */
+
   numberOfFoundSensors = 0;
   byte currentAddr[8];
 
   while ( ds.search( currentAddr ) && numberOfFoundSensors < MAX_NUMBER_OF_SENSORS )
   {
-    for ( byte i = 0; i < 8; i++)
+    for ( uint8_t i = 0; i < sizeof( currentAddr ); i++)
     {
       sensor[numberOfFoundSensors].addr[i] = currentAddr[i];
     }
@@ -38,9 +40,12 @@ void IRAM_ATTR tempTask( void * pvParameters )
     ds.write( 0x44, 0); /* start conversion, with parasite power off at the end */
 
     vTaskDelay( 750 / portTICK_PERIOD_MS); //wait for conversion ready
+
+
     for ( byte thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++)
     {
       byte data[12];
+
       ds.reset();
       ds.select( sensor[thisSensor].addr );
       ds.write( 0xBE );         /* Read Scratchpad */
@@ -48,6 +53,7 @@ void IRAM_ATTR tempTask( void * pvParameters )
       { // we need 9 bytes
         data[i] = ds.read(  );
       }
+
 
       ESP_LOGD( TAG, "Sensor %i '%s' data=%02x%02x%02x%02x%02x%02x%02x%02x%02x", thisSensor, sensor[thisSensor].name,
                 data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
@@ -57,7 +63,7 @@ void IRAM_ATTR tempTask( void * pvParameters )
       switch ( sensor[thisSensor].addr[0] )
       {
         case 0x10:
-         ESP_LOGD( TAG, "Dallas sensor type : DS18S20" );  /* or old DS1820 */
+          ESP_LOGD( TAG, "Dallas sensor type : DS18S20" );  /* or old DS1820 */
           type_s = 1;
           break;
         case 0x28:

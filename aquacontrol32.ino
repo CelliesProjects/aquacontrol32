@@ -4,11 +4,11 @@
 #include <SPIFFS.h>                /* should be installed together with ESP32 Arduino install */
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
-#include "Adafruit_ILI9341.h"      /* Install via 'Manage Libraries' in Arduino IDE */
-#include "Adafruit_GFX.h"          /* Install via 'Manage Libraries' in Arduino IDE */
-#include "OneWire.h"               /* Install via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_ILI9341.h>      /* Install via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_GFX.h>          /* Install via 'Manage Libraries' in Arduino IDE */
+#include <OneWire.h>               /* Install via 'Manage Libraries' in Arduino IDE */
 /* or use stickbreakers library:      https://github.com/stickbreaker/OneWire */
-#include "SSD1306.h"               /* https://github.com/squix78/esp8266-oled-ssd1306 */
+#include <SSD1306.h>               /* https://github.com/squix78/esp8266-oled-ssd1306 */
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
@@ -103,8 +103,6 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341( SPI_TFT_CS_PIN, SPI_TFT_DC_PIN, SPI_TFT
 
 Preferences preferences;
 
-OneWire  ds( ONEWIRE_PIN );  /* a 4.7K pull-up resistor is necessary */
-
 SSD1306  OLED( OLED_ADDRESS, I2C_SDA_PIN, I2C_SCL_PIN );
 
 AsyncWebServer server(80);
@@ -133,7 +131,7 @@ const char *lightStatusToString( const lightStatus_t status )
 struct lightTimer_t
 {
   time_t      time;                    /* time in seconds since midnight so range is 0-86400 */
-  byte        percentage;              /* in percentage so range is 0-100 */
+  uint8_t     percentage;              /* in percentage so range is 0-100 */
 };
 
 struct channelData_t
@@ -143,8 +141,8 @@ struct channelData_t
   char            color[8];            /* interface color, not light color! in hex format*/
   /*                                      Example: '#ff0000' for bright red */
   float           currentPercentage;   /* what percentage is this channel set to */
-  byte            pin;                 /* which ESP32 pin is this channel on */
-  byte            numberOfTimers;      /* actual number of timers for this channel */
+  uint8_t         pin;                 /* which ESP32 pin is this channel on */
+  uint8_t         numberOfTimers;      /* actual number of timers for this channel */
   float           minimumLevel;        /* never dim this channel below this percentage */
 };
 
@@ -195,7 +193,7 @@ double                  ledcActualFrequency;
 uint16_t                ledcMaxValue;
 uint8_t                 ledcNumberOfBits;
 
-byte                    numberOfFoundSensors;
+uint8_t                 numberOfFoundSensors;
 
 float                   tftBrightness                 = 80;                         /* in percent */
 uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
@@ -278,7 +276,7 @@ void setup()
     xTaskCreatePinnedToCore(
       oledTask,                       /* Function to implement the task */
       "oledTask",                     /* Name of the task */
-      2000,                           /* Stack size in words */
+      3000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
       oledTaskPriority,               /* Priority of the task */
       &xOledTaskHandle,               /* Task handle. */

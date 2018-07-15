@@ -63,7 +63,8 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>`const char * sketchVersion = "change this to a version string";`
 <br>This file will be overwritten and deleted if you use the `flash.sh` or `compile.sh` script.
 
-- Source are compiled for `ESP32 Dev Module` which has support for ESP_LOGX macros.
+- Source are compiled for `mhetesp32minikit` which has support for ESP_LOGX macros.
+<br>This can be changed to a particular esp32 board by changing the `--board` option in the `compile.sh` and `flash.sh` scripts. Look in `~/Arduino/hardware/espressif/esp32/boards.txt` to find the relevant board desciption.
 <br>`custom_DebugLevel` should be set to `esp32_none` in the `flash.sh` script for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)

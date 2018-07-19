@@ -6,9 +6,8 @@
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
 #include <Adafruit_ILI9341.h>      /* Install via 'Manage Libraries' in Arduino IDE */
 #include <Adafruit_GFX.h>          /* Install via 'Manage Libraries' in Arduino IDE */
-#include <OneWire.h>               /* Install via 'Manage Libraries' in Arduino IDE */
-/* or use stickbreakers library:      https://github.com/stickbreaker/OneWire */
-#include <SSD1306.h>               /* https://github.com/squix78/esp8266-oled-ssd1306 */
+#include <OneWire.h>               /* https://github.com/stickbreaker/OneWire */
+#include <SSD1306.h>               /* Install via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */

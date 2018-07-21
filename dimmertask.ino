@@ -72,7 +72,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
         float newPercentage;
 
         /* only do a lot of math if really neccesary */
-        if ( channel[channelNumber].timer[thisTimer].time != channel[channelNumber].timer[thisTimer - 1].time )
+        if ( channel[channelNumber].timer[thisTimer].percentage != channel[channelNumber].timer[thisTimer - 1].percentage )
         {
           newPercentage = mapFloat( milliSecondsToday,
                                     channel[channelNumber].timer[thisTimer - 1].time * 1000U,

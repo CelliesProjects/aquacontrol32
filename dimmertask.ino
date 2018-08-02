@@ -160,13 +160,17 @@ bool defaultTimersLoaded()
   //return true on success
   //return false on error
 
+  if ( !SPIFFS.exists( defaultTimerFile ) )
+  {
+    ESP_LOGI( TAG, "No default timer file found. [%s]", defaultTimerFile );
+    return false;
+  }
+
   File f = SPIFFS.open( defaultTimerFile, "r" );
 
-  ESP_LOGI( TAG, "Reading SPIFFS." );
-
-  if (!f)
+  if ( !f.available() )
   {
-    ESP_LOGI( TAG, "No default timer file found." );
+    ESP_LOGI( TAG, "Error opening default timer file. [%s]", defaultTimerFile );
     return false;
   }
   String lineBuf;

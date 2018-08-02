@@ -16,11 +16,13 @@ void IRAM_ATTR tempTask( void * pvParameters )
     snprintf( sensorUniqueId, sizeof( sensorUniqueId ), "%02x%02x%02x%02x%02x%02x%02x",
               currentAddr[1], currentAddr[2], currentAddr[3], currentAddr[4], currentAddr[5], currentAddr[6], currentAddr[7]  );
 
+    ESP_LOGI( TAG, "Finding saved name for sensor ID: %s", sensorUniqueId );
+
     /* and read value from NVS or use default name */
     snprintf( sensor[numberOfFoundSensors].name, sizeof( sensor[numberOfFoundSensors].name ),
               preferences.getString( sensorUniqueId, "temp sensor" ).c_str(), numberOfFoundSensors  );
 
-    ESP_LOGD( TAG, "Sensor %i: %s - Name: '%s'", numberOfFoundSensors, sensorUniqueId, sensor[numberOfFoundSensors].name );
+    ESP_LOGD( TAG, "Sensor %i ID: %s - Name: '%s'", numberOfFoundSensors, sensorUniqueId, sensor[numberOfFoundSensors].name );
 
     numberOfFoundSensors++;
   }

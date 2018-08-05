@@ -114,7 +114,14 @@ void webServerTask ( void * pvParameters )
     AsyncResponseStream *response;
     if ( request->hasArg( "boottime" ) )
     {
-      return request->send( 200, HTML_HEADER, asctime( localtime( &systemStart.tv_sec ) ) );
+      time_t rawtime;
+      struct tm * timeinfo;
+      char buffer [25];
+
+      time (&rawtime);
+      timeinfo = localtime ( &rawtime );
+      strftime ( buffer, sizeof(buffer), "%c", timeinfo );
+      return request->send( 200, HTML_HEADER, buffer );
     }
 
     else if ( request->hasArg( "channelcolors" ) )

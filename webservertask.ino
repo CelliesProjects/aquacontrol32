@@ -776,22 +776,24 @@ bool setupMDNS( const char *hostname )
   addr.addr = 0;
   ESP_LOGI( TAG, "Looking for: %s.local...", hostname );
   esp_err_t res = mdns_query_a( hostname, 2000, &addr );
-  if ( res == ESP_ERR_NOT_FOUND )
+
+  if ( res != ESP_ERR_NOT_FOUND )
   {
-    ESP_LOGI( TAG, "Setting up %s in mDNS.", hostname );
-    mdns_hostname_set( hostname );
-    mdns_service_add( NULL, "_http", "_tcp", 80, NULL, 0 );
-    mdns_service_instance_name_set( "_http", "_tcp", hostname );
-    mdns_txt_item_t serviceTxtData[3] = {
-      { (char *)"description", (char *)"5 Channel LED controller" },
-      { (char *)"source url", (char *)"https://github.com/CelliesProjects/aquacontrol32" },
-      { (char *)"name", (char *)"Aquacontrol32" }
-    };
-    //set txt data for service (will free and replace current data)
-    mdns_service_txt_set( "_http", "_tcp", serviceTxtData, 3 );
-    preferences.putString( "hostname", hostname );
-    return true;
+    ESP_LOGI( TAG, "Hostname %s not set because %s is already present!", hostname, hostname );
+    return false;
   }
-  ESP_LOGI( TAG, "Host %s already present!", hostname );
-  return false;
+
+  ESP_LOGI( TAG, "Setting up %s in mDNS.", hostname );
+  mdns_hostname_set( hostname );
+  mdns_service_add( NULL, "_http", "_tcp", 80, NULL, 0 );
+  mdns_service_instance_name_set( "_http", "_tcp", hostname );
+  mdns_txt_item_t serviceTxtData[3] = {
+    { (char *)"description", (char *)"5 Channel LED controller" },
+    { (char *)"source url", (char *)"https://github.com/CelliesProjects/aquacontrol32" },
+    { (char *)"name", (char *)"Aquacontrol32" }
+  };
+  //set txt data for service (will free and replace current data)
+  mdns_service_txt_set( "_http", "_tcp", serviceTxtData, 3 );
+  preferences.putString( "hostname", hostname );
+  return true;
 }

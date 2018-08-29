@@ -104,8 +104,6 @@ Preferences preferences;
 
 SSD1306  OLED( OLED_ADDRESS, I2C_SDA_PIN, I2C_SCL_PIN );
 
-AsyncWebServer server(80);
-
 MoonPhase MoonPhase;
 
 /**************************************************************************

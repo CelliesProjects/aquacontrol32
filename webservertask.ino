@@ -20,6 +20,8 @@ void webServerTask ( void * pvParameters )
 
   static fs::FS &fs = SPIFFS;
 
+  static AsyncWebServer server(80);
+
   server.on( "/robots.txt", HTTP_GET, []( AsyncWebServerRequest * request )
   {
     request->send( 200, HTML_HEADER, "User-agent: *\nDisallow: /\n" );

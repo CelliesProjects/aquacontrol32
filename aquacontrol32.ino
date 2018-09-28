@@ -114,6 +114,8 @@ enum lightStatus_t
   LIGHTS_OFF, LIGHTS_ON, LIGHTS_AUTO
 };
 
+const char *lightStatusToString( const lightStatus_t status );
+
 const char *lightStatusToString( const lightStatus_t status )
 {
   switch ( status )

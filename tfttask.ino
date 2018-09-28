@@ -516,7 +516,7 @@ static inline __attribute__((always_inline)) void drawSensors( const bool &force
           ESP_LOGE( TAG, "Out of range temperature." );
           sensor[ thisSensor ].tempCelcius = currentTemp[ thisSensor ];                            /* show previous temp */
         }
-        snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), "%.1f%c", sensor[thisSensor].tempCelcius, char(247) );
+        snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " %.1f%c ", sensor[thisSensor].tempCelcius, char(247) );
         button.updateText( tempArea[thisSensor] );
         currentTemp[ thisSensor ] = sensor[ thisSensor ].tempCelcius;
       }

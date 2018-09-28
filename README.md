@@ -46,7 +46,7 @@ Aquacontrol32 runs on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.n
 
 - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
 
-- The [Arduino IDE](https://arduino.cc/) 1.8.5.
+- The [Arduino IDE](https://arduino.cc/) 1.8.7.
 
 - The [ESP32 Arduino Core @ commit e346f20aa9f455f3147d9d018e09dd7c05818951](https://github.com/espressif/arduino-esp32/commit/e346f20aa9f455f3147d9d018e09dd7c05818951).
 

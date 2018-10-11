@@ -55,6 +55,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
 
+- Compare your `#included` libraries version numbers against [libraries.md](libraries.md).
 - Check your device options in `deviceSetup.h`.
 - Compiling from the Arduino IDE does not work if you just cloned the repo.
 <br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.

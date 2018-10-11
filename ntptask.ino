@@ -17,16 +17,15 @@ void ntpTask( void * pvParameters )
 
   configTzTime( preferences.getString( "timezone", defaultTimezone ).c_str(), NTPpoolAdress );
 
-  time_t now;
   struct tm timeinfo;
 
   while ( timeinfo.tm_year < ( 2016 - 1900 ) )
   {
     vTaskDelay( 50 / portTICK_PERIOD_MS );
-    time( &now );
-    localtime_r( &now, &timeinfo );
+    getLocalTime( &timeinfo );
   }
   delay(100);
+
   gettimeofday( &systemStart, NULL );
 
   ESP_LOGI( TAG, "NTP sync @ %s", asctime( localtime( &systemStart.tv_sec ) ) );

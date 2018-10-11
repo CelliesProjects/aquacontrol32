@@ -7,9 +7,9 @@
 
 /**************************************************************************
        set to false to produce no log files
-       set to 1 to produce log files
+       set to true to produce log files
 **************************************************************************/
-#define LOG_FILES                          false
+#define LOG_FILES                          true
 
 
 /**************************************************************************
@@ -28,7 +28,7 @@
        false = show light and temps on oled
        true = show system data on oled
 **************************************************************************/
-#define OLED_SHOW_SYSTEMDATA               false
+#define OLED_SHOW_SYSTEMDATA               true
 
 
 /**************************************************************************
@@ -37,13 +37,13 @@
        Set TFT_HAS_NO_MISO to false to use device detection.
        Set TFT_HAS_NO_MISO to true to override detection and use these tft boards.
 **************************************************************************/
-#define TFT_HAS_NO_MISO                    false
+#define TFT_HAS_NO_MISO                    true
 
 
 /**************************************************************************
        TFT SPI CLOCK SPEED (DEFAULT = 10MHz)
 **************************************************************************/
-#define TFT_SPI_CLOCK                      10 * 1000 * 1000
+#define TFT_SPI_CLOCK                      26 * 1000 * 1000
 
 
 /**************************************************************************
@@ -57,4 +57,3 @@
        Set to false to disable the moon simulator.
 **************************************************************************/
 #define MOON_SIMULATOR                     true
-

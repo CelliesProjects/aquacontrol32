@@ -4,8 +4,8 @@
 #include <SPIFFS.h>                /* should be installed together with ESP32 Arduino install */
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
-#include <Adafruit_ILI9341.h>      /* Install via 'Manage Libraries' in Arduino IDE */
-#include <Adafruit_GFX.h>          /* Install via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_ILI9341.h>      /* Install 1.2.0 via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_GFX.h>          /* Install 1.2.3 via 'Manage Libraries' in Arduino IDE */
 #include <OneWire.h>               /* https://github.com/stickbreaker/OneWire */
 #include <SSD1306.h>               /* Install via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/AsyncTCP */
@@ -13,7 +13,7 @@
 #include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
 
-#include "gitTagVersion.h"
+#include "gitTagVersion.h"         /* const char * sketchVersion = "ARDUINO IDE"; */ 
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
 #include "mapFloat.h"
@@ -113,8 +113,6 @@ enum lightStatus_t
 {
   LIGHTS_OFF, LIGHTS_ON, LIGHTS_AUTO
 };
-
-const char *lightStatusToString( const lightStatus_t status );
 
 const char *lightStatusToString( const lightStatus_t status )
 {
@@ -231,7 +229,7 @@ void setup()
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
 
-  tft.begin( TFT_SPI_CLOCK, SPI );
+  tft.begin( TFT_SPI_CLOCK );
 
   if ( !SPIFFS.begin( true ) )
   {

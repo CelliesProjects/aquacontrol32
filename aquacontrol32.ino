@@ -13,7 +13,7 @@
 #include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
 
-#include "gitTagVersion.h"       //const char * sketchVersion = "ARDUINO IDE";
+#include "gitTagVersion.h"         //const char * sketchVersion = "ARDUINO IDE";
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
 #include "mapFloat.h"
@@ -258,7 +258,6 @@ void setup()
   else
   {
     ESP_LOGI( TAG, "No ILI9341 found" );
-    tft.end();
   }
 
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 400000 );

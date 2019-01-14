@@ -52,7 +52,7 @@ Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit
 
 - The [Arduino IDE](https://arduino.cc/) 1.8.8.
 
-- The [ESP32 Arduino Core @ commit 6dd8be32629a3d9cd6610da93224f3559f63c6ee](https://github.com/espressif/arduino-esp32/commit/6dd8be32629a3d9cd6610da93224f3559f63c6ee).
+- The [ESP32 Arduino Core 1.0.1](https://github.com/espressif/arduino-esp32/releases/tag/1.0.1).
 
 
 Aquacontrol32 can run happily with or without OLED or TFT display.
@@ -61,8 +61,8 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 - Compare your `#included` libraries version numbers against [libraries.md](libraries.md).
 - Check your device options in `deviceSetup.h`.
-- Toggle the GIT_TAG option in `deviceSetup.h` to enable or disable version information.
-<br>Setting GIT_TAG to `true` makes that the Arduino IDE can no longer compile or flash your script.
+- Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information.
+<br>Setting `GIT_TAG` to `true` makes that the Arduino IDE can no longer compile or flash your script.
 <br>You then have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
 <br>Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
 - Source are compiled for `mhetesp32minikit` which has support for ESP_LOGX macros.

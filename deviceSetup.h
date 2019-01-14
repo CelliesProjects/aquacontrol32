@@ -57,3 +57,9 @@
        Set to false to disable the moon simulator.
 **************************************************************************/
 #define MOON_SIMULATOR                     true
+
+
+/**************************************************************************
+       Set to true to use the flash and compile scripts.
+**************************************************************************/
+#define GIT_TAG                             false

@@ -61,15 +61,13 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 - Compare your `#included` libraries version numbers against [libraries.md](libraries.md).
 - Check your device options in `deviceSetup.h`.
-- Compiling from the Arduino IDE does not work if you just cloned the repo.
-<br>You have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
+- Toggle the GIT_TAG option in `deviceSetup.h` to enable or disable version information.
+<br>Setting GIT_TAG to `true` makes that the Arduino IDE can no longer compile or flash your script.
+<br>You then have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
 <br>Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
-<br>You can however still compile from the Arduino IDE if you manually add a file named `gitTagVersion.h` to your sketch folder with the following content:
-<br>`const char * sketchVersion = "change this to a version string";`
-<br>This file will be overwritten and deleted if you use the `flash.sh` or `compile.sh` script.
-
 - Source are compiled for `mhetesp32minikit` which has support for ESP_LOGX macros.
-<br>This can be changed to a particular esp32 board by changing the `--board` option in the `compile.sh` and `flash.sh` scripts. Look in `~/Arduino/hardware/espressif/esp32/boards.txt` to find the relevant board desciption.
+<br>This can be changed to a particular esp32 board by changing the `--board` option in the `compile.sh` and `flash.sh` scripts.
+<br>Look in `~/Arduino/hardware/espressif/esp32/boards.txt` to find the relevant board desciption.
 <br>`custom_DebugLevel` should be set to `esp32_none` in the `flash.sh` script for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)

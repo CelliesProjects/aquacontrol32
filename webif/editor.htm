@@ -210,7 +210,7 @@ function addTimer( thisChannel, thisTime, currentPercentage ){
     console.log( "No channel selected." );
     return;
   }
-  if ( thisChannel.length >= maxNumberOfTimers ) {
+  if ( thisChannel.length >= maxNumberOfTimers - 1 ) {
     console.log( "Maximum timers set" );
     return;
   }

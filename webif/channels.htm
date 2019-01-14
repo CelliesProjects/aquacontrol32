@@ -243,23 +243,23 @@ $( '.minLevel' ).on( 'change', function() {
   });
 });
 $( '.channelName' ).on( 'input', function( ) {
-  $('.channelName').eq( $(this).parent(".channelbar").index() ).css({ 'background' : '#fffe75' } );
+  $(this).css({ 'background' : '#fffe75' } );
 });
 $( '.channelName' ).on( 'change', function( ) {
-  var thisChannel = $(this).parent(".channelbar").index();
+  var thisInput = $(this);
   $.post( "/api/setchannel",
   {
-    channel : thisChannel,
+    channel : $(this).parent(".channelbar").index(),
     name    : $(this).val()
   })
   .done(function( data ) {
     $('#statusBox').html( data );
-    $('.channelName').eq( thisChannel ).css({ 'background' : '' } );
+    thisInput.css({ 'background' : '' } );
     getChannelNames();
   })
   .fail(function( data ) {
     $('#statusBox').html( data.statusText );
-    $('.channelName').eq( thisChannel ).css({ 'background' : '#ff5e5e' } );
+    thisInput.css({ 'background' : '#ff5e5e' } );
   });
 });
 $( '.colorPicker' ).on( 'change', function() {

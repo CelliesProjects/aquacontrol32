@@ -64,7 +64,7 @@ void ntpTask( void * pvParameters )
     xReturned = xTaskCreatePinnedToCore(
                   moonSimtask,                    /* Function to implement the task */
                   "moonSimtask",                  /* Name of the task */
-                  2000,                           /* Stack size in words */
+                  2200,                           /* Stack size in words */
                   NULL,                           /* Task input parameter */
                   moonSimtaskPriority,            /* Priority of the task */
                   NULL,                           /* Task handle. */

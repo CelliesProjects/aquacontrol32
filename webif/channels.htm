@@ -254,11 +254,11 @@ $( '.channelName' ).on( 'change', function( ) {
   })
   .done(function( data ) {
     $('#statusBox').html( data );
-    thisInput.css({ 'background' : '' } );
+    thisInput.css({ 'background' : '#46ff44' } );
     getChannelNames();
   })
   .fail(function( data ) {
-    $('#statusBox').html( data.statusText );
+    $('#statusBox').html( data.responseText );
     thisInput.css({ 'background' : '#ff5e5e' } );
   });
 });

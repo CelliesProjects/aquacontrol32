@@ -418,9 +418,9 @@ void webServerTask ( void * pvParameters )
       {
         if ( request->arg( "name" )[currentChar] != 0x20  && !isalnum( request->arg( "name" )[currentChar] ) )
         {
-          response = request->beginResponseStream( HEADER_HTML );
-          response->printf( "Invalid character '%c'.", request->arg( "name" )[currentChar] );
-          return request->send( response );
+          char buffer[30];
+          snprintf( buffer, sizeof( buffer ), "Invalid character '%c'.", request->arg( "name" )[currentChar]  );
+          return request->send( 400, HEADER_HTML, buffer );
         }
       }
       if ( request->arg( "name" ) != "" )

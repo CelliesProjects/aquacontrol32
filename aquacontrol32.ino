@@ -5,7 +5,7 @@
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
 #include <Adafruit_ILI9341.h>      /* Install 1.2.0 via 'Manage Libraries' in Arduino IDE */
-#include <Adafruit_GFX.h>          /* Install 1.2.3 via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_GFX.h>          /* Install 1.3.6 via 'Manage Libraries' in Arduino IDE */
 #include <SSD1306.h>               /* Install 4.0.0 via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */
 #include <OneWire.h>               /* https://github.com/stickbreaker/OneWire */
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/AsyncTCP */
@@ -167,7 +167,6 @@ const uint8_t ntpTaskPriority          = 4;
 const uint8_t oledTaskPriority         = 3;
 const uint8_t wifiTaskPriority         = 2;
 const uint8_t loggerTaskPriority       = 1;
-const uint8_t spiffsTaskPriority       = 0;
 const uint8_t moonSimtaskPriority      = 0;
 
 /**************************************************************************

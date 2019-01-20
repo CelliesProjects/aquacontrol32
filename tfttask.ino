@@ -444,31 +444,33 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
 
 static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const uint16_t &touchX, const uint16_t &touchY )
 {
+  const uint16_t XPT_RES = 4096;
   uint16_t x, y;
+
   if ( !TOUCH_IS_INVERTED )
   {
     if (  tftOrientation == TFT_ORIENTATION_UPSIDEDOWN )
     {
-      x = mapFloat( touchX, 340, 3900, 0, 320 );
-      y = mapFloat( touchY, 200, 3850, 0, 240 );
+      x = map( touchX, 0, XPT_RES, 0, 320 );
+      y = map( touchY, 0, XPT_RES, 0, 240 );
     }
     else if ( tftOrientation == TFT_ORIENTATION_NORMAL )
     {
-      x = mapFloat( touchX, 340, 3900, 320, 0 );
-      y = mapFloat( touchY, 200, 3850, 240, 0 );
+      x = map( touchX, 0, XPT_RES, 320, 0 );
+      y = map( touchY, 0, XPT_RES, 240, 0 );
     }
   }
   else
   {
     if (  tftOrientation == TFT_ORIENTATION_UPSIDEDOWN )
     {
-      x = mapFloat( touchX, 340, 3900, 320, 0 );
-      y = mapFloat( touchY, 200, 3850, 240, 0 );
+      x = map( touchX, 0, XPT_RES, 320, 0 );
+      y = map( touchY, 0, XPT_RES, 240, 0 );
     }
     else if ( tftOrientation == TFT_ORIENTATION_NORMAL )
     {
-      x = mapFloat( touchX, 340, 3900, 0, 320 );
-      y = mapFloat( touchY, 200, 3850, 0, 240 );
+      x = map( touchX, 0, XPT_RES, 0, 320 );
+      y = map( touchY, 0, XPT_RES, 0, 240 );
     }
   }
   return { x, y };
@@ -570,7 +572,7 @@ inline __attribute__((always_inline)) void tftButton::updateSlider( const button
   tft.writeFillRect( area.x + area.w / 2  - 1, area.y, 2, area.h, ILI9341_YELLOW );
   tft.endWrite();
 
-  int16_t ypos = mapFloat( value, rangeLow, rangeHigh, area.h + area.y, area.y );
+  int16_t ypos = map( value, rangeLow, rangeHigh, area.h + area.y, area.y );
   knob = { area.x, 0, BL_SLIDER_WIDTH, 10, ILI9341_YELLOW };
   knob.y = ypos - 5;
   button.draw( knob );
@@ -641,4 +643,3 @@ inline __attribute__((always_inline)) void tftButton::updateSensorLabel( const t
                  ( tempArea.y - 6 ) );
   tft.print( newLabel );
 }
-

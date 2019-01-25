@@ -8,7 +8,7 @@ const uint16_t TFT_BUTTON_WIDTH       = 100;
 const uint16_t TFT_BUTTON_HEIGHT      =  40;
 
 const bool     TFT_SHOW_RAW           = false;            /* show raw PWM values */
-const bool     HIGH_VIZ_PERCENTAGE    = true;             /* show channel percent values in TFT_BACK_COLOR instead of the channel color to improve visibility */
+const bool     HIGH_VIZ_PERCENTAGE    = true;             /* show channel percent values in TFT_TEXT_COLOR instead of the channel color to improve visibility */
 
 enum tftFontsize_t
 {
@@ -32,8 +32,8 @@ class tftButton
 
     struct button_t
     {
-      int16_t        x;
-      int16_t        y;
+      uint16_t       x;
+      uint16_t       y;
       uint16_t       w;
       uint16_t       h;
       uint16_t       color;
@@ -184,6 +184,7 @@ static inline __attribute__((always_inline)) void showMenu()
     displayedLightStatus = lightStatus;
   }
 
+  /* process touch screen input */
   if ( touch.tirqTouched() )
   {
     TS_Point p = touch.getPoint();
@@ -442,41 +443,37 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
   button.draw( EXIT_BUTTON );
 }
 
+
+static inline __attribute__((always_inline)) uint16_t mapUint16( const uint16_t &x, const uint16_t &in_min, const uint16_t &in_max, const uint16_t &out_min, const uint16_t &out_max)
+{
+  return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
+}
+
 static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const uint16_t &touchX, const uint16_t &touchY )
 {
   const uint16_t XPT_RES = 4096;
-  uint16_t x, y;
 
   if ( !TOUCH_IS_INVERTED )
   {
     if (  tftOrientation == TFT_ORIENTATION_UPSIDEDOWN )
-    {
-      x = map( touchX, 0, XPT_RES, 0, 320 );
-      y = map( touchY, 0, XPT_RES, 0, 240 );
-    }
+      return { mapUint16( touchX, 0, XPT_RES, 0, 320 ),
+               mapUint16( touchY, 0, XPT_RES, 0, 240 ) };
+
     else if ( tftOrientation == TFT_ORIENTATION_NORMAL )
-    {
-      x = map( touchX, 0, XPT_RES, 320, 0 );
-      y = map( touchY, 0, XPT_RES, 240, 0 );
-    }
+      return { mapUint16( touchX, 0, XPT_RES, 320, 0 ),
+               mapUint16( touchY, 0, XPT_RES, 240, 0 ) };
   }
   else
   {
     if (  tftOrientation == TFT_ORIENTATION_UPSIDEDOWN )
-    {
-      x = map( touchX, 0, XPT_RES, 320, 0 );
-      y = map( touchY, 0, XPT_RES, 240, 0 );
-    }
+      return { mapUint16( touchX, 0, XPT_RES, 320, 0 ),
+               mapUint16( touchY, 0, XPT_RES, 240, 0 ) };
+
     else if ( tftOrientation == TFT_ORIENTATION_NORMAL )
-    {
-      x = map( touchX, 0, XPT_RES, 0, 320 );
-      y = map( touchY, 0, XPT_RES, 0, 240 );
-    }
+      return { mapUint16( touchX, 0, XPT_RES, 0, 320 ),
+               mapUint16( touchY, 0, XPT_RES, 0, 240 ) };
   }
-  return { x, y };
 }
-
-
 
 static inline __attribute__((always_inline)) void showIPAddress( )
 {

@@ -17,14 +17,13 @@ void ntpTask( void * pvParameters )
 
   configTzTime( preferences.getString( "timezone", defaultTimezone ).c_str(), NTPpoolAdress );
 
-  struct tm timeinfo;
+  struct tm timeinfo = {};
 
-  while ( timeinfo.tm_year < ( 2016 - 1900 ) )
+  while ( !timeinfo.tm_year )
   {
     vTaskDelay( 50 / portTICK_PERIOD_MS );
     getLocalTime( &timeinfo );
   }
-  delay(100);
 
   gettimeofday( &systemStart, NULL );
 

@@ -224,6 +224,12 @@ void setup()
   pinMode( I2C_SCL_PIN, INPUT_PULLUP );
   pinMode( I2C_SDA_PIN, INPUT_PULLUP );
 
+  gpio_set_drive_capability( (gpio_num_t)LED0_PIN, GPIO_DRIVE_CAP_3 );
+  gpio_set_drive_capability( (gpio_num_t)LED1_PIN, GPIO_DRIVE_CAP_3 );
+  gpio_set_drive_capability( (gpio_num_t)LED2_PIN, GPIO_DRIVE_CAP_3 );
+  gpio_set_drive_capability( (gpio_num_t)LED3_PIN, GPIO_DRIVE_CAP_3 );
+  gpio_set_drive_capability( (gpio_num_t)LED4_PIN, GPIO_DRIVE_CAP_3 );
+
   preferences.begin( "aquacontrol32", false );
 
   btStop();

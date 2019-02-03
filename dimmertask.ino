@@ -96,7 +96,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
 
         /* done, set the channel */
         channel[channelNumber].currentPercentage = newPercentage;
-        ledcWrite( channelNumber, map( channel[channelNumber].currentPercentage,
+        ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage,
                                             0,
                                             100,
                                             0,

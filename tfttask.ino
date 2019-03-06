@@ -225,7 +225,7 @@ static inline __attribute__((always_inline)) void showMenu()
 static inline __attribute__((always_inline)) void showStatus()
 {
   const uint16_t BARS_BOTTOM      = 190;
-  const uint16_t BARS_HEIGHT      = BARS_BOTTOM;
+  const uint16_t BARS_HEIGHT      = BARS_BOTTOM - 10;
   const uint16_t BARS_BORDER      = 12;
   const uint16_t BARS_WIDTH       = 210 / 5; /* note: total width is 210 px */
   const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
@@ -298,16 +298,8 @@ static inline __attribute__((always_inline)) void showStatus()
       tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
                          BARS_BOTTOM - BARS_HEIGHT,
                          BARS_WIDTH - BARS_BORDER * 2,
-                         BARS_HEIGHT - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,
+                         BARS_HEIGHT - channel[channelNumber].currentPercentage * HEIGHT_FACTOR + 1, /* + 1 is a fudge factor to delete the bottom pixel TODO: fix it... */
                          TFT_BACK_COLOR );
-      /*
-            //100% water mark
-            tft.drawFastHLine( channelNumber * BARS_WIDTH + BARS_BORDER,
-                               BARS_BOTTOM - BARS_HEIGHT - 1,
-                               BARS_WIDTH - BARS_BORDER * 2,
-                               tft.color565( r, g, b ) );
-      */
-
       // redraw the bottom part of the bar
       tft.writeFillRect( channelNumber * BARS_WIDTH + BARS_BORDER,
                          BARS_BOTTOM - channel[channelNumber].currentPercentage * HEIGHT_FACTOR,

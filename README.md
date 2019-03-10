@@ -59,7 +59,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 #### Compile notes:
 
-- Compare your `#included` libraries version numbers against [libraries.md](libraries.md).
+- Compare your installed libraries version numbers against the comments in `aquacontrol32.ino`.
 - Check your device options in `deviceSetup.h`.
 - Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information.
 <br>Setting `GIT_TAG` to `true` makes that the Arduino IDE can no longer compile or flash your script.
@@ -119,15 +119,12 @@ The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapte
 #### Log files:
 
 By default log files are not generated.
-<br>Log files saved on SPIFFS could reduce the lifetime of the flash memory.
+<br>That is because log files saved on SPIFFS could reduce the lifetime of the flash memory.
 <br>To log the temperature sensor values enable `LOG_FILES` (set it to `true`) in `deviceSetup.h`.
 
 #### Known issues:
 
-1. Use the master branch from [PaulStoffregen's XPT2046 Touchscreen library](https://github.com/paulstoffregen/XPT2046_Touchscreen) until the next release. 
-<br>( Current release is 1.2, which does not have the IRAM fix.) See [this issue](https://github.com/PaulStoffregen/XPT2046_Touchscreen/issues/14).
-
-2. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
+1. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
 
 #### The test hardware:
 

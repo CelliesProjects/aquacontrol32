@@ -7,10 +7,10 @@
 #include <Adafruit_ILI9341.h>      /* Install 1.2.0 via 'Manage Libraries' in Arduino IDE */
 #include <Adafruit_GFX.h>          /* Install 1.3.6 via 'Manage Libraries' in Arduino IDE */
 #include <SSD1306.h>               /* Install 4.0.0 via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */
+#include <XPT2046_Touchscreen.h>   /* Install 1.3.0 via 'Manage Libraries' in Arduino IDE */
 #include <OneWire.h>               /* https://github.com/stickbreaker/OneWire */
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
-#include <XPT2046_Touchscreen.h>   /* https://github.com/PaulStoffregen/XPT2046_Touchscreen */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
 
 #include "deviceSetup.h"
@@ -46,7 +46,7 @@ const char * sketchVersion = "ARDUINO IDE";
 /**************************************************************************
        update frequency for TFT display in Hz
 **************************************************************************/
-#define UPDATE_FREQ_TFT                    5
+#define UPDATE_FREQ_TFT                    25
 
 
 /**************************************************************************

@@ -35,9 +35,7 @@ Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit
 
 - XPT2046 touchscreen support.
 
-- SPIFFS storage support.
-
-- Temperature logging on SPIFFS.
+- FFat storage with temperature logging.
 
 - All device settings are saved in NVS.
 
@@ -76,7 +74,7 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 
 - If your controller has a problem after flashing (no Wifi or stuck/not properly booting) the most probable cause is corrupted NVS.
 <br>Erasing the complete flash memory will solve most of these problems.
-<br>Use this command to erase flash (SPIFFS INCLUDED!) in Linux:
+<br>Use this command to erase flash (FFat INCLUDED!) in Linux:
 <br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
 <br>Backup your `default.aqu` in the file manager before erasing and upload it after you flash your controller.
 
@@ -119,7 +117,7 @@ The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapte
 #### Log files:
 
 By default log files are not generated.
-<br>That is because log files saved on SPIFFS could reduce the lifetime of the flash memory.
+<br>That is because log files saved on FFat could reduce the lifetime of the flash memory.
 <br>To log the temperature sensor values enable `LOG_FILES` (set it to `true`) in `deviceSetup.h`.
 
 #### Known issues:

@@ -118,12 +118,12 @@ void webServerTask ( void * pvParameters )
       path = request->arg( "filename" );
     }
 
-    if ( !SPIFFS.exists( path ) )
+    if ( !FFat.exists( path ) )
     {
       path = request->arg( "filename" ) + " not found.";
       return request->send( 404, HEADER_HTML, path );
     }
-    SPIFFS.remove( path );
+    FFat.remove( path );
     path = request->arg( "filename" ) + " deleted.";
     request->send( 200, HEADER_HTML, path );
   });
@@ -162,13 +162,14 @@ void webServerTask ( void * pvParameters )
     else if ( request->hasArg( "diskspace" ) )
     {
       response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "%i" , SPIFFS.totalBytes() - SPIFFS.usedBytes() );
+      response->printf( "%lu" ,FFat.freeBytes() );
+      //response->print( String(FFat.totalBytes() - FFat.freeBytes()) );
       return request->send( response );
     }
 
     else if ( request->hasArg( "files" ) )
     {
-      File root = SPIFFS.open( "/" );
+      File root = FFat.open( "/" );
       if ( !root )
       {
         return request->send( 503, HEADER_HTML, "Storage not available." );
@@ -698,7 +699,7 @@ void webServerTask ( void * pvParameters )
         {
           filename = "/" + filename;
         }
-        request->_tempFile = SPIFFS.open( filename, "w" );
+        request->_tempFile = FFat.open( filename, "w" );
         _authenticated = true;
       }
       else
@@ -728,7 +729,7 @@ void webServerTask ( void * pvParameters )
     }
   });
 
-  server.serveStatic( "/", SPIFFS, "/" );
+  server.serveStatic( "/", FFat, "/" );
 
   server.onNotFound( []( AsyncWebServerRequest * request )
   {

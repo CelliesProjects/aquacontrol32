@@ -15,41 +15,26 @@ Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit
 #### Features:
 
 - 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
-
 - Lunar cycle night light.
-
 - 50 timers per channel.
-
 - Password protected web interface to control the device.
 <br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
-
 - Automatic NTP timekeeping.
-
 - Timezone support.
-
 - OneWire Maxim ( Dallas ) DS18B20 sensor support.
-
 - I2C 128x64 SSD1306 OLED support.
-
 - SPI 320x240 ILI9341 TFT support.
-
 - XPT2046 touchscreen support.
-
 - FFat storage with temperature logging.
-
 - All device settings are saved in NVS.
-
 - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
-
 - Get a notification in the web interface if a new release is available.
 
 
 #### You will need:
 
 - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
-
 - The [Arduino IDE](https://arduino.cc/) 1.8.9.
-
 - The [ESP32 Arduino Core 1.0.1](https://github.com/espressif/arduino-esp32/releases/tag/1.0.1).
 
 
@@ -81,24 +66,20 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 #### Connecting the hardware:
 
 - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
-
 - Read the [file](tft_board_pins.md) on connecting a ILI9341 display. Pull-ups are not optional!
-
 - The ILI9341 boards from AliExpress, DealExtreme or any other supplier are not all equal.
 <br>Among the tested boards I encountered some that have no MISO pin connected, so they can't respond to read commands.
 <br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to `true`) in `deviceSetup.h`.
-
 - Some ILI9341 boards have their touch coordinates inverted.
 <br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to `true`) in `deviceSetup.h`.
-
 - Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
 <br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 330R resistor in series to prevent burning up your ESP32.
 
 #### Lunar cycle night light:
 
-When enabled, the settings for the minimum levels in the channel section of the webinterface become the full moon light value.
-Can be disabled in `deviceSetup.h`. (set it to `false`)
+- Moon light settings can be adjusted in the `channels` area of the web-interface.
+- Can be disabled in `deviceSetup.h`. (set it to `false`)
 
 The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
 
@@ -107,7 +88,6 @@ The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapte
 #### SmartConfig:
 
 - If your ESP32 has connected to your WiFi router before you flash Aquacontrol to your device, it will probably connect automagically .
-
 - If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.

@@ -50,7 +50,7 @@ Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit
 
 - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
 
-- The [Arduino IDE](https://arduino.cc/) 1.8.8.
+- The [Arduino IDE](https://arduino.cc/) 1.8.9.
 
 - The [ESP32 Arduino Core 1.0.1](https://github.com/espressif/arduino-esp32/releases/tag/1.0.1).
 

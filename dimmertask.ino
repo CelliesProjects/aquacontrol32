@@ -113,13 +113,13 @@ bool defaultTimersLoaded()
   //return true on success
   //return false on error
 
-  if ( !SPIFFS.exists( defaultTimerFile ) )
+  if ( !FFat.exists( defaultTimerFile ) )
   {
     ESP_LOGI( TAG, "No default timer file found. [%s]", defaultTimerFile );
     return false;
   }
 
-  File f = SPIFFS.open( defaultTimerFile, "r" );
+  File f = FFat.open( defaultTimerFile, "r" );
 
   if ( !f.available() )
   {

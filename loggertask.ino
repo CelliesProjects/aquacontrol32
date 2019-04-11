@@ -18,19 +18,19 @@ void IRAM_ATTR loggerTask ( void * pvParameters )
 
     ESP_LOGI( TAG, "Logger task writing to %s", fileName );
 
-    deleteOldLogfiles( SPIFFS, "/", 0 );
+    deleteOldLogfiles( FFat, "/", 0 );
 
     if ( systemHasBooted )
     {
       snprintf( content, sizeof( content ), "#%i Aquacontrol32 start", now );
-      if ( !writelnFile( SPIFFS, fileName, content ) )
+      if ( !writelnFile( FFat, fileName, content ) )
       {
         ESP_LOGE( TAG, "%s", appendError );
       }
       systemHasBooted = false;
       /* add reset reasons for both cores to log file */
       snprintf( content, sizeof( content ), "#Reset reasons: CPU0:%s CPU1:%s ", reset_reason( rtc_get_reset_reason(0) ), reset_reason( rtc_get_reset_reason(1) ) );
-      if ( !writelnFile( SPIFFS, fileName, content ) )
+      if ( !writelnFile( FFat, fileName, content ) )
       {
         ESP_LOGE( TAG, "%s", appendError );
       }
@@ -45,7 +45,7 @@ void IRAM_ATTR loggerTask ( void * pvParameters )
       {
         charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%3.2f", sensor[ sensorNumber ].tempCelcius );
       }
-      if ( !writelnFile( SPIFFS, fileName, content ) )
+      if ( !writelnFile( FFat, fileName, content ) )
       {
         ESP_LOGE( TAG, "%s", appendError );
       }
@@ -155,4 +155,3 @@ static inline __attribute__((always_inline)) const char * reset_reason( const RE
     default : return PSTR("NO_MEAN");
   }
 }
-

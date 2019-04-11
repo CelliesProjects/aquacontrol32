@@ -1,7 +1,7 @@
 #include <rom/rtc.h>               /* should be installed together with ESP32 Arduino install */
 #include <list>                    /* should be installed together with ESP32 Arduino install */
 #include <SPI.h>                   /* should be installed together with ESP32 Arduino install */
-#include <SPIFFS.h>                /* should be installed together with ESP32 Arduino install */
+#include <FFat.h>                  /* should be installed together with ESP32 Arduino install */
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
 #include <Adafruit_ILI9341.h>      /* Install 1.2.0 via 'Manage Libraries' in Arduino IDE */
@@ -241,13 +241,17 @@ void setup()
 
   tft.begin( TFT_SPI_CLOCK );
 
-  if ( !SPIFFS.begin( true ) )
+  ESP_LOGI( TAG, "Starting FFat. (format on fail)" );
+
+  if ( !FFat.begin( true ) )
   {
-    ESP_LOGE( TAG, "Error starting SPIFFS." );
+    ESP_LOGE( TAG, "Error starting FFat." );
   }
   else
   {
-    ESP_LOGI( TAG, "SPIFFS started." );
+    ESP_LOGI( TAG, "FFat started." );
+    ESP_LOGI( TAG, "Total space: %10lu", FFat.totalBytes());
+    ESP_LOGI( TAG, "Free space:  %10lu", FFat.freeBytes());
   }
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
@@ -276,11 +280,11 @@ void setup()
   uint8_t error = Wire.endTransmission();
   if ( error )
   {
-    ESP_LOGI( TAG, "No I2C device found." );
+    ESP_LOGI( TAG, "No SSD1306 OLED found." );
   }
   else
   {
-    ESP_LOGI( TAG, "Found I2C device at address 0x%x.", OLED_ADDRESS );
+    ESP_LOGI( TAG, "Found SSD1306 OLED at address 0x%x.", OLED_ADDRESS );
     xTaskCreatePinnedToCore(
       oledTask,                       /* Function to implement the task */
       "oledTask",                     /* Name of the task */

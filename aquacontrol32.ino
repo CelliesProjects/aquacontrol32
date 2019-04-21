@@ -1,9 +1,12 @@
 #include <rom/rtc.h>               /* should be installed together with ESP32 Arduino install */
 #include <list>                    /* should be installed together with ESP32 Arduino install */
 #include <SPI.h>                   /* should be installed together with ESP32 Arduino install */
+#include <FS.h>                    /* should be installed together with ESP32 Arduino install */
 #include <FFat.h>                  /* should be installed together with ESP32 Arduino install */
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
+#include <WiFi.h>                  /* should be installed together with ESP32 Arduino install */
+#include <Wire.h>                  /* should be installed together with ESP32 Arduino install */
 #include <Adafruit_ILI9341.h>      /* Install 1.2.0 via 'Manage Libraries' in Arduino IDE */
 #include <Adafruit_GFX.h>          /* Install 1.3.6 via 'Manage Libraries' in Arduino IDE */
 #include <SSD1306.h>               /* Install 4.0.0 via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */

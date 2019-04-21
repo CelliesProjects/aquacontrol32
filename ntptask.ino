@@ -36,7 +36,7 @@ void ntpTask( void * pvParameters )
   xReturned = xTaskCreatePinnedToCore(
                 dimmerTask,                     /* Function to implement the task */
                 "dimmerTask",                   /* Name of the task */
-                2500,                           /* Stack size in words */
+                3000,                           /* Stack size in words */
                 NULL,                           /* Task input parameter */
                 dimmerTaskPriority,             /* Priority of the task */
                 &xDimmerTaskHandle,             /* Task handle. */

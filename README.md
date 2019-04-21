@@ -37,12 +37,28 @@ Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit
 - The [Arduino IDE](https://arduino.cc/) 1.8.9.
 - The [ESP32 Arduino Core 1.0.1](https://github.com/espressif/arduino-esp32/releases/tag/1.0.1).
 
+#### Libraries:
 
-Aquacontrol32 can run happily with or without OLED or TFT display.
+Most libraries can be installed with the Arduino library Manager `Sketch > Include Library > Manage Libraries`.
+<br>A few have to be downloaded from GitHub:
+
+- [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3
+- [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) master
+- [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) master
+- [MoonPhase.h](https://github.com/CelliesProjects/MoonPhase) master
+
+Install these libraries in the Arduino libraries folder.
+
+#### Compile options.
+
+- Board: MH ET LIVE ESP32MiniKit
+- Upload Speed: 921600 (or lower)
+- Flash frequency: 80Mhz
+- Partition scheme: Default with ffat
 
 #### Compile notes:
 
-- Compare your installed libraries version numbers against the comments in `aquacontrol32.ino`.
+- Compare your installed libraries versions against the libraries in `aquacontrol32.ino`.
 - Check your device options in `deviceSetup.h`.
 - Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information.
 <br>Setting `GIT_TAG` to `true` makes that the Arduino IDE can no longer compile or flash your script.
@@ -54,14 +70,10 @@ Aquacontrol32 can run happily with or without OLED or TFT display.
 <br>`custom_DebugLevel` should be set to `esp32_none` in the `flash.sh` script for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)
-
-- Check your [compile settings](compile_options.md) and [used libraries](libraries.md).
-
-- If your controller has a problem after flashing (no Wifi or stuck/not properly booting) the most probable cause is corrupted NVS.
-<br>Erasing the complete flash memory will solve most of these problems.
+- If your controller has a problem after flashing (no Wifi or stuck/not properly booting) a reflash after a full flash erase will solve it almost always.
+<br>Backup your `default.aqu` in the file manager before erasing and upload it back to the controller after you flashed your controller.
 <br>Use this command to erase flash (FFat INCLUDED!) in Linux:
 <br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
-<br>Backup your `default.aqu` in the file manager before erasing and upload it after you flash your controller.
 
 #### Connecting the hardware:
 
@@ -91,7 +103,6 @@ The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapte
 - If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
-
 - If after 5 minutes SmartConfig has not connected your device will reboot. This way Aquacontrol32 will reconnect after a powerout when the modem is not yet online when Aquacontrol32 has booted the first time.
 
 #### Log files:

@@ -7,8 +7,8 @@
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
 #include <WiFi.h>                  /* should be installed together with ESP32 Arduino install */
 #include <Wire.h>                  /* should be installed together with ESP32 Arduino install */
-#include <Adafruit_ILI9341.h>      /* Install 1.2.0 via 'Manage Libraries' in Arduino IDE */
-#include <Adafruit_GFX.h>          /* Install 1.3.6 via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_ILI9341.h>      /* Install 1.3.6 via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_GFX.h>          /* Install 1.4.11 via 'Manage Libraries' in Arduino IDE */
 #include <SSD1306.h>               /* Install 4.0.0 via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */
 #include <XPT2046_Touchscreen.h>   /* Install 1.3.0 via 'Manage Libraries' in Arduino IDE */
 #include <OneWire.h>               /* https://github.com/stickbreaker/OneWire */

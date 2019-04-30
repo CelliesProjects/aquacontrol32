@@ -124,15 +124,9 @@ enum lightStatus_t
 
 const char * lightStr[] = { " LIGHTS OFF", "LIGHTS ON", "LIGHTS AUTO" };
 
-const char *lightStatusToString( const lightStatus_t status )
+const char IRAM_ATTR * lightStatusToString( const lightStatus_t status )
 {
-  switch ( status )
-  {
-    case LIGHTS_OFF:   return lightStr[LIGHTS_OFF];
-    case LIGHTS_ON:    return lightStr[LIGHTS_ON];
-    case LIGHTS_AUTO:  return lightStr[LIGHTS_AUTO];
-    default:           return " UNDEFINED ";
-  }
+  return lightStr[status];
 }
 
 struct lightTimer_t

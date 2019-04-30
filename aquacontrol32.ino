@@ -122,14 +122,16 @@ enum lightStatus_t
   LIGHTS_OFF, LIGHTS_ON, LIGHTS_AUTO
 };
 
+const char * lightStr[] = { " LIGHTS OFF", "LIGHTS ON", "LIGHTS AUTO" };
+
 const char *lightStatusToString( const lightStatus_t status )
 {
   switch ( status )
   {
-    case LIGHTS_OFF:   return PSTR(" LIGHTS OFF");
-    case LIGHTS_ON:    return PSTR(" LIGHTS ON ");
-    case LIGHTS_AUTO:  return PSTR("LIGHTS AUTO");
-    default:           return PSTR(" UNDEFINED ");
+    case LIGHTS_OFF:   return lightStr[LIGHTS_OFF];
+    case LIGHTS_ON:    return lightStr[LIGHTS_ON];
+    case LIGHTS_AUTO:  return lightStr[LIGHTS_AUTO];
+    default:           return " UNDEFINED ";
   }
 }
 

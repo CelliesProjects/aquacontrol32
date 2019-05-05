@@ -45,7 +45,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( htmlUnmodified( request, date ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, index_htm, index_htm_len );
-    response->addHeader( "Last-Modified", date );
+    response->addHeader( HEADER_LASTMODIFIED, date );
     request->send( response );
   });
 
@@ -54,7 +54,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( htmlUnmodified( request, date ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, channels_htm, channels_htm_len );
-    response->addHeader( "Last-Modified", date );
+    response->addHeader( HEADER_LASTMODIFIED, date );
     request->send( response );
   });
 
@@ -63,7 +63,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( htmlUnmodified( request, date ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, editor_htm, editor_htm_len );
-    response->addHeader( "Last-Modified", date );
+    response->addHeader( HEADER_LASTMODIFIED, date );
     request->send( response );
   });
 
@@ -72,7 +72,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( htmlUnmodified( request, date ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, logs_htm, logs_htm_len );
-    response->addHeader( "Last-Modified", date );
+    response->addHeader( HEADER_LASTMODIFIED, date );
     request->send( response );
   });
 
@@ -81,7 +81,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( htmlUnmodified( request, date ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, setup_htm, setup_htm_len );
-    response->addHeader( "Last-Modified", date );
+    response->addHeader( HEADER_LASTMODIFIED, date );
     request->send( response );
   });
 
@@ -90,7 +90,7 @@ void webServerTask ( void * pvParameters )
   {
     if ( htmlUnmodified( request, date ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, fileman_htm, fileman_htm_len );
-    response->addHeader( "Last-Modified", date );
+    response->addHeader( HEADER_LASTMODIFIED, date );
     request->send( response );
   });
 

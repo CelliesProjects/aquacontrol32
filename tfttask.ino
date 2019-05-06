@@ -152,7 +152,7 @@ void IRAM_ATTR tftTask( void * pvParameters )
 
 static inline __attribute__((always_inline)) void showMenu()
 {
-  static lightStatus_t displayedLightStatus;
+  static lightState_t displayedLightStatus;
 
   if ( tftClearScreen )
   {
@@ -165,7 +165,7 @@ static inline __attribute__((always_inline)) void showMenu()
 
     snprintf( versionString.text, sizeof( versionString.text ), sketchVersion );
     button.updateText( versionString );
-    displayedLightStatus = lightStatus;
+    displayedLightStatus = leds.getState();
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
     tftClearScreen = false;
   }
@@ -178,10 +178,10 @@ static inline __attribute__((always_inline)) void showMenu()
   }
 
   /* check if light status has changed */
-  if ( displayedLightStatus != lightStatus )
+  if ( displayedLightStatus != leds.getState() )
   {
     drawMenuButtons();
-    displayedLightStatus = lightStatus;
+    displayedLightStatus = leds.getState();
   }
 
   /* process touch screen input */
@@ -193,15 +193,15 @@ static inline __attribute__((always_inline)) void showMenu()
 
     if ( button.pressed( LIGHTSON_BUTTON , clickedLocation ) )
     {
-      lightsOn();
+      leds.setState( LIGHTS_ON );
     }
     else if ( button.pressed( LIGHTSOFF_BUTTON , clickedLocation ) )
     {
-      lightsOff();
+      leds.setState( LIGHTS_OFF );
     }
     else if ( button.pressed( LIGHTSAUTO_BUTTON , clickedLocation ) )
     {
-      lightsAuto();
+      leds.setState( LIGHTS_AUTO );
     }
     else if ( button.pressed( BL_SLIDER_AREA , clickedLocation ) )
     {
@@ -231,7 +231,7 @@ static inline __attribute__((always_inline)) void showStatus()
   const float    HEIGHT_FACTOR    = BARS_HEIGHT / 100.0;
 
   static wl_status_t   displayedWiFiStatus;
-  static lightStatus_t displayedLightStatus;
+  static lightState_t displayedLightStatus;
 
   uint16_t channelColor565[NUMBER_OF_CHANNELS];
 
@@ -421,15 +421,15 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
   tftButton::button_t tempButton;
 
   tempButton = LIGHTSON_BUTTON;
-  tempButton.color = ( lightStatus == LIGHTS_ON ) ? ILI9341_RED : ILI9341_BLUE;
+  tempButton.color = ( leds.getState() == LIGHTS_ON ) ? ILI9341_RED : ILI9341_BLUE;
   button.draw( tempButton );
 
   tempButton = LIGHTSOFF_BUTTON;
-  tempButton.color = ( lightStatus == LIGHTS_OFF ) ? ILI9341_RED : ILI9341_BLUE;
+  tempButton.color = ( leds.getState() == LIGHTS_OFF ) ? ILI9341_RED : ILI9341_BLUE;
   button.draw( tempButton );
 
   tempButton = LIGHTSAUTO_BUTTON;
-  tempButton.color = ( lightStatus == LIGHTS_AUTO ) ? ILI9341_RED : ILI9341_BLUE;
+  tempButton.color = ( leds.getState() == LIGHTS_AUTO ) ? ILI9341_RED : ILI9341_BLUE;
   button.draw( tempButton );
 
   button.draw( EXIT_BUTTON );

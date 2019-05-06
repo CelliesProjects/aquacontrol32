@@ -39,68 +39,80 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
   setupDimmerPWMfrequency( preferences.getDouble( "pwmfrequency", LEDC_MAXIMUM_FREQ ),
                            preferences.getUInt( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
 
-  lightStatus = LIGHTS_AUTO;
+  leds.setState( LIGHTS_AUTO );
 
   xLastWakeTime = xTaskGetTickCount();
 
   while (1)
   {
-    struct timeval microSecondTime;
-
-    gettimeofday( &microSecondTime, NULL );
-
-    struct tm *localTime;
-
-    localTime = localtime( &microSecondTime.tv_sec );
-
-    suseconds_t milliSecondsToday = ( localTime->tm_hour       * 3600000U ) +
-                                    ( localTime->tm_min        * 60000U ) +
-                                    ( localTime->tm_sec        * 1000U ) +
-                                    ( microSecondTime.tv_usec  / 1000U );
-
-    if ( milliSecondsToday ) /* to solve flashing at 00:00:000 due to the fact that the first timer has no predecessor */
+    if ( leds.getState() != LIGHTS_AUTO )
     {
+      uint16_t ledCvalue = ( leds.getState() == LIGHTS_OFF ) ? 0 : ledcMaxValue;
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        uint8_t thisTimer = 0;
+        channel[channelNumber].currentPercentage = ( ledCvalue == 0 ) ? 0 : 100;
+        ledcWrite( channelNumber, ledCvalue );
+      }
+    }
+    else
+    {
+      struct timeval microSecondTime;
 
-        while ( channel[channelNumber].timer[thisTimer].time * 1000U < milliSecondsToday )
+      gettimeofday( &microSecondTime, NULL );
+
+      struct tm *localTime;
+
+      localTime = localtime( &microSecondTime.tv_sec );
+
+      suseconds_t milliSecondsToday = ( localTime->tm_hour       * 3600000U ) +
+                                      ( localTime->tm_min        * 60000U ) +
+                                      ( localTime->tm_sec        * 1000U ) +
+                                      ( microSecondTime.tv_usec  / 1000U );
+
+      if ( milliSecondsToday ) /* to solve flashing at 00:00:000 due to the fact that the first timer has no predecessor */
+      {
+        for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
         {
-          thisTimer++;
+          uint8_t thisTimer = 0;
+
+          while ( channel[channelNumber].timer[thisTimer].time * 1000U < milliSecondsToday )
+          {
+            thisTimer++;
+          }
+
+          float newPercentage;
+
+          /* only do a lot of math if really neccesary */
+          if ( channel[channelNumber].timer[thisTimer].percentage != channel[channelNumber].timer[thisTimer - 1].percentage )
+          {
+            newPercentage = mapFloat( milliSecondsToday,
+                                      channel[channelNumber].timer[thisTimer - 1].time * 1000U,
+                                      channel[channelNumber].timer[thisTimer].time * 1000U,
+                                      channel[channelNumber].timer[thisTimer - 1].percentage,
+                                      channel[channelNumber].timer[thisTimer].percentage );
+          }
+          else
+          {
+            /* timers are equal so no math neccesary */
+            newPercentage = channel[channelNumber].timer[thisTimer].percentage;
+          }
+
+          /* check if channel has a minimum set */
+          if ( !MOON_SIMULATOR && newPercentage < channel[channelNumber].minimumLevel )
+            newPercentage = channel[channelNumber].minimumLevel;
+
+          /* calculate moon light */
+          if ( MOON_SIMULATOR && newPercentage < ( channel[channelNumber].minimumLevel * moonData.percentLit ) )
+            newPercentage = channel[channelNumber].minimumLevel * moonData.percentLit;
+
+          /* done, set the channel */
+          channel[channelNumber].currentPercentage = newPercentage;
+          ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage,
+                                              0,
+                                              100,
+                                              0,
+                                              ledcMaxValue ) );
         }
-
-        float newPercentage;
-
-        /* only do a lot of math if really neccesary */
-        if ( channel[channelNumber].timer[thisTimer].percentage != channel[channelNumber].timer[thisTimer - 1].percentage )
-        {
-          newPercentage = mapFloat( milliSecondsToday,
-                                    channel[channelNumber].timer[thisTimer - 1].time * 1000U,
-                                    channel[channelNumber].timer[thisTimer].time * 1000U,
-                                    channel[channelNumber].timer[thisTimer - 1].percentage,
-                                    channel[channelNumber].timer[thisTimer].percentage );
-        }
-        else
-        {
-          /* timers are equal so no math neccesary */
-          newPercentage = channel[channelNumber].timer[thisTimer].percentage;
-        }
-
-        /* check if channel has a minimum set */
-        if ( !MOON_SIMULATOR && newPercentage < channel[channelNumber].minimumLevel )
-          newPercentage = channel[channelNumber].minimumLevel;
-
-        /* calculate moon light */
-        if ( MOON_SIMULATOR && newPercentage < ( channel[channelNumber].minimumLevel * moonData.percentLit ) )
-          newPercentage = channel[channelNumber].minimumLevel * moonData.percentLit;
-
-        /* done, set the channel */
-        channel[channelNumber].currentPercentage = newPercentage;
-        ledcWrite( channelNumber, mapFloat( channel[channelNumber].currentPercentage,
-                                            0,
-                                            100,
-                                            0,
-                                            ledcMaxValue ) );
       }
     }
     vTaskDelayUntil( &xLastWakeTime, dimmerTaskdelayTime );
@@ -188,32 +200,4 @@ void setupDimmerPWMfrequency( const double frequency, const uint8_t numberOfBits
   ESP_LOGI( TAG, "PWM frequency set to %.2f kHz.", ledcActualFrequency / 1000);
   ESP_LOGI( TAG, "PWM bit depth set to %i bits.", ledcNumberOfBits);
   ESP_LOGI( TAG, "Maximum raw value set to 0x%x or %i decimal.", ledcMaxValue, ledcMaxValue);
-}
-
-static inline __attribute__((always_inline)) void lightsOn()
-{
-  vTaskSuspend( xDimmerTaskHandle );
-  for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-  {
-    channel[channelNumber].currentPercentage = 100;
-    ledcWrite( channelNumber, ledcMaxValue );
-  }
-  lightStatus = LIGHTS_ON;
-}
-
-static inline __attribute__((always_inline)) void lightsOff()
-{
-  vTaskSuspend( xDimmerTaskHandle );
-  for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-  {
-    channel[channelNumber].currentPercentage = 0;
-    ledcWrite( channelNumber, 0 );
-  }
-  lightStatus = LIGHTS_OFF;
-}
-
-static inline __attribute__((always_inline)) void lightsAuto()
-{
-  lightStatus = LIGHTS_AUTO;
-  vTaskResume( xDimmerTaskHandle );
 }

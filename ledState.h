@@ -11,30 +11,26 @@ class ledState
   public:
 
     ledState() {
-      lightState = LIGHTS_OFF;
+      _lightState = LIGHTS_OFF;
     };
 
     const char *          stateString() {                                 // return the current state
-      return lightStr[lightState];
-    }
-
-    const char *          stateString( const lightState_t state ) {
-      return lightStr[state];
+      return _lightStr[_lightState];
     }
 
     void                  setState( lightState_t state ) {
-      lightState = state;
+      _lightState = state;
     };
 
-    const lightState_t   getState() {
-      return lightState;
+    const lightState_t   state() {
+      return _lightState;
     };
 
   private:
 
-    const char * lightStr[3] = { "LIGHTS OFF", "LIGHTS ON", "LIGHTS AUTO" };
+    const char * _lightStr[3] = { "LIGHTS OFF", "LIGHTS ON", "LIGHTS AUTO" };
 
-    lightState_t lightState;
+    lightState_t _lightState;
 };
 
 #endif

@@ -165,7 +165,7 @@ static inline __attribute__((always_inline)) void showMenu()
 
     snprintf( versionString.text, sizeof( versionString.text ), sketchVersion );
     button.updateText( versionString );
-    displayedLightStatus = leds.getState();
+    displayedLightStatus = leds.state();
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
     tftClearScreen = false;
   }
@@ -178,10 +178,10 @@ static inline __attribute__((always_inline)) void showMenu()
   }
 
   /* check if light status has changed */
-  if ( displayedLightStatus != leds.getState() )
+  if ( displayedLightStatus != leds.state() )
   {
     drawMenuButtons();
-    displayedLightStatus = leds.getState();
+    displayedLightStatus = leds.state();
   }
 
   /* process touch screen input */
@@ -421,15 +421,15 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
   tftButton::button_t tempButton;
 
   tempButton = LIGHTSON_BUTTON;
-  tempButton.color = ( leds.getState() == LIGHTS_ON ) ? ILI9341_RED : ILI9341_BLUE;
+  tempButton.color = ( leds.state() == LIGHTS_ON ) ? ILI9341_RED : ILI9341_BLUE;
   button.draw( tempButton );
 
   tempButton = LIGHTSOFF_BUTTON;
-  tempButton.color = ( leds.getState() == LIGHTS_OFF ) ? ILI9341_RED : ILI9341_BLUE;
+  tempButton.color = ( leds.state() == LIGHTS_OFF ) ? ILI9341_RED : ILI9341_BLUE;
   button.draw( tempButton );
 
   tempButton = LIGHTSAUTO_BUTTON;
-  tempButton.color = ( leds.getState() == LIGHTS_AUTO ) ? ILI9341_RED : ILI9341_BLUE;
+  tempButton.color = ( leds.state() == LIGHTS_AUTO ) ? ILI9341_RED : ILI9341_BLUE;
   button.draw( tempButton );
 
   button.draw( EXIT_BUTTON );

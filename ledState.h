@@ -14,7 +14,7 @@ class ledState
       _lightState = LIGHTS_OFF;
     };
 
-    const char *          stateString() {                                 // return the current state
+    const char *          stateString() {
       return _lightStr[_lightState];
     }
 
@@ -22,7 +22,7 @@ class ledState
       _lightState = state;
     };
 
-    const lightState_t   state() {
+    const lightState_t    state() {
       return _lightState;
     };
 

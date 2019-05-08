@@ -135,8 +135,9 @@ static inline __attribute__((always_inline)) bool writelnFile( fs::FS &fs, const
 
 const char * resetStr[] =
 {
-  "NO_MEAN",
+  "",
   "POWERON_RESET",
+  "",
   "SW_RESET",
   "OWDT_RESET",
   "DEEPSLEEP_RESET",

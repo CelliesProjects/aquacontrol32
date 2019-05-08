@@ -29,7 +29,7 @@ void IRAM_ATTR loggerTask ( void * pvParameters )
       }
       systemHasBooted = false;
       /* add reset reasons for both cores to log file */
-      snprintf( content, sizeof( content ), "#Reset reasons: CPU0:%s CPU1:%s ", reset_reason( rtc_get_reset_reason(0) ), reset_reason( rtc_get_reset_reason(1) ) );
+      snprintf( content, sizeof( content ), "#Reset reasons: CPU0:%s CPU1:%s ", resetString( rtc_get_reset_reason(0) ), resetString( rtc_get_reset_reason(1) ) );
       if ( !writelnFile( FFat, fileName, content ) )
       {
         ESP_LOGE( TAG, "%s", appendError );
@@ -133,7 +133,7 @@ static inline __attribute__((always_inline)) bool writelnFile( fs::FS &fs, const
   return true;
 }
 
-const char * reset_reason( const RESET_REASON reason )
+const char * resetString( const RESET_REASON reason )
 {
   const char * resetStr[] =
   {

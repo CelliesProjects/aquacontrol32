@@ -47,20 +47,13 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
   {
     if ( leds.state() != LIGHTS_AUTO )
     {
-      static bool firstRun = true;
-      if ( firstRun )
+      uint16_t pwmValue = ( leds.state() == LIGHTS_OFF ) ? 0 : ledcMaxValue;
+      float percentage = ( pwmValue == 0 ) ? 0 : 100;
+      for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
-        uint16_t pwmValue = ( leds.state() == LIGHTS_OFF ) ? 0 : ledcMaxValue;
-        float percentage = ( pwmValue == 0 ) ? 0 : 100;
-        for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
-        {
-          channel[channelNumber].currentPercentage = percentage;
-          ledcWrite( channelNumber, pwmValue );
-        }
-        firstRun = false;
+        channel[channelNumber].currentPercentage = percentage;
+        ledcWrite( channelNumber, pwmValue );
       }
-      else
-        firstRun = true;
     }
     else
     {

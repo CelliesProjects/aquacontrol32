@@ -16,6 +16,8 @@
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
 
+#include "ledState.h"
+
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
 #include "mapFloat.h"
@@ -104,6 +106,8 @@ const char * sketchVersion = "ARDUINO IDE";
 /**************************************************************************
       Setup included libraries
  *************************************************************************/
+ledState leds;
+
 XPT2046_Touchscreen touch( TOUCH_CS_PIN, TOUCH_IRQ_PIN );
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341( SPI_TFT_CS_PIN, SPI_TFT_DC_PIN, SPI_TFT_RST_PIN );
@@ -117,18 +121,6 @@ MoonPhase MoonPhase;
 /**************************************************************************
        type definitions
 **************************************************************************/
-enum lightStatus_t
-{
-  LIGHTS_OFF, LIGHTS_ON, LIGHTS_AUTO
-};
-
-const char * lightStr[] = { " LIGHTS OFF", "LIGHTS ON", "LIGHTS AUTO" };
-
-const char IRAM_ATTR * lightStatusToString( const lightStatus_t status )
-{
-  return lightStr[status];
-}
-
 struct lightTimer_t
 {
   time_t      time;                    /* time in seconds since midnight so range is 0-86400 */
@@ -174,8 +166,6 @@ const uint8_t moonSimtaskPriority      = 0;
 channelData_t           channel[NUMBER_OF_CHANNELS];
 
 sensorData_t            sensor[MAX_NUMBER_OF_SENSORS];
-
-lightStatus_t           lightStatus;
 
 MoonPhase::moonData     moonData;
 

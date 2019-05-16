@@ -313,7 +313,7 @@ void webServerTask ( void * pvParameters )
         strftime( timeStr, sizeof( timeStr ),  "%H:%M", localtime( &now ) );
         then = now;
       }
-      response->printf( "%s\n%s\n", timeStr, lightStatusToString( lightStatus ) );
+      response->printf( "%s\n%s\n", timeStr, leds.stateString() );
       if ( numberOfFoundSensors )
       {
         for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
@@ -481,20 +481,20 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "lightsoff" ) )
     {
-      lightsOff();
-      return request->send( 200, HEADER_HTML, lightStatusToString( lightStatus ) );
+      leds.setState( LIGHTS_OFF );
+      return request->send( 200, HEADER_HTML, leds.stateString() );
     }
 
     else if ( request->hasArg( "lightson" ) )
     {
-      lightsOn();
-      return request->send( 200, HEADER_HTML, lightStatusToString( lightStatus ) );
+      leds.setState( LIGHTS_ON );
+      return request->send( 200, HEADER_HTML, leds.stateString() );
     }
 
     else if ( request->hasArg( "lightsprogram" ) )
     {
-      lightsAuto();
-      return request->send( 200, HEADER_HTML, lightStatusToString( lightStatus ) );
+      leds.setState( LIGHTS_AUTO );
+      return request->send( 200, HEADER_HTML, leds.stateString() );
     }
 
     else if ( request->hasArg( "loadtimers" ) )

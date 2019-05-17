@@ -157,3 +157,19 @@ const char * resetString( const RESET_REASON reason )
   };
   return resetStr[reason];
 }
+
+void writeSensorErrorLog( const uint8_t &whichSensor, const char * errorStr, const byte data[9] )
+{
+  time_t rawtime;
+  struct tm * timeinfo;
+  time ( &rawtime );
+  timeinfo = localtime ( &rawtime );
+  char timeBuff[20];
+  strftime ( timeBuff, sizeof(timeBuff), "%x %X", timeinfo );
+  char buffer[100];
+  snprintf( buffer, sizeof( buffer ), "%s - sensor: '%s' %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, sensor[whichSensor].name, errorStr,
+            data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+
+  writelnFile( FFat, "/sensor_error.txt", buffer );
+  ESP_LOGE( TAG, "%s", buffer );
+}

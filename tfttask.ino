@@ -504,7 +504,6 @@ static inline __attribute__((always_inline)) void drawSensors( const bool &force
         if ( sensor[ thisSensor ].tempCelcius < -55 || sensor[ thisSensor ].tempCelcius > 125 )    /* temp is outside DS18B20 specs */
         {
           tempArea[thisSensor].labelcolor = ILI9341_RED;                                           /* show temp as in error */
-          ESP_LOGE( TAG, "Out of range temperature." );
           sensor[ thisSensor ].tempCelcius = currentTemp[ thisSensor ];                            /* show previous temp */
         }
         snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " %.1f%c ", sensor[thisSensor].tempCelcius, char(247) );

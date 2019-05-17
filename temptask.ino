@@ -85,7 +85,7 @@ void IRAM_ATTR tempTask( void * pvParameters )
       if ( OneWire::crc8(data, 8) != data[8])
       {
         // CRC of temperature reading indicates an error, so we print a error message and discard this reading
-        ESP_LOGE( TAG, "%u - CRC error from device %u", millis() / 1000.0, thisSensor );
+        writeSensorErrorLog( thisSensor, "BAD_CRC", data );
       }
       else
       {
@@ -109,6 +109,9 @@ void IRAM_ATTR tempTask( void * pvParameters )
           //// default is 12 bit resolution, 750 ms conversion time
         }
         sensor[thisSensor].tempCelcius = raw / 16.0;
+
+        if ( sensor[ thisSensor ].tempCelcius < -55 || sensor[ thisSensor ].tempCelcius > 125 )    /* temp is outside DS18B20 specs which should never happen */
+          writeSensorErrorLog( thisSensor, "BAD_TMP", data );
       }
     }
   }

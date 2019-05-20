@@ -491,7 +491,7 @@ static inline __attribute__((always_inline)) void showIPAddress( )
   tft.print( buff );
 }
 
-static inline __attribute__((always_inline)) void drawSensors( const bool &forceDraw )
+void drawSensors( const bool &forceDraw )
 {
   if ( numberOfFoundSensors )
   {
@@ -499,17 +499,22 @@ static inline __attribute__((always_inline)) void drawSensors( const bool &force
 
     for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
     {
-      if ( sensor[ thisSensor ].tempCelcius != currentTemp[ thisSensor ] || forceDraw )            /* only update temp if changed */
+      if ( sensor[ thisSensor ].tempCelcius != currentTemp[ thisSensor ] || sensor[thisSensor].error || forceDraw )            /* only update temp if changed */
       {
-        if ( sensor[ thisSensor ].tempCelcius < -55 || sensor[ thisSensor ].tempCelcius > 125 )    /* temp is outside DS18B20 specs */
+        if ( sensor[ thisSensor ].error )
         {
-          tempArea[thisSensor].labelcolor = ILI9341_RED;                                           /* show temp as in error */
-          sensor[ thisSensor ].tempCelcius = currentTemp[ thisSensor ];                            /* show previous temp */
+          tempArea[thisSensor].labelcolor = ILI9341_YELLOW;                                           /* show temp as in error */
+          snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " ERROR " );
+          button.updateText( tempArea[thisSensor] );
+          return;
         }
-        snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " %.1f%c ", sensor[thisSensor].tempCelcius, char(247) );
-        button.updateText( tempArea[thisSensor] );
-        currentTemp[ thisSensor ] = sensor[ thisSensor ].tempCelcius;
+        else
+        {
+          snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " %.1f%c ", sensor[thisSensor].tempCelcius, char(247) );
+          button.updateText( tempArea[thisSensor] );
+        }
       }
+      currentTemp[ thisSensor ] = sensor[ thisSensor ].tempCelcius;
     }
   }
 }

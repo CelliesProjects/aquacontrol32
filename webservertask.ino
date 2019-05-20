@@ -162,7 +162,7 @@ void webServerTask ( void * pvParameters )
     else if ( request->hasArg( "diskspace" ) )
     {
       response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "%lu" ,FFat.freeBytes() );
+      response->printf( "%lu", FFat.freeBytes() );
       //response->print( String(FFat.totalBytes() - FFat.freeBytes()) );
       return request->send( response );
     }
@@ -318,7 +318,10 @@ void webServerTask ( void * pvParameters )
       {
         for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
         {
-          response->printf( "%s,%.3f\n", sensor[sensorNumber].name, sensor[sensorNumber].tempCelcius );
+          if ( !sensor[sensorNumber].error )
+            response->printf( "%s,%.3f\n", sensor[sensorNumber].name, sensor[sensorNumber].tempCelcius );
+          else
+            response->printf( "%s,ERROR\n", sensor[sensorNumber].name );
         }
       }
       return request->send( response );
@@ -584,6 +587,21 @@ void webServerTask ( void * pvParameters )
       response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%.0f", ledcActualFrequency );
       return request->send( response );
+    }
+
+    else if ( request->hasArg( "sensorlogging" ) )
+    {
+      if ( request->arg( "sensorlogging").equalsIgnoreCase( "true" ) )
+      {
+        LOG_SENSOR_ERRORS = true;
+        return request->send( 200, HEADER_HTML, "Sensor logging is on." );
+      }
+      else if ( request->arg( "sensorlogging" ).equalsIgnoreCase( "false" ) )
+      {
+        LOG_SENSOR_ERRORS = false;
+        return request->send( 200, HEADER_HTML, "Sensor logging is off." );
+      }
+      else return request->send( 400, HEADER_HTML, "Invalid option." );
     }
 
     else if ( request->hasArg( "sensorname" ) )

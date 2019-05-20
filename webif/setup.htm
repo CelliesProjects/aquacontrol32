@@ -156,7 +156,7 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   <h3>ADMIN SETUP</h3>
     <div class="settingsBox">
     <p class="item"><span class="itemName">CHANGE ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
-    <p class="item"><span class="itemName">DISCONNECT AND RESET WIFI</span><input type="button" id="clearwifi" value="RESET"></p>
+    <p class="item"><span class="itemName">LOG SENSOR ERRORS</span><input type="button" id="sensorLogging"></p>
     </div>
 </div>
 <div class="shadowedBox">
@@ -251,6 +251,22 @@ function getTftOrientation(){
   })
   .fail( function( data ){
     if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft orientation." );
+  })
+  .always( function( data ){
+    if ( getAllValues )
+    {
+      getSensorLoggingStatus();
+    }
+  });
+}
+
+function getSensorLoggingStatus(){
+  $.get("/api/getdevice?sensorlogging=")
+  .done( function( data ){
+    $('#sensorLogging').prop('value', data);
+  })
+  .fail( function( data ){
+    console.log(data);
   })
   .always( function( data ){
     if ( getAllValues )
@@ -575,6 +591,20 @@ $('#timeZoneTextBox').on('change', function( data ) {
     });
 }); /* last in chain setup */
 
+$('#sensorLogging').on('click',function(data){
+  $.post("/api/setdevice",
+  {
+    sensorlogging : $(this).val() === "OFF" ? "ON" : "OFF"
+  })
+  .done( function(data){
+    $('#sensorLogging').prop('value',data);
+    $('#deviceStatus').html('SENSOR LOGGING IS NOW '+data);
+  })
+  .fail( function(data){
+    console.log(data);
+  });
+});
+
 $('.sensorNameInput').on('change', function( data ) {
   var sensor = $(this).index('.sensorNameInput');
   $.post( "/api/setdevice",
@@ -591,23 +621,6 @@ $('.sensorNameInput').on('change', function( data ) {
     $( '.sensorNameInput' ).eq( sensor ).css({'background':'red'});
   });
 });
-
-$('#clearwifi').on('click', function( data ) {
-  if ( confirm( "Are you sure to reset the WiFi data?\nAfter clicking yes you will not be able to access this web interface." ) )
-  {
-    $.post( "/api/setdevice",
-    {
-      clearwifi : 0
-    })
-    .done(function( data ){
-      $( '#deviceStatus' ).html( "You can now reset the ESP32." );
-    })
-    .fail(function( data ){
-      checkAuth( data );
-    });
-  };
-});
-
 </script>
 </body>
 </html>

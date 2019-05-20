@@ -40,7 +40,7 @@ class tftButton
       uint16_t       bordercolor;
       uint16_t       labelcolor;
       tftFontsize_t  fontsize;
-      char           text[20];
+      char           text[25];
       char           label[15];
     };
 

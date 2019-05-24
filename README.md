@@ -17,7 +17,7 @@ Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit
 - 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
 - Lunar cycle night light.
 - 50 timers per channel.
-- Password protected web interface to control the device.
+- Password protected web interface to control the device. (default login is user:admin password:esp32)
 <br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
 - Automatic NTP timekeeping.
 - Timezone support.

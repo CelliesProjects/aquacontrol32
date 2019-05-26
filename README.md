@@ -119,3 +119,11 @@ By default log files are not generated.
 
 <a href="https://user-images.githubusercontent.com/24290108/33763793-1df0fe98-dc12-11e7-82a5-853e5a1d07d1.JPG"><img src="https://user-images.githubusercontent.com/24290108/33763798-2385a69c-dc12-11e7-81c4-2429f2fb88fd.JPG" height="320" width="512" ></a>
 
+#### This program is beerware.
+
+I develop Aquacontrol32 in my spare time for fun.
+Although I like to code, my afk time is equally important. 
+A beer in a bar is around €2 where I live.
+If you like the project, you could buy me a beer for some moral support.
+
+[![paypal](https://www.paypalobjects.com/en_US/NL/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MSP53ANQ3VV6J)

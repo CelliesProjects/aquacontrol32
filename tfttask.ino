@@ -506,6 +506,7 @@ void drawSensors( const bool &forceDraw )
           tempArea[thisSensor].labelcolor = ILI9341_YELLOW;                                           /* show temp as in error */
           snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " ERROR " );
           button.updateText( tempArea[thisSensor] );
+          currentTemp[thisSensor] = -273;
           return;
         }
         else

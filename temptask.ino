@@ -78,14 +78,16 @@ void IRAM_ATTR tempTask( void * pvParameters )
           break;
         default:
           ESP_LOGE( TAG, "OneWire device is not a DS18x20 family device.");
-          return;
       }
 
       int16_t raw;
-      if ( OneWire::crc8(data, 8) != data[8])
+      if ( data[8] == 0xFF || OneWire::crc8(data, 8) != data[8])
       {
+
         // CRC of temperature reading indicates an error, so we print a error message and discard this reading
-        ESP_LOGE( TAG, "%u - CRC error from device %u", millis() / 1000.0, thisSensor );
+        sensor[thisSensor].error = true;
+        if ( LOG_SENSOR_ERRORS ) writeSensorErrorLog( thisSensor, "BAD_CRC", data );
+        ESP_LOGE( TAG, "Sensor %i error. data: %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", thisSensor, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
       }
       else
       {
@@ -107,8 +109,10 @@ void IRAM_ATTR tempTask( void * pvParameters )
           else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
           else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
           //// default is 12 bit resolution, 750 ms conversion time
+
         }
         sensor[thisSensor].tempCelcius = raw / 16.0;
+        sensor[thisSensor].error = false;
       }
     }
   }

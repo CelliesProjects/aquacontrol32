@@ -79,7 +79,10 @@ void IRAM_ATTR oledTask( void * pvParameters )
         uint8_t charCount = 0;
         for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
         {
-          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C  " , sensor[sensorNumber].tempCelcius );
+          if ( !sensor[sensorNumber].error )
+            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C  " , sensor[sensorNumber].tempCelcius );
+          else
+            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "ERROR  " , sensor[sensorNumber].tempCelcius );
         }
       }
       else
@@ -93,4 +96,3 @@ void IRAM_ATTR oledTask( void * pvParameters )
     vTaskDelay( oledTaskdelayTime );
   }
 }
-

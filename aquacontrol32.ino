@@ -141,9 +141,10 @@ struct channelData_t
 
 struct sensorData_t                    /* struct to keep track of Dallas DS18B20 sensors */
 {
-  byte   addr[8];
-  float  tempCelcius;
-  char   name[15];
+  byte     addr[8];
+  float    tempCelcius;
+  char     name[15];
+  bool     error = false;
 };
 
 /* const */
@@ -191,10 +192,9 @@ uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
 uint8_t                 oledContrast;                                               /* 0 .. 15 */
 uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 
+bool                    LOG_SENSOR_ERRORS             = false;
 /*****************************************************************************************
-
        end of global variables
-
 *****************************************************************************************/
 void tftTask( void * pvParameters );
 void oledTask( void * pvParameters );

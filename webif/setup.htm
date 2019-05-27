@@ -156,7 +156,7 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   <h3>ADMIN SETUP</h3>
     <div class="settingsBox">
     <p class="item"><span class="itemName">CHANGE ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
-    <p class="item"><span class="itemName">DISCONNECT AND RESET WIFI</span><input type="button" id="clearwifi" value="RESET"></p>
+    <p class="item"><span class="itemName">LOG SENSOR ERRORS</span><input type="button" id="sensorLogging"></p>
     </div>
 </div>
 <div class="shadowedBox">
@@ -170,11 +170,6 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   </div>
 </div>
 <script>
-function checkAuth( data )
-{
-  if ( data.status == 401 ) $( '#deviceStatus' ).html( "You are not authorized." )
-  else $( '#deviceStatus' ).html( data.responseText );
-}
 function formatBytes( bytes, decimals ) {
   if( bytes == 0 ) return '0 Bytes';
   var k = 1000,
@@ -236,7 +231,6 @@ function getOledContrast(){
     }
   });
 }
-
 function getTftOrientation(){
   $.get( "/api/getdevice?tftorientation=")
   .done( function( data ){
@@ -255,11 +249,25 @@ function getTftOrientation(){
   .always( function( data ){
     if ( getAllValues )
     {
+      getSensorLoggingStatus();
+    }
+  });
+}
+function getSensorLoggingStatus(){
+  $.get("/api/getdevice?sensorlogging=")
+  .done( function( data ){
+    $('#sensorLogging').prop('value', data);
+  })
+  .fail( function( data ){
+    console.log(data);
+  })
+  .always( function( data ){
+    if ( getAllValues )
+    {
       getTftMaxBrightness();
     }
   });
 }
-
 function getTftMaxBrightness(){
   $.get( "/api/getdevice?tftbrightness=")
   .done( function( data ){
@@ -276,7 +284,6 @@ function getTftMaxBrightness(){
     }
   });
 }
-
 function getTimeZone(){
   $.get( "/api/getdevice?timezone=")
   .done( function( data ){
@@ -292,7 +299,6 @@ function getTimeZone(){
     }
   });
 }
-
 function getLightStatus(){
   $.get( "/api/getdevice?status=")
   .done( function( data ){
@@ -314,7 +320,6 @@ function getLightStatus(){
     if ( getAllValues ) getWifiSSID();
   });
 }
-
 function getWifiSSID(){
   $.get( "/api/getdevice?wifissid=")
   .done( function( data ){
@@ -327,7 +332,6 @@ function getWifiSSID(){
     if ( getAllValues ) getBootTime();
   });
 }
-
 function getBootTime(){
   $.get( "/api/getdevice?boottime=")
   .done( function( data ){
@@ -340,7 +344,6 @@ function getBootTime(){
     if ( getAllValues ) getDiskSpace();
   });
 }
-
 function getDiskSpace(){
   $.get( "/api/getdevice?diskspace=")
   .done( function( data ){
@@ -367,7 +370,6 @@ function getPwmDepth(){
     if ( getAllValues ) getVersion();
   });
 }
-
 function getVersion()
 {
   $.get( "/api/getdevice?version=")
@@ -428,7 +430,6 @@ $('#passwordInput').on('change', function( event ) {
     $( '#deviceStatus' ).html( data );
   })
   .fail(function( data ){
-    checkAuth( data );
     $('#passwordInput').css({'background':'red'});
   });
 });
@@ -445,7 +446,6 @@ $('#oledOrientationSlider').on('change', function( event ) {
   })
   .fail(function( data ){
     console.log( data );
-    checkAuth( data );
     getOledOrientation();
   });
 });
@@ -461,7 +461,6 @@ $('#tftOrientationSlider').on('change', function( event ) {
     $('#tftOrientation').html( data )
   })
   .fail(function( data ){
-    checkAuth( data );
     getTftOrientation();
   });
 });
@@ -488,7 +487,7 @@ $('#lightsOff').on('click', function() {
     $('#lightStatus').html( data );
   })
   .fail(function( data ){
-    checkAuth( data );
+    $( '#deviceStatus' ).html( data.statusText  );
   });
 });
 
@@ -501,7 +500,7 @@ $('#lightsProgram').on('click', function() {
     $('#lightStatus').html( data );
   })
   .fail(function( data ){
-    checkAuth( data );
+    $( '#deviceStatus' ).html( data.statusText  );
   });
 });
 
@@ -518,7 +517,6 @@ $('#hostNameInput').on('change', function( data ) {
   })
   .fail(function( data ){
     console.log( data );
-    checkAuth( data );
     $( '#hostNameInput' ).css({'background':'red'});
   });
 });
@@ -537,7 +535,6 @@ $('#oledContrastSlider').on('change', function() {
     $('#oledContrastSlider').val( data );
   })
   .fail(function( data ){
-    checkAuth( data );
     getOledContrast();
   });
 });
@@ -555,7 +552,6 @@ $('#tftBrightnessSlider').on('change', function() {
     $('#tftBrightnessSlider').val( data );
   })
   .fail(function( data ){
-    checkAuth( data );
     getTftMaxBrightness();
   });
 });
@@ -570,10 +566,23 @@ $('#timeZoneTextBox').on('change', function( data ) {
       $('#deviceStatus').html( 'Timezone set to ' + data );
     })
     .fail(function( data ) {
-      checkAuth( data );
       $('#timeZoneTextBox').css( {'background':'red'} );
     });
 }); /* last in chain setup */
+
+$('#sensorLogging').on('click',function(data){
+  $.post("/api/setdevice",
+  {
+    sensorlogging : $(this).val() === "OFF" ? "ON" : "OFF"
+  })
+  .done( function(data){
+    $('#sensorLogging').prop('value',data);
+    $('#deviceStatus').html('SENSOR LOGGING IS NOW '+data);
+  })
+  .fail( function(data){
+    $('#deviceStatus').html(data.statusText);
+  });
+});
 
 $('.sensorNameInput').on('change', function( data ) {
   var sensor = $(this).index('.sensorNameInput');
@@ -587,27 +596,9 @@ $('.sensorNameInput').on('change', function( data ) {
     $( '.sensorNameInput' ).eq( sensor ).css({'background':'lightgreen'});
   })
   .fail(function( data ){
-    checkAuth( data );
     $( '.sensorNameInput' ).eq( sensor ).css({'background':'red'});
   });
 });
-
-$('#clearwifi').on('click', function( data ) {
-  if ( confirm( "Are you sure to reset the WiFi data?\nAfter clicking yes you will not be able to access this web interface." ) )
-  {
-    $.post( "/api/setdevice",
-    {
-      clearwifi : 0
-    })
-    .done(function( data ){
-      $( '#deviceStatus' ).html( "You can now reset the ESP32." );
-    })
-    .fail(function( data ){
-      checkAuth( data );
-    });
-  };
-});
-
 </script>
 </body>
 </html>

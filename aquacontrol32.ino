@@ -6,16 +6,16 @@
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
 #include <WiFi.h>                  /* should be installed together with ESP32 Arduino install */
-#include <Wire.h>                  /* should be installed together with ESP32 Arduino install */
+//#include <Wire.h>                  /* should be installed together with ESP32 Arduino install */
 #include <Adafruit_ILI9341.h>      /* Install 1.3.6 via 'Manage Libraries' in Arduino IDE */
 #include <Adafruit_GFX.h>          /* Install 1.4.11 via 'Manage Libraries' in Arduino IDE */
 #include <SSD1306.h>               /* Install 4.0.0 via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */
 #include <XPT2046_Touchscreen.h>   /* Install 1.3.0 via 'Manage Libraries' in Arduino IDE */
-#include <OneWire.h>               /* https://github.com/stickbreaker/OneWire */
 #include <AsyncTCP.h>              /* https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
 
+#include "sensorState.h"
 #include "ledState.h"
 
 #include "deviceSetup.h"
@@ -106,17 +106,19 @@ const char * sketchVersion = "ARDUINO IDE";
 /**************************************************************************
       Setup included libraries
  *************************************************************************/
-ledState leds;
+ledState                leds;
 
-XPT2046_Touchscreen touch( TOUCH_CS_PIN, TOUCH_IRQ_PIN );
+sensorState             sensor;
 
-Adafruit_ILI9341 tft = Adafruit_ILI9341( SPI_TFT_CS_PIN, SPI_TFT_DC_PIN, SPI_TFT_RST_PIN );
+MoonPhase               MoonPhase;
 
-Preferences preferences;
+XPT2046_Touchscreen     touch( TOUCH_CS_PIN, TOUCH_IRQ_PIN );
 
-SSD1306  OLED( OLED_ADDRESS, I2C_SDA_PIN, I2C_SCL_PIN );
+Adafruit_ILI9341        tft = Adafruit_ILI9341( SPI_TFT_CS_PIN, SPI_TFT_DC_PIN, SPI_TFT_RST_PIN );
 
-MoonPhase MoonPhase;
+SSD1306                 OLED( OLED_ADDRESS, I2C_SDA_PIN, I2C_SCL_PIN );
+
+Preferences             preferences;
 
 /**************************************************************************
        type definitions
@@ -139,20 +141,11 @@ struct channelData_t
   float           minimumLevel;        /* never dim this channel below this percentage */
 };
 
-struct sensorData_t                    /* struct to keep track of Dallas DS18B20 sensors */
-{
-  byte     addr[8];
-  float    tempCelcius;
-  char     name[15];
-  bool     error = false;
-};
-
 /* const */
 const char* defaultTimerFile   = "/default.aqu";
 
 /* task priorities */
 const uint8_t dimmerTaskPriority       = 8;
-const uint8_t tempTaskPriority         = 7;
 const uint8_t webserverTaskPriority    = 6;
 const uint8_t tftTaskPriority          = 5;
 const uint8_t ntpTaskPriority          = 4;
@@ -165,8 +158,6 @@ const uint8_t moonSimtaskPriority      = 0;
        start of global variables
 **************************************************************************/
 channelData_t           channel[NUMBER_OF_CHANNELS];
-
-sensorData_t            sensor[MAX_NUMBER_OF_SENSORS];
 
 MoonPhase::moonData     moonData;
 
@@ -184,8 +175,6 @@ double                  ledcActualFrequency;
 uint16_t                ledcMaxValue;
 uint8_t                 ledcNumberOfBits;
 
-uint8_t                 numberOfFoundSensors;
-
 float                   tftBrightness                 = 80;                         /* in percent */
 uint8_t                 tftOrientation                = TFT_ORIENTATION_NORMAL;
 
@@ -198,7 +187,6 @@ bool                    LOG_SENSOR_ERRORS             = false;
 *****************************************************************************************/
 void tftTask( void * pvParameters );
 void oledTask( void * pvParameters );
-void tempTask( void * pvParameters );
 void wifiTask( void * pvParameters );
 
 void setup()
@@ -219,6 +207,8 @@ void setup()
   gpio_set_drive_capability( (gpio_num_t)LED3_PIN, GPIO_DRIVE_CAP_3 );
   gpio_set_drive_capability( (gpio_num_t)LED4_PIN, GPIO_DRIVE_CAP_3 );
 
+  sensor.startTask();
+
   preferences.begin( "aquacontrol32", false );
 
   btStop();
@@ -234,20 +224,18 @@ void setup()
 
   if ( !FFat.begin( true ) )
   {
-    ESP_LOGE( TAG, "Error starting FFat." );
+    ESP_LOGE( TAG, "FATAL ERROR! Could not mount FFat. Did you select the right partition scheme? (something with ffat)" );
   }
   else
   {
-    ESP_LOGI( TAG, "FFat started." );
-    ESP_LOGI( TAG, "Total space: %10lu", FFat.totalBytes());
-    ESP_LOGI( TAG, "Free space:  %10lu", FFat.freeBytes());
+    ESP_LOGI( TAG, "FFat started. Total space: %lu kB. Free space:  %lu kB.", FFat.totalBytes() / 1024, FFat.freeBytes() / 1024 );
   }
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
   {
     touch.begin();
 
-    ESP_LOGI( TAG, "ILI9341 display %s.", TFT_HAS_NO_MISO ? "forced" : "found" );
+    ESP_LOGI( TAG, "An SPI ILI9341 display has been %s.", TFT_HAS_NO_MISO ? "forced" : "found" );
 
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
@@ -292,15 +280,6 @@ void setup()
     wifiTaskPriority,               /* Priority of the task */
     NULL,                           /* Task handle. */
     1);
-
-  xTaskCreatePinnedToCore(
-    tempTask,                       /* Function to implement the task */
-    "tempTask",                     /* Name of the task */
-    4000,                           /* Stack size in words */
-    NULL,                           /* Task input parameter */
-    tempTaskPriority,               /* Priority of the task */
-    NULL,                           /* Task handle. */
-    1);                             /* Core where the task should run */
 }
 
 void loop()

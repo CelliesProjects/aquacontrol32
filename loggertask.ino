@@ -36,14 +36,14 @@ void IRAM_ATTR loggerTask ( void * pvParameters )
       }
     }
 
-    if ( numberOfFoundSensors )
+    if ( sensor.count() )
     {
       charCount += snprintf( content, sizeof( content ), "%i,", now );
-      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%3.2f", sensor[ 0 ].tempCelcius);
+      charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%3.2f", sensor.temp( 0 ) );
 
-      for  ( uint8_t sensorNumber = 1; sensorNumber < numberOfFoundSensors; sensorNumber++ )
+      for  ( uint8_t sensorNumber = 1; sensorNumber < sensor.count(); sensorNumber++ )
       {
-        charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%3.2f", sensor[ sensorNumber ].tempCelcius );
+        charCount += snprintf( content + charCount, sizeof( content ) - charCount, ",%3.2f", sensor.temp( sensorNumber ) );
       }
       if ( !writelnFile( FFat, fileName, content ) )
       {
@@ -167,7 +167,7 @@ void writeSensorErrorLog( const uint8_t &whichSensor, const char * errorStr, con
   char timeBuff[20];
   strftime ( timeBuff, sizeof(timeBuff), "%x %X", timeinfo );
   char buffer[100];
-  snprintf( buffer, sizeof( buffer ), "%s - sensor: '%s' %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, sensor[whichSensor].name, errorStr,
+  snprintf( buffer, sizeof( buffer ), "%s - sensor: '%s' %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, sensor.name( whichSensor ), errorStr,
             data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
 
   writelnFile( FFat, "/sensor_error.txt", buffer );

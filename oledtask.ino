@@ -46,7 +46,7 @@ void IRAM_ATTR oledTask( void * pvParameters )
 
       OLED.drawString( 64, 20, "IP: " +  WiFi.localIP().toString() );
 
-      snprintf( content, sizeof( content ), "%i Dallas sensors", numberOfFoundSensors );
+      snprintf( content, sizeof( content ), "%i Dallas sensors", sensor.count() );
       OLED.drawString( 64, 30, content );
 
       snprintf( content, sizeof( content ), "%s", sketchVersion );
@@ -74,15 +74,15 @@ void IRAM_ATTR oledTask( void * pvParameters )
         OLED.drawString( x1 + ( BARS_WIDTH / 2 ) - 1, y1 - 11, content );
       }
 
-      if ( numberOfFoundSensors )
+      if ( sensor.count() )
       {
         uint8_t charCount = 0;
-        for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
+        for ( uint8_t sensorNumber = 0; sensorNumber < sensor.count(); sensorNumber++ )
         {
-          if ( !sensor[sensorNumber].error )
-            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C  " , sensor[sensorNumber].tempCelcius );
+          if ( !sensor.error(sensorNumber) )
+            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C  " , sensor.temp( sensorNumber ) );
           else
-            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "ERROR  " , sensor[sensorNumber].tempCelcius );
+            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "ERROR  " , sensor.temp( sensorNumber ) );
         }
       }
       else

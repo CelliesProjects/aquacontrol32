@@ -9,7 +9,7 @@
        set to false to produce no log files
        set to true to produce log files
 **************************************************************************/
-#define LOG_FILES                          false
+#define LOG_FILES                          true
 
 
 /**************************************************************************
@@ -37,7 +37,7 @@
        Set TFT_HAS_NO_MISO to false to use device detection.
        Set TFT_HAS_NO_MISO to true to override detection and use these tft boards.
 **************************************************************************/
-#define TFT_HAS_NO_MISO                    false
+#define TFT_HAS_NO_MISO                    true
 
 
 /**************************************************************************

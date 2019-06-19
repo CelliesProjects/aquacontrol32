@@ -108,6 +108,8 @@ displayState tftState = normal;
 
 bool tftClearScreen = true;
 
+void drawSensors();
+
 void IRAM_ATTR tftTask( void * pvParameters )
 {
   const TickType_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
@@ -222,6 +224,51 @@ static inline __attribute__((always_inline)) void showMenu()
   }
 }
 
+void newSensors()
+{
+  tft.startWrite();
+  tft.writeFillRect( 220, 60, TFT_BUTTON_WIDTH, 90, TFT_BACK_COLOR );
+  tft.endWrite();
+
+  for ( uint8_t num = 0; num < sensor.count(); num++ )
+  {
+    tempArea[num].x = 220;
+    tempArea[num].y = 70 + num * 50;
+    tempArea[num].w = TFT_BUTTON_WIDTH - 20;
+    tempArea[num].h = 30;
+    tempArea[num].color = TFT_BACK_COLOR;
+    tempArea[num].labelcolor = ILI9341_WHITE;
+    tempArea[num].fontsize = size2;
+    button.updateSensorLabel( tempArea[num], (char *)sensor.name( num ) );
+  }
+}
+
+void updateSensorLabels(  )
+{
+  for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
+    button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.name( thisSensor ) );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static inline __attribute__((always_inline)) void showStatus()
 {
   const uint16_t BARS_BOTTOM      = 190;
@@ -235,50 +282,13 @@ static inline __attribute__((always_inline)) void showStatus()
 
   uint16_t channelColor565[NUMBER_OF_CHANNELS];
 
-
   if ( tftClearScreen )
   {
     tft.fillScreen( TFT_BACK_COLOR );
     button.draw( MENU_BUTTON );
-
     showIPAddress(  );
     displayedWiFiStatus = WiFi.status();
-
-    tft.setTextSize( 0 );
-    for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
-    {
-      tempArea[thisSensor].x = 220;
-      tempArea[thisSensor].y = 70 + thisSensor * 50;
-      tempArea[thisSensor].w = TFT_BUTTON_WIDTH - 20;
-      tempArea[thisSensor].h = 30;
-      tempArea[thisSensor].color = TFT_BACK_COLOR;
-      tempArea[thisSensor].labelcolor = ILI9341_WHITE;
-      tempArea[thisSensor].fontsize = size2;
-      button.updateSensorLabel( tempArea[thisSensor], sensor[thisSensor].name );
-    }
-    drawSensors( true );
-  }
-
-  if ( numberOfFoundSensors && !tftClearScreen )
-  {
-    struct savedSensor_t
-    {
-      char name[ sizeof( sensor->name ) ];
-    };
-
-    static savedSensor_t savedSensor[MAX_NUMBER_OF_SENSORS];
-
-    for ( auto thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
-    {
-      if ( strcmp( sensor[thisSensor].name, savedSensor[thisSensor].name ) != 0 )
-      {
-        ESP_LOGI( TAG, "Updating sensor %i label from '%s' to '%s'.", thisSensor, savedSensor[thisSensor].name, sensor[thisSensor].name );
-
-        button.updateSensorLabel( tempArea[thisSensor], sensor[thisSensor].name );
-
-        strncpy( savedSensor[thisSensor].name, sensor[thisSensor].name, sizeof( sensor->name ) );
-      }
-    }
+    tftClearScreen = false;
   }
 
   static float oldPercentage[NUMBER_OF_CHANNELS];
@@ -364,7 +374,37 @@ static inline __attribute__((always_inline)) void showStatus()
 
   ledcWrite( TFT_BACKLIGHT_CHANNEL, ( averageLedBrightness > rawBrightness ) ? rawBrightness : averageLedBrightness );
 
-  drawSensors( false );
+
+
+  // check if the number of sensors changed, delete the current sensors if needed and draw the new sensor labels
+  //static sensorState::sensorState_t displayedSensors[MAX_NUMBER_OF_SENSORS]{};
+  static uint8_t lastCount{0};
+  if ( sensor.count() != lastCount )
+  {
+    newSensors();
+    lastCount = sensor.count();
+  }
+
+  static sensorState::sensorState_t lastState[MAX_NUMBER_OF_SENSORS];
+
+  for ( uint8_t num = 0; num < sensor.count(); num++ )
+  {
+    //if the name changed update the display
+    if ( strcmp(lastState[num].name, sensor.name(num)) )
+    {
+      button.updateSensorLabel(tempArea[num], (char *)sensor.name(num));
+      memcpy(lastState[num].name, sensor.name(num), sizeof( sensorState::sensorState_t::name) );
+    }
+
+    // if the temperature changed update the display
+    if ( lastState[num].tempCelcius != sensor.temp( num ) && !sensor.error( num ) )
+    {
+      snprintf( tempArea[num].text, sizeof( tempArea[num].text ), " %.1f%c ", sensor.temp( num ), char(247) );
+      button.updateText( tempArea[num] );
+      lastState[num].tempCelcius = sensor.temp( num );
+    }
+  }
+
 
   struct tm timeinfo;
 
@@ -415,6 +455,40 @@ static inline __attribute__((always_inline)) void showStatus()
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 static inline __attribute__((always_inline)) void drawMenuButtons()
 {
@@ -491,32 +565,14 @@ static inline __attribute__((always_inline)) void showIPAddress( )
   tft.print( buff );
 }
 
-void drawSensors( const bool &forceDraw )
+void drawSensors( /*const bool &forceDraw*/ )
 {
-  if ( numberOfFoundSensors )
+  for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
   {
-    static float currentTemp[MAX_NUMBER_OF_SENSORS];
+    button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.name(thisSensor) );
 
-    for ( uint8_t thisSensor = 0; thisSensor < numberOfFoundSensors; thisSensor++ )
-    {
-      if ( sensor[ thisSensor ].tempCelcius != currentTemp[ thisSensor ] || sensor[thisSensor].error || forceDraw )            /* only update temp if changed */
-      {
-        if ( sensor[ thisSensor ].error )
-        {
-          tempArea[thisSensor].labelcolor = ILI9341_YELLOW;                                           /* show temp as in error */
-          snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " ERROR " );
-          button.updateText( tempArea[thisSensor] );
-          currentTemp[thisSensor] = -273;
-          return;
-        }
-        else
-        {
-          snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " %.1f%c ", sensor[thisSensor].tempCelcius, char(247) );
-          button.updateText( tempArea[thisSensor] );
-        }
-      }
-      currentTemp[ thisSensor ] = sensor[ thisSensor ].tempCelcius;
-    }
+    //snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " %.1f%c ", sensor.temp( thisSensor ), char(247) );
+    //button.updateText( tempArea[thisSensor] );
   }
 }
 

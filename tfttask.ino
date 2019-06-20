@@ -288,7 +288,6 @@ static inline __attribute__((always_inline)) void showStatus()
     button.draw( MENU_BUTTON );
     showIPAddress(  );
     displayedWiFiStatus = WiFi.status();
-    tftClearScreen = false;
   }
 
   static float oldPercentage[NUMBER_OF_CHANNELS];
@@ -366,7 +365,6 @@ static inline __attribute__((always_inline)) void showStatus()
     oldPercentage[ channelNumber ] = channel[channelNumber].currentPercentage;
     averageLedBrightness += ledcRead( channelNumber );
   }
-  tftClearScreen = false;
 
   averageLedBrightness = averageLedBrightness / NUMBER_OF_CHANNELS;
 
@@ -374,18 +372,16 @@ static inline __attribute__((always_inline)) void showStatus()
 
   ledcWrite( TFT_BACKLIGHT_CHANNEL, ( averageLedBrightness > rawBrightness ) ? rawBrightness : averageLedBrightness );
 
-
-
-  // check if the number of sensors changed, delete the current sensors if needed and draw the new sensor labels
-  //static sensorState::sensorState_t displayedSensors[MAX_NUMBER_OF_SENSORS]{};
   static uint8_t lastCount{0};
-  if ( sensor.count() != lastCount )
+  static sensorState::sensorState_t lastState[MAX_NUMBER_OF_SENSORS];
+  if ( tftClearScreen || sensor.count() != lastCount )
   {
+    memset( lastState, 0, sizeof( lastState ) );
     newSensors();
     lastCount = sensor.count();
+    tftClearScreen = false;
   }
 
-  static sensorState::sensorState_t lastState[MAX_NUMBER_OF_SENSORS];
 
   for ( uint8_t num = 0; num < sensor.count(); num++ )
   {

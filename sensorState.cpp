@@ -1,5 +1,7 @@
+#include <FFat.h>
 #include <OneWire.h>
 #include <Preferences.h>
+
 #include "sensorState.h"
 
 OneWire ds( SENSOR_PIN );
@@ -16,22 +18,39 @@ bool sensorState::startTask()
     ESP_LOGE( TAG, "Sensor task already running. Exiting." );
     return false;
   }
-  //TODO: check if new succeeds
   _pSensorState = new sensorState();
+  if ( nullptr == _pSensorState )
+  {
+    ESP_LOGE( TAG, "Sensor task not created. (low mem?) Exiting." );
+    return false;
+  }
   _pSensorState->setStackSize(2500);
   _pSensorState->setCore(0);
   _pSensorState->setPriority(0);
   _pSensorState->start();
+  ESP_LOGE( TAG, "Sensor task started." );
   return true;
 }
 
-uint8_t sensorState::count() const { return ( nullptr == _pSensorState ) ? 0 : _pSensorState->_count; };
+uint8_t sensorState::count() const
+{
+  return ( nullptr == _pSensorState ) ? 0 : _pSensorState->_count;
+};
 
-float sensorState::temp( uint8_t num ) const { return ( nullptr == _pSensorState ) ? NAN :_pSensorState->_state[num].tempCelcius; };
+float sensorState::temp( uint8_t num ) const
+{
+  return ( nullptr == _pSensorState ) ? NAN : _pSensorState->_state[num].tempCelcius;
+};
 
-bool sensorState::error( uint8_t num ) const { return ( nullptr == _pSensorState ) ? true :  _pSensorState->_state[num].error; };
+bool sensorState::error( uint8_t num ) const
+{
+  return ( nullptr == _pSensorState ) ? true :  _pSensorState->_state[num].error;
+};
 
-const char * sensorState::name( uint8_t num ) const { return ( nullptr == _pSensorState ) ? "" : _pSensorState->_state[num].name; };
+const char * sensorState::name( uint8_t num ) const
+{
+  return ( nullptr == _pSensorState ) ? "" : _pSensorState->_state[num].name;
+};
 
 uint8_t sensorState::_scanSensors()
 {
@@ -142,6 +161,14 @@ void sensorState::run( void * data ) {
       {
         _tempState[thisSensor].tempCelcius = NAN;
         _tempState[thisSensor].error = true;
+
+        if ( logging() )
+        {
+          if ( !_logError( thisSensor, "/sensor_error.txt", "BAD CRC", data ) )
+          {
+            ESP_LOGI( TAG, "append error writing %s to sensor errorlog.", "blabla" );
+          }
+        }
       }
       else
       {
@@ -169,9 +196,35 @@ void sensorState::run( void * data ) {
       }
       thisSensor++;
     }
-    vTaskSuspendAll();
+    //vTaskSuspendAll();
     memcpy( &_state, &_tempState, sizeof( sensorState_t[ MAX_NUMBER_OF_SENSORS ] ) );
     _count = loopCounter;
-    xTaskResumeAll();
+    //xTaskResumeAll();
   }
+}
+
+bool sensorState::_logError( uint8_t num, const char * path, const char * message, const byte data[9] )
+{
+  time_t rawtime;
+  struct tm * timeinfo;
+  time ( &rawtime );
+  timeinfo = localtime ( &rawtime );
+  char timeBuff[20];
+  strftime ( timeBuff, sizeof(timeBuff), "%x %X", timeinfo );
+  char buffer[100];
+  snprintf( buffer, sizeof( buffer ), "%s - sensor: '%s' %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, _tempState[num].name, message,
+            data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
+  ESP_LOGE( TAG, "%s", buffer );
+  File file = FFat.open( path, FILE_APPEND );
+  if ( !file )
+  {
+    return false;
+  }
+  if ( !file.println( buffer ) )
+  {
+    file.close();
+    return false;
+  }
+  file.close();
+  return true;
 }

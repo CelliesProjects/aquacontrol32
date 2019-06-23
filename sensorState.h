@@ -34,12 +34,8 @@ class sensorState: public Task {
     const char *          nameFromId( const char * id ) const;
     char *                id( uint8_t num );
     bool                  setName( const char * id, const char * name ) const;
-    bool                  logging() {
-      return _logToFfat;
-    };
-    void                  setLogging( bool state ) {
-      _logToFfat = state;
-    };
+    bool                  logging() { return _logToFfat; };
+    void                  setLogging( bool state ) { _logToFfat = state; };
 
   private:
 
@@ -50,7 +46,8 @@ class sensorState: public Task {
     sensorState_t         _tempState[MAX_NUMBER_OF_SENSORS];
     sensorState *         _pSensorState = nullptr;
     char                  _idStr[15];
-    bool                  _logToFfat = false;
+    bool                  _logToFfat = true;
+    bool                  _logError( uint8_t num, const char * path, const char * message, const byte data[9] );
 };
 
 #endif

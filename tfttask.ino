@@ -227,13 +227,13 @@ static inline __attribute__((always_inline)) void showMenu()
 void newSensors()
 {
   tft.startWrite();
-  tft.writeFillRect( 220, 60, TFT_BUTTON_WIDTH, 90, TFT_BACK_COLOR );
+  tft.writeFillRect( 210, 60, TFT_BUTTON_WIDTH, 120, TFT_BACK_COLOR );
   tft.endWrite();
 
   for ( uint8_t num = 0; num < sensor.count(); num++ )
   {
     tempArea[num].x = 220;
-    tempArea[num].y = 70 + num * 50;
+    tempArea[num].y = 70 + num * 40;
     tempArea[num].w = TFT_BUTTON_WIDTH - 20;
     tempArea[num].h = 30;
     tempArea[num].color = TFT_BACK_COLOR;
@@ -248,26 +248,6 @@ void updateSensorLabels(  )
   for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
     button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.name( thisSensor ) );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 static inline __attribute__((always_inline)) void showStatus()
 {
@@ -382,7 +362,6 @@ static inline __attribute__((always_inline)) void showStatus()
     tftClearScreen = false;
   }
 
-
   for ( uint8_t num = 0; num < sensor.count(); num++ )
   {
     //if the name changed update the display
@@ -400,7 +379,6 @@ static inline __attribute__((always_inline)) void showStatus()
       lastState[num].tempCelcius = sensor.temp( num );
     }
   }
-
 
   struct tm timeinfo;
 
@@ -452,40 +430,6 @@ static inline __attribute__((always_inline)) void showStatus()
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 static inline __attribute__((always_inline)) void drawMenuButtons()
 {
   tftButton::button_t tempButton;
@@ -504,7 +448,6 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
 
   button.draw( EXIT_BUTTON );
 }
-
 
 static inline __attribute__((always_inline)) uint16_t mapUint16( const uint16_t &x, const uint16_t &in_min, const uint16_t &in_max, const uint16_t &out_min, const uint16_t &out_max)
 {
@@ -561,15 +504,10 @@ static inline __attribute__((always_inline)) void showIPAddress( )
   tft.print( buff );
 }
 
-void drawSensors( /*const bool &forceDraw*/ )
+void drawSensors()
 {
   for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
-  {
     button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.name(thisSensor) );
-
-    //snprintf( tempArea[thisSensor].text, sizeof( tempArea[thisSensor].text ), " %.1f%c ", sensor.temp( thisSensor ), char(247) );
-    //button.updateText( tempArea[thisSensor] );
-  }
 }
 
 //tftButton:: functions

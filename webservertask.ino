@@ -280,7 +280,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "sensorlogging" ) )
     {
-      return request->send( 200, HEADER_HTML, LOG_SENSOR_ERRORS ? "ON" : "OFF" );
+      return request->send( 200, HEADER_HTML, sensor.logging() ? "ON" : "OFF" );
     }
 
     else if ( request->hasArg( "sensorname" ) )
@@ -598,12 +598,12 @@ void webServerTask ( void * pvParameters )
     {
       if ( request->arg( "sensorlogging").equalsIgnoreCase( "on" ) )
       {
-        LOG_SENSOR_ERRORS = true;
+        sensor.setLogging( true );
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorlogging" ).equalsIgnoreCase( "off" ) )
       {
-        LOG_SENSOR_ERRORS = false;
+        sensor.setLogging( false );
         return request->send( 200, HEADER_HTML, "OFF" );
       }
       else return request->send( 400, HEADER_HTML, "Invalid option." );

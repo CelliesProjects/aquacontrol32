@@ -25,35 +25,13 @@ bool sensorState::startTask()
   return true;
 }
 
+uint8_t sensorState::count() const { return ( nullptr == _pSensorState ) ? 0 : _pSensorState->_count; };
 
+float sensorState::temp( uint8_t num ) const { return ( nullptr == _pSensorState ) ? NAN :_pSensorState->_state[num].tempCelcius; };
 
+bool sensorState::error( uint8_t num ) const { return ( nullptr == _pSensorState ) ? true :  _pSensorState->_state[num].error; };
 
-
-
-
-
-
-
-    uint8_t               sensorState::count() const { return ( nullptr == _pSensorState ) ? 0 : _pSensorState->_count; };
-    float                 sensorState::temp( uint8_t num ) const { return ( nullptr == _pSensorState ) ? NAN :_pSensorState->_state[num].tempCelcius; };
-    bool                  sensorState::error( uint8_t num ) const { return ( nullptr == _pSensorState ) ? true :  _pSensorState->_state[num].error; };
-    const char *          sensorState::name( uint8_t num ) const { return ( nullptr == _pSensorState ) ? "" : _pSensorState->_state[num].name; };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+const char * sensorState::name( uint8_t num ) const { return ( nullptr == _pSensorState ) ? "" : _pSensorState->_state[num].name; };
 
 uint8_t sensorState::_scanSensors()
 {
@@ -88,22 +66,20 @@ float sensorState::tempFromId( const char * sensorId )  {
   // search id in connected sensors
   uint8_t num = 0;
   uint8_t found = count();
-  while ( num < found && 0 != strcmp( sensorId, sensorState::id(num) ) ) num++;
+  while ( num < found && 0 != strcmp( sensorId, id(num) ) ) num++;
   if ( num == found ) return NAN;
   return _pSensorState->_state[num].tempCelcius;
 }
 
 bool sensorState::setName( const char * id, const char * name ) const {
-  if ( !id ) return false;
-  if ( !name ) return sensorPreferences.remove( id );
+  if ( 0 == strlen( name ) ) return sensorPreferences.remove( id );
+  if ( 14 != strlen( id ) ) return false;
   if ( strlen( name ) > sizeof( sensorState_t::name ) ) return false;
-  bool result = sensorPreferences.putString( id, name );
-  ESP_LOGD( TAG, "Sensor ID: %s new name: '%s' result: %s", id, name, result == true ? "success" : "failed" );
-  return result;
+  return sensorPreferences.putString( id, name );
 }
 
 char * sensorState::id( uint8_t num ) {
-  snprintf( sensorState::_idStr, sizeof( sensorState::_idStr ), "%02x%02x%02x%02x%02x%02x%02x",
+  snprintf( sensorState::_idStr, sizeof( _idStr ), "%02x%02x%02x%02x%02x%02x%02x",
             _pSensorState->_state[num].addr[1], _pSensorState->_state[num].addr[2], _pSensorState->_state[num].addr[3], _pSensorState->_state[num].addr[4],
             _pSensorState->_state[num].addr[5], _pSensorState->_state[num].addr[6], _pSensorState->_state[num].addr[7] );
   return (char *)sensorState::_idStr;
@@ -194,7 +170,7 @@ void sensorState::run( void * data ) {
       thisSensor++;
     }
     vTaskSuspendAll();
-    memcpy( &_state, &_tempState, sizeof(sensorState_t[MAX_NUMBER_OF_SENSORS]) );
+    memcpy( &_state, &_tempState, sizeof( sensorState_t[ MAX_NUMBER_OF_SENSORS ] ) );
     _count = loopCounter;
     xTaskResumeAll();
   }

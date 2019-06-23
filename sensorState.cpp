@@ -44,7 +44,7 @@ float sensorState::temp( uint8_t num ) const
 
 bool sensorState::error( uint8_t num ) const
 {
-  return ( nullptr == _pSensorState ) ? true :  _pSensorState->_state[num].error;
+  return ( nullptr == _pSensorState ) ? true : _pSensorState->_state[num].error;
 };
 
 const char * sensorState::name( uint8_t num ) const
@@ -205,6 +205,9 @@ void sensorState::run( void * data ) {
 
 bool sensorState::_logError( uint8_t num, const char * path, const char * message, const byte data[9] )
 {
+  File file = FFat.open( path, FILE_APPEND );
+  if ( !file ) return false;
+
   time_t rawtime;
   struct tm * timeinfo;
   time ( &rawtime );
@@ -215,11 +218,7 @@ bool sensorState::_logError( uint8_t num, const char * path, const char * messag
   snprintf( buffer, sizeof( buffer ), "%s - sensor: '%s' %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, _tempState[num].name, message,
             data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
   ESP_LOGE( TAG, "%s", buffer );
-  File file = FFat.open( path, FILE_APPEND );
-  if ( !file )
-  {
-    return false;
-  }
+
   if ( !file.println( buffer ) )
   {
     file.close();

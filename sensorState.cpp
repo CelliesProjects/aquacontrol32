@@ -15,22 +15,42 @@ bool sensorState::startTask()
 {
   if ( nullptr != _pSensorState )
   {
-    ESP_LOGE( TAG, "Sensor task already running. Exiting." );
+    ESP_LOGE( TAG, "Sensors already running. Exiting." );
     return false;
   }
   _pSensorState = new sensorState();
   if ( nullptr == _pSensorState )
   {
-    ESP_LOGE( TAG, "Sensor task not created. (low mem?) Exiting." );
+    ESP_LOGE( TAG, "Sensors not created. (low mem?) Exiting." );
     return false;
   }
-  _pSensorState->setStackSize(2500);
+  _pSensorState->setStackSize(3100);
   _pSensorState->setCore(0);
   _pSensorState->setPriority(0);
   _pSensorState->start();
-  ESP_LOGE( TAG, "Sensor task started." );
+  ESP_LOGI( TAG, "Sensors started." );
   return true;
 }
+
+bool sensorState::logging()
+{
+  return sensorPreferences.getBool( "logging", false );
+}
+
+bool sensorState::setLogging( bool state )
+{
+  return sensorPreferences.putBool( "logging", state );
+};
+
+bool sensorState::errorLogging()
+{
+  return ( nullptr == _pSensorState ) ? false : _pSensorState->_errorlogging;
+};
+
+void sensorState::setErrorLogging( bool state )
+{
+  if ( nullptr != _pSensorState ) _pSensorState->_errorlogging = state;
+};
 
 uint8_t sensorState::count() const
 {
@@ -91,8 +111,8 @@ float sensorState::tempFromId( const char * sensorId )  {
 }
 
 bool sensorState::setName( const char * id, const char * name ) const {
-  if ( 0 == strlen( name ) ) return sensorPreferences.remove( id );
   if ( 14 != strlen( id ) ) return false;
+  if ( 0 == strlen( name ) ) return sensorPreferences.remove( id );
   if ( strlen( name ) > sizeof( sensorState_t::name ) ) return false;
   return sensorPreferences.putString( id, name );
 }
@@ -162,12 +182,10 @@ void sensorState::run( void * data ) {
         _tempState[thisSensor].tempCelcius = NAN;
         _tempState[thisSensor].error = true;
 
-        if ( logging() )
+        if ( _errorlogging )
         {
           if ( !_logError( thisSensor, "/sensor_error.txt", "BAD CRC", data ) )
-          {
-            ESP_LOGI( TAG, "append error writing %s to sensor errorlog.", "blabla" );
-          }
+            ESP_LOGE( TAG, "Error writing errorlog.(disk full?)" );
         }
       }
       else

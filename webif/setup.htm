@@ -144,6 +144,8 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
     <p class="item sensorBar"><span class="itemName">SENSOR 1 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 2 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 3 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
+    <p class="item"><span class="itemName">LOG TEMPERATURE</span><input type="button" id="sensorLogging"></p>
+    <p class="item"><span class="itemName">LOG SENSOR ERRORS</span><input type="button" id="sensorErrorLogging"></p>
     <!--<p class="item"><span class="itemName">PWM FREQUENCY</span><span id="pwmFreqValue" class="itemValue">&nbsp;</span><input type="range" id="pwmFreqSlider" value="100" min="100" max="10000"></p>-->
     <!--<p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="11" min="11" max="16" step="1"></p>-->
     <p class="item tftBar"><span class="itemName">TFT ORIENTATION</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
@@ -156,7 +158,6 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   <h3>ADMIN SETUP</h3>
     <div class="settingsBox">
     <p class="item"><span class="itemName">CHANGE ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
-    <p class="item"><span class="itemName">LOG SENSOR ERRORS</span><input type="button" id="sensorLogging"></p>
     </div>
 </div>
 <div class="shadowedBox">
@@ -257,6 +258,21 @@ function getSensorLoggingStatus(){
   $.get("/api/getdevice?sensorlogging=")
   .done( function( data ){
     $('#sensorLogging').prop('value', data);
+  })
+  .fail( function( data ){
+    console.log(data);
+  })
+  .always( function( data ){
+    if ( getAllValues )
+    {
+      getSensorErrorLoggingStatus();
+    }
+  });
+}
+function getSensorErrorLoggingStatus(){
+  $.get("/api/getdevice?sensorerrorlogging=")
+  .done( function( data ){
+    $('#sensorErrorLogging').prop('value', data);
   })
   .fail( function( data ){
     console.log(data);
@@ -403,21 +419,16 @@ function getPwmFrequency(){
       $('body').css('opacity','1');       /* and show the page */
     });
 }
-
   /* event handlers */
-
 $('#timeZoneTextBox, #hostNameInput, #passwordInput, .sensorNameInput').on('input', function() {
   $( this ).css({'background':'yellow'});
 });
-
 $('input').on( 'input', function() {
   $('#deviceStatus').html('');
 });
-
 $('input[type="button"]').on( 'click', function() {
   $('#deviceStatus').html('');
 });
-
 $('#passwordInput').on('change', function( event ) {
   if (!confirm("You are about to change the admin password.\nAre you sure?") ) {
     return;
@@ -433,7 +444,6 @@ $('#passwordInput').on('change', function( event ) {
     $('#passwordInput').css({'background':'red'});
   });
 });
-
 $('#oledOrientationSlider').on('change', function( event ) {
   $(this).val() == 1  ? $('#oledOrientationValue').html( 'upsidedown' ): $('#oledOrientationValue').html( 'normal' );
   $.post( "/api/setdevice",
@@ -449,7 +459,6 @@ $('#oledOrientationSlider').on('change', function( event ) {
     getOledOrientation();
   });
 });
-
 $('#tftOrientationSlider').on('change', function( event ) {
   if ( $(this).val() == 0 ) $('#tftOrientation').html('normal');
   if ( $(this).val() == 1 ) $('#tftOrientation').html('upsidedown');
@@ -464,7 +473,6 @@ $('#tftOrientationSlider').on('change', function( event ) {
     getTftOrientation();
   });
 });
-
 $('#lightsOn').on('click', function() {
   $.post( "/api/setdevice",
   {
@@ -477,7 +485,6 @@ $('#lightsOn').on('click', function() {
     $( '#deviceStatus' ).html( data.statusText  );
   });
 });
-
 $('#lightsOff').on('click', function() {
   $.post( "/api/setdevice",
   {
@@ -490,7 +497,6 @@ $('#lightsOff').on('click', function() {
     $( '#deviceStatus' ).html( data.statusText  );
   });
 });
-
 $('#lightsProgram').on('click', function() {
   $.post( "/api/setdevice",
   {
@@ -503,7 +509,6 @@ $('#lightsProgram').on('click', function() {
     $( '#deviceStatus' ).html( data.statusText  );
   });
 });
-
 $('#hostNameInput').on('change', function( data ) {
   $('#deviceStatus').html("Checking network for hostname " + $(this).val() + "..." );
   $.post( "/api/setdevice",
@@ -520,11 +525,9 @@ $('#hostNameInput').on('change', function( data ) {
     $( '#hostNameInput' ).css({'background':'red'});
   });
 });
-
 $('#oledContrastSlider').on('input', function() {
   $('#oledContrastValue').html( $(this).val() );
 });
-
 $('#oledContrastSlider').on('change', function() {
   $.post( "/api/setdevice",
   {
@@ -538,11 +541,9 @@ $('#oledContrastSlider').on('change', function() {
     getOledContrast();
   });
 });
-
 $('#tftBrightnessSlider').on('input', function() {
   $('#tftBrightnessValue').html( parseInt( $(this).val() ) + "%" );
 });
-
 $('#tftBrightnessSlider').on('change', function() {
   $.post( "/api/setdevice",
   {
@@ -555,7 +556,6 @@ $('#tftBrightnessSlider').on('change', function() {
     getTftMaxBrightness();
   });
 });
-
 $('#timeZoneTextBox').on('change', function( data ) {
   $.post( '/api/setdevice',
     {
@@ -569,7 +569,19 @@ $('#timeZoneTextBox').on('change', function( data ) {
       $('#timeZoneTextBox').css( {'background':'red'} );
     });
 }); /* last in chain setup */
-
+$('#sensorErrorLogging').on('click',function(data){
+  $.post("/api/setdevice",
+  {
+    sensorerrorlogging : $(this).val() === "OFF" ? "ON" : "OFF"
+  })
+  .done( function(data){
+    $('#sensorErrorLogging').prop('value',data);
+    $('#deviceStatus').html('SENSOR ERROR LOGGING IS NOW '+data);
+  })
+  .fail( function(data){
+    $('#deviceStatus').html(data.statusText);
+  });
+});
 $('#sensorLogging').on('click',function(data){
   $.post("/api/setdevice",
   {
@@ -583,7 +595,6 @@ $('#sensorLogging').on('click',function(data){
     $('#deviceStatus').html(data.statusText);
   });
 });
-
 $('.sensorNameInput').on('change', function( data ) {
   var sensor = $(this).index('.sensorNameInput');
   $.post( "/api/setdevice",

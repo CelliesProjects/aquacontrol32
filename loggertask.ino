@@ -6,7 +6,6 @@ void IRAM_ATTR loggerTask ( void * pvParameters )
   {
     const char *    appendError = "Failed to write to log file.";
     char            content[60];
-    uint8_t           charCount = 0;
     static bool systemHasBooted = true;
     time_t                  now;
     struct tm          timeinfo;
@@ -36,6 +35,7 @@ void IRAM_ATTR loggerTask ( void * pvParameters )
       }
     }
 
+    uint8_t charCount = 0;
     if ( sensor.count() )
     {
       charCount += snprintf( content, sizeof( content ), "%i,", now );
@@ -156,20 +156,4 @@ const char * resetString( const RESET_REASON reason )
     "RTCWDT_RTC_RESET"
   };
   return resetStr[reason];
-}
-
-void writeSensorErrorLog( const uint8_t &whichSensor, const char * errorStr, const byte data[9] )
-{
-  time_t rawtime;
-  struct tm * timeinfo;
-  time ( &rawtime );
-  timeinfo = localtime ( &rawtime );
-  char timeBuff[20];
-  strftime ( timeBuff, sizeof(timeBuff), "%x %X", timeinfo );
-  char buffer[100];
-  snprintf( buffer, sizeof( buffer ), "%s - sensor: '%s' %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, sensor.name( whichSensor ), errorStr,
-            data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
-
-  writelnFile( FFat, "/sensor_error.txt", buffer );
-  ESP_LOGE( TAG, "%s", buffer );
 }

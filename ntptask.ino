@@ -44,7 +44,7 @@ void ntpTask( void * pvParameters )
 
   ESP_LOGI( TAG, "DimmerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
 
-  if ( LOG_FILES )
+  if ( sensor.logging() )
   {
     xReturned = xTaskCreatePinnedToCore(
                   loggerTask,                     /* Function to implement the task */

@@ -7,6 +7,7 @@
 
 #include "Task.h"
 
+#define SAVED_LOGFILES          30
 #define SENSOR_PIN              5
 #define MAX_NUMBER_OF_SENSORS   3
 
@@ -34,8 +35,10 @@ class sensorState: public Task {
     const char *          nameFromId( const char * id ) const;
     char *                id( uint8_t num );
     bool                  setName( const char * id, const char * name ) const;
-    bool                  logging() { return _logToFfat; };
-    void                  setLogging( bool state ) { _logToFfat = state; };
+    bool                  logging();
+    bool                  setLogging( bool state );
+    bool                  errorLogging();
+    void                  setErrorLogging( bool state );
 
   private:
 
@@ -46,7 +49,7 @@ class sensorState: public Task {
     sensorState_t         _tempState[MAX_NUMBER_OF_SENSORS];
     sensorState *         _pSensorState = nullptr;
     char                  _idStr[15];
-    bool                  _logToFfat = true;
+    bool                  _errorlogging = false;
     bool                  _logError( uint8_t num, const char * path, const char * message, const byte data[9] );
 };
 

@@ -144,8 +144,8 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
     <p class="item sensorBar"><span class="itemName">SENSOR 1 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 2 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <p class="item sensorBar"><span class="itemName">SENSOR 3 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
-    <p class="item"><span class="itemName">LOG TEMPERATURE</span><input type="button" id="sensorLogging"></p>
-    <p class="item"><span class="itemName">LOG SENSOR ERRORS</span><input type="button" id="sensorErrorLogging"></p>
+    <p class="item sensorBar button"><span class="itemName">TEMPERATURE LOGGING</span><input type="button" id="sensorLogging"></p>
+    <p class="item sensorBar button"><span class="itemName">SENSOR ERROR LOGGING</span><input type="button" id="sensorErrorLogging"></p>
     <!--<p class="item"><span class="itemName">PWM FREQUENCY</span><span id="pwmFreqValue" class="itemValue">&nbsp;</span><input type="range" id="pwmFreqSlider" value="100" min="100" max="10000"></p>-->
     <!--<p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="11" min="11" max="16" step="1"></p>-->
     <p class="item tftBar"><span class="itemName">TFT ORIENTATION</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
@@ -258,8 +258,10 @@ function getSensorLoggingStatus(){
   $.get("/api/getdevice?sensorlogging=")
   .done( function( data ){
     $('#sensorLogging').prop('value', data);
+    $('.sensorBar.button').show();
   })
   .fail( function( data ){
+    if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting sensor status." );
     console.log(data);
   })
   .always( function( data ){
@@ -275,6 +277,7 @@ function getSensorErrorLoggingStatus(){
     $('#sensorErrorLogging').prop('value', data);
   })
   .fail( function( data ){
+    if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting sensor status." );
     console.log(data);
   })
   .always( function( data ){

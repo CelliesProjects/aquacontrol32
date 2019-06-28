@@ -133,18 +133,18 @@ function updateBargraph() {
     while ( channelValue[sensorNumber + 7].length > 0 )
     {
       var temp = channelValue[sensorNumber + 7].split(",");
-        console.log(temp);
-      if ( temp[1] != "ERROR" )
-        str += String( '<p class="tempStr">' + temp[0].toLowerCase() + "<br>" + temp[1].substring( 0,  temp[1].indexOf( "." ) + 2 ) + "°</p>" );
-      else
-        str += String( '<p class="tempStr">' + temp[0].toLowerCase() + "<br>ERROR</p>" );
+      console.log(temp);
+      str += String( '<p class="tempStr">' + temp[0].toLowerCase() + "<br>" + temp[1].substring( 0,  temp[1].indexOf( "." ) + 2 ) + "°</p>" );
       sensorNumber++;
     }
-    if (str.length)
+    if (sensorNumber)
+//    if (str.length)
     {
       $( "#tempBox" ).show();
       $( "#tempStats" ).html( str );
     }
+    else
+      $( "#tempBox" ).hide();
   });
 }
 </script>

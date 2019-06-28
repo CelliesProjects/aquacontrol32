@@ -2,7 +2,7 @@
 #define SENSORSTATE_H
 
 #ifndef ESP32
-#warning Sorry, sensorState will only work on ESP32 MCUs
+#warning sensorState will only work on ESP32 MCUs
 #endif
 
 #include "Task.h"
@@ -28,8 +28,9 @@ class sensorState: public Task {
 
     bool                  startTask();
     uint8_t               count() const;
+    //void                  rescan() { _rescan = true; };
     float                 temp( uint8_t num ) const;
-    float                 tempFromId( const char * sensorId ) ;
+    float                 tempFromId( const char * sensorId );
     bool                  error( uint8_t num ) const;
     const char *          name( uint8_t num ) const;
     const char *          nameFromId( const char * id ) const;
@@ -39,6 +40,7 @@ class sensorState: public Task {
     bool                  setLogging( bool state );
     bool                  errorLogging();
     void                  setErrorLogging( bool state );
+    bool                  isRunning(){ return ( nullptr != _pSensorState ); };
 
   private:
 
@@ -51,6 +53,7 @@ class sensorState: public Task {
     char                  _idStr[15];
     bool                  _errorlogging = false;
     bool                  _logError( uint8_t num, const char * path, const char * message, const byte data[9] );
+    bool                  _rescan = false;
 };
 
 #endif

@@ -24,7 +24,7 @@ bool sensorState::startTask()
     ESP_LOGE( TAG, "Sensors not created. (low mem?) Exiting." );
     return false;
   }
-  _pSensorState->setStackSize(3100);
+  _pSensorState->setStackSize(3000);
   _pSensorState->setCore(0);
   _pSensorState->setPriority(0);
   _pSensorState->start();
@@ -97,6 +97,7 @@ uint8_t sensorState::_scanSensors()
 
     currentSensor++;
   }
+  _rescan = false;
   return currentSensor;
 }
 
@@ -131,9 +132,13 @@ const char * sensorState::nameFromId( const char * id ) const {
 
 void sensorState::run( void * data ) {
   sensorPreferences.begin( "sensors", false );
+
+  uint8_t loopCounter = _scanSensors();
+
   while (1)
   {
-    uint8_t loopCounter = _scanSensors();
+    if ( _rescan ) loopCounter = _scanSensors();
+
     ds.reset();
     ds.write( 0xCC, 0); /* Skip ROM - All sensors */
     ds.write( 0x44, 0); /* start conversion, with parasite power off at the end */
@@ -143,10 +148,10 @@ void sensorState::run( void * data ) {
     uint8_t thisSensor = 0;
     while ( thisSensor < loopCounter )
     {
-      ESP_LOGD( TAG, "current sensor: %i", thisSensor);
       byte data[12];
 
-      byte present = ds.reset();
+      _tempState[thisSensor].error = true; /* we start with an error, which will be cleared if the CRC checks out. */
+      ds.reset();
       ds.select( _tempState[thisSensor].addr );
       ds.write( 0xBE );         /* Read Scratchpad */
       for ( byte i = 0; i < 9; i++)
@@ -177,9 +182,8 @@ void sensorState::run( void * data ) {
           ESP_LOGE( TAG, "OneWire device is not a DS18x20 family device.");
       }
 
-      if ( OneWire::crc8( data, 8) != data[8] )
+      if ( OneWire::crc8( data, 8 ) != data[8] )
       {
-        _tempState[thisSensor].tempCelcius = NAN;
         _tempState[thisSensor].error = true;
 
         if ( _errorlogging )
@@ -212,12 +216,11 @@ void sensorState::run( void * data ) {
         _tempState[thisSensor].tempCelcius = raw / 16.0;
         _tempState[thisSensor].error = false;
       }
+      ESP_LOGD( TAG, "sensor %i: %.1f %s", thisSensor, _tempState[thisSensor].tempCelcius, _tempState[thisSensor].error ? "invalid" : "valid" );
       thisSensor++;
     }
-    //vTaskSuspendAll();
     memcpy( &_state, &_tempState, sizeof( sensorState_t[ MAX_NUMBER_OF_SENSORS ] ) );
     _count = loopCounter;
-    //xTaskResumeAll();
   }
 }
 

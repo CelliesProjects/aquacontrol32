@@ -45,7 +45,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
 
   xLastWakeTime = xTaskGetTickCount();
 
-  ESP_LOGI( TAG, "Boot complete after %f seconds.", millis() / 1000.0 );
+  ESP_LOGI( TAG, "Lights running after %.1f seconds.", millis() / 1000.0 );
 
   while (1)
   {

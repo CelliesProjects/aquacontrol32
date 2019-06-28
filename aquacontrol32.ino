@@ -1,6 +1,7 @@
 #include <rom/rtc.h>               /* should be installed together with ESP32 Arduino install */
 #include <list>                    /* should be installed together with ESP32 Arduino install */
 #include <SPI.h>                   /* should be installed together with ESP32 Arduino install */
+#include <Wire.h>                  /* should be installed together with ESP32 Arduino install */
 #include <FS.h>                    /* should be installed together with ESP32 Arduino install */
 #include <FFat.h>                  /* should be installed together with ESP32 Arduino install */
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
@@ -205,14 +206,16 @@ void setup()
   gpio_set_drive_capability( (gpio_num_t)LED3_PIN, GPIO_DRIVE_CAP_3 );
   gpio_set_drive_capability( (gpio_num_t)LED4_PIN, GPIO_DRIVE_CAP_3 );
 
-  sensor.startTask();
-
-  preferences.begin( "aquacontrol32", false );
+  gpio_set_drive_capability( (gpio_num_t)ONEWIRE_PIN, GPIO_DRIVE_CAP_3 );
 
   btStop();
 
   ESP_LOGI( TAG, "aquacontrol32 %s", sketchVersion );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
+
+  sensor.startTask();
+
+  preferences.begin( "aquacontrol32", false );
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
 
@@ -238,7 +241,7 @@ void setup()
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
       "tftTask",                      /* Name of the task */
-      3000,                           /* Stack size in words */
+      4000,                           /* Stack size in words */
       NULL,                           /* Task input parameter */
       tftTaskPriority,                /* Priority of the task */
       &xTftTaskHandle,                /* Task handle. */

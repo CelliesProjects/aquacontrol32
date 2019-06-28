@@ -187,6 +187,19 @@ uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 void tftTask( void * pvParameters );
 void oledTask( void * pvParameters );
 void wifiTask( void * pvParameters );
+void loggerTask( void * pvParameters );
+
+BaseType_t startLogger()
+{
+  return xTaskCreatePinnedToCore(
+           loggerTask,                     /* Function to implement the task */
+           "loggerTask",                   /* Name of the task */
+           3000,                           /* Stack size in words */
+           NULL,                           /* Task input parameter */
+           loggerTaskPriority,             /* Priority of the task */
+           &xLoggerTaskHandle,             /* Task handle. */
+           1);
+}
 
 void setup()
 {

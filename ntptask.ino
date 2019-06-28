@@ -46,15 +46,7 @@ void ntpTask( void * pvParameters )
 
   if ( sensor.logging() )
   {
-    xReturned = xTaskCreatePinnedToCore(
-                  loggerTask,                     /* Function to implement the task */
-                  "loggerTask",                   /* Name of the task */
-                  3000,                           /* Stack size in words */
-                  NULL,                           /* Task input parameter */
-                  loggerTaskPriority,             /* Priority of the task */
-                  &xLoggerTaskHandle,             /* Task handle. */
-                  1);                             /* Core where the task should run */
-
+    xReturned = startLogger();
     ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
   }
 

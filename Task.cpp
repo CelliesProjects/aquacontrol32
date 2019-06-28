@@ -57,8 +57,8 @@ void Task::runTask(void* pTaskInstance) {
 	Task* pTask = (Task*) pTaskInstance;
 	ESP_LOGD(LOG_TAG, ">> runTask: taskName=%s", pTask->m_taskName.c_str());
 	pTask->run(pTask->m_taskData);
-	ESP_LOGD(LOG_TAG, "<< runTask: taskName=%s", pTask->m_taskName.c_str());
-	pTask->stop();
+	//ESP_LOGD(LOG_TAG, "<< runTask: taskName=%s", pTask->m_taskName.c_str());
+	//pTask->stop();
 } // runTask
 
 /**

@@ -78,12 +78,7 @@ void IRAM_ATTR oledTask( void * pvParameters )
       {
         uint8_t charCount = 0;
         for ( uint8_t sensorNumber = 0; sensorNumber < sensor.count(); sensorNumber++ )
-        {
-          if ( !sensor.error(sensorNumber) )
-            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C  " , sensor.temp( sensorNumber ) );
-          else
-            charCount += snprintf( content + charCount, sizeof( content ) - charCount, "ERROR  " , sensor.temp( sensorNumber ) );
-        }
+          charCount += snprintf( content + charCount, sizeof( content ) - charCount, "%.1f°C  " , sensor.temp( sensorNumber ) );
       }
       else
       {

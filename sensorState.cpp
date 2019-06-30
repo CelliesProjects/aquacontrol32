@@ -4,6 +4,11 @@
 
 #include "sensorState.h"
 
+#define VALID_ID_LENGTH 14
+
+static const char * ERROR_LOG_NAME = "/sensor_error.txt";
+static const char * UNKNOWN_SENSOR = "unknown sensor";
+
 OneWire ds( SENSOR_PIN );
 Preferences sensorPreferences;
 
@@ -67,9 +72,9 @@ bool sensorState::error( uint8_t num ) const
   return ( nullptr == _pSensorState ) ? true : _pSensorState->_state[num].error;
 };
 
-const char * sensorState::name( uint8_t num ) const
+const char * sensorState::name( uint8_t num )
 {
-  return ( nullptr == _pSensorState ) ? "" : _pSensorState->_state[num].name;
+  return ( nullptr == _pSensorState ) ? "" : sensorPreferences.getString( id( num ), UNKNOWN_SENSOR ).c_str();
 };
 
 uint8_t sensorState::_scanSensors()
@@ -91,7 +96,7 @@ uint8_t sensorState::_scanSensors()
 
     /* and read value from NVS or use default name */
     snprintf( _tempState[currentSensor].name, sizeof( sensorState_t::name ),
-              sensorPreferences.getString( sensorUniqueId, "unknown sensor" ).c_str() );
+              sensorPreferences.getString( sensorUniqueId, UNKNOWN_SENSOR ).c_str() );
 
     ESP_LOGD( TAG, "Found sensor %i id: %.15s name: '%s'", currentSensor, sensorUniqueId, _tempState[currentSensor].name );
 
@@ -111,8 +116,8 @@ float sensorState::tempFromId( const char * sensorId )  {
   return _pSensorState->_state[num].tempCelcius;
 }
 
-bool sensorState::setName( const char * id, const char * name ) const {
-  if ( 14 != strlen( id ) ) return false;
+bool sensorState::setName( const char * id, const char * name )  {
+  if ( VALID_ID_LENGTH != strlen( id ) ) return false;
   if ( 0 == strlen( name ) ) return sensorPreferences.remove( id );
   if ( strlen( name ) > sizeof( sensorState_t::name ) ) return false;
   return sensorPreferences.putString( id, name );
@@ -125,9 +130,9 @@ char * sensorState::id( uint8_t num ) {
   return (char *)sensorState::_idStr;
 }
 
-const char * sensorState::nameFromId( const char * id ) const {
-  if ( 14 != strlen( id ) ) return "";
-  return sensorPreferences.getString( id, "unnamed sensor" ).c_str();
+const char * sensorState::nameFromId( const char * id ) {
+  if ( VALID_ID_LENGTH != strlen( id ) ) return "";
+  return sensorPreferences.getString( id, UNKNOWN_SENSOR ).c_str();
 }
 
 void sensorState::run( void * data ) {
@@ -185,12 +190,8 @@ void sensorState::run( void * data ) {
       if ( OneWire::crc8( data, 8 ) != data[8] )
       {
         _tempState[thisSensor].error = true;
-
-        if ( _errorlogging )
-        {
-          if ( !_logError( thisSensor, "/sensor_error.txt", "BAD CRC", data ) )
-            ESP_LOGE( TAG, "Error writing errorlog.(disk full?)" );
-        }
+        if ( _errorlogging && !_logError( thisSensor, ERROR_LOG_NAME, "BAD_CRC", data ) )
+          ESP_LOGE( TAG, "%s", "Error writing errorlog.(disk full?)" );
       }
       else
       {
@@ -214,7 +215,15 @@ void sensorState::run( void * data ) {
           //// default is 12 bit resolution, 750 ms conversion time
         }
         _tempState[thisSensor].tempCelcius = raw / 16.0;
-        _tempState[thisSensor].error = false;
+
+        if ( _tempState[thisSensor].tempCelcius <= -40.0 || _tempState[thisSensor].tempCelcius  >= 85.0 )
+        {
+          _tempState[thisSensor].error = true;
+          if ( _errorlogging && !_logError( thisSensor, ERROR_LOG_NAME, "BAD_TMP", data ) )
+            ESP_LOGE( TAG, "%s", "Error writing errorlog.(disk full?)" );
+        }
+        else
+          _tempState[thisSensor].error = false;
       }
       ESP_LOGD( TAG, "sensor %i: %.1f %s", thisSensor, _tempState[thisSensor].tempCelcius, _tempState[thisSensor].error ? "invalid" : "valid" );
       thisSensor++;

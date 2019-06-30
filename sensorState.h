@@ -28,19 +28,17 @@ class sensorState: public Task {
 
     bool                  startTask();
     uint8_t               count() const;
-    //void                  rescan() { _rescan = true; };
     float                 temp( uint8_t num ) const;
     float                 tempFromId( const char * sensorId );
     bool                  error( uint8_t num ) const;
-    const char *          name( uint8_t num ) const;
-    const char *          nameFromId( const char * id ) const;
+    const char *          name( uint8_t num );
+    const char *          nameFromId( const char * id );
     char *                id( uint8_t num );
-    bool                  setName( const char * id, const char * name ) const;
+    bool                  setName( const char * id, const char * name );
     bool                  logging();
     bool                  setLogging( bool state );
     bool                  errorLogging();
     void                  setErrorLogging( bool state );
-    bool                  isRunning(){ return ( nullptr != _pSensorState ); };
 
   private:
 

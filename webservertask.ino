@@ -632,32 +632,17 @@ void webServerTask ( void * pvParameters )
     else if ( request->hasArg( "sensorname" ) )
     {
       if ( request->arg( "sensorname" ).length() > sizeof( sensorState::sensorState_t::name ) - 1 )
-      {
         return request->send( 400, HEADER_HTML, "Sensorname too long" );
-      }
-      if ( !request->hasArg( "number" ) )
-      {
-        return request->send( 400, HEADER_HTML, "No sensornumber" );
-      }
+
+      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
 
       uint8_t sensorNumber = request->arg( "number" ).toInt();
+      if ( sensorNumber > sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
 
-      if ( sensorNumber > sensor.count() )
-      {
-        return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
-      }
-
-      //get the sensor id and save under that key
-      char sensorId[ sizeof( sensorState::sensorState_t::name ) ];
-      snprintf( sensorId, sizeof( sensorId ), sensor.id( sensorNumber ) );
-
-      if (!sensor.setName( sensorId, request->arg( "sensorname" ).c_str() ) )
-        ESP_LOGI( TAG, " Error saving name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensorId );
+      if ( !sensor.setName( sensor.id( sensorNumber ), request->arg( "sensorname" ).c_str() ) )
+        ESP_LOGI( TAG, " Error saving name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensor.id( sensorNumber ) );
       else
-        ESP_LOGI( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensorId );
-
-
-
+        ESP_LOGI( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensor.id( sensorNumber ) );
       return request->send( 200, HEADER_HTML, request->arg( "sensorname" ).c_str() );
     }
 

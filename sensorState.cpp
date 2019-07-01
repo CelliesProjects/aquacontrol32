@@ -4,8 +4,6 @@
 
 #include "sensorState.h"
 
-#define VALID_ID_LENGTH 14
-
 static const char * ERROR_LOG_NAME = "/sensor_error.txt";
 static const char * UNKNOWN_SENSOR = "unknown sensor";
 
@@ -57,24 +55,30 @@ void sensorState::setErrorLogging( bool state )
   if ( nullptr != _pSensorState ) _pSensorState->_errorlogging = state;
 };
 
-uint8_t sensorState::count() const
+uint8_t sensorState::count()
 {
   return ( nullptr == _pSensorState ) ? 0 : _pSensorState->_count;
 };
 
-float sensorState::temp( uint8_t num ) const
+float sensorState::temp( const uint8_t num )
 {
   return ( nullptr == _pSensorState ) ? NAN : _pSensorState->_state[num].tempCelcius;
 };
 
-bool sensorState::error( uint8_t num ) const
+bool sensorState::error( const uint8_t num )
 {
   return ( nullptr == _pSensorState ) ? true : _pSensorState->_state[num].error;
 };
 
-const char * sensorState::name( uint8_t num )
+bool sensorState::getName( const uint8_t num, sensorName_t name )
 {
-  return ( nullptr == _pSensorState ) ? "" : sensorPreferences.getString( id( num ), UNKNOWN_SENSOR ).c_str();
+  if ( nullptr == _pSensorState ) return false;
+  sensorIdStr_t id;
+  idToStr( num, id );
+  String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
+  if ( !result ) return false;
+  strncpy( name, result.c_str(), sizeof( sensorName_t ) );
+  return true;
 };
 
 uint8_t sensorState::_scanSensors()
@@ -106,35 +110,39 @@ uint8_t sensorState::_scanSensors()
   return currentSensor;
 }
 
-float sensorState::tempFromId( const char * sensorId )  {
+float sensorState::tempFromId( const sensorIdStr_t id )  {
   if ( nullptr == _pSensorState ) return NAN;
-  // search id in connected sensors
   uint8_t num = 0;
-  uint8_t found = count();
-  while ( num < found && 0 != strcmp( sensorId, id(num) ) ) num++;
-  if ( num == found ) return NAN;
-  return _pSensorState->_state[num].tempCelcius;
+  uint8_t total = count();
+  sensorIdStr_t buffer;
+  while ( num < total )
+  {
+    idToStr( num, buffer );
+    if ( 0 == strcmp( id, buffer ) ) return _pSensorState->_state[num].tempCelcius;
+    num++;
+  }
+  return NAN;
 }
 
-bool sensorState::setName( const char * id, const char * name )  {
-  if ( VALID_ID_LENGTH != strlen( id ) ) return false;
+bool sensorState::setName( const sensorIdStr_t id, const char * name )  {
   if ( 0 == strlen( name ) ) return sensorPreferences.remove( id );
-  if ( strlen( name ) > sizeof( sensorState_t::name ) ) return false;
+  if ( strlen( name ) > sizeof( sensorName_t ) ) return false;
   return sensorPreferences.putString( id, name );
 }
 
-char * sensorState::id( uint8_t num ) {
-  snprintf( sensorState::_idStr, sizeof( _idStr ), "%02x%02x%02x%02x%02x%02x%02x",
+void sensorState::idToStr( const uint8_t num, sensorIdStr_t str ) {
+  snprintf( str, sizeof( sensorIdStr_t ), "%02x%02x%02x%02x%02x%02x%02x",
             _pSensorState->_state[num].addr[1], _pSensorState->_state[num].addr[2], _pSensorState->_state[num].addr[3], _pSensorState->_state[num].addr[4],
             _pSensorState->_state[num].addr[5], _pSensorState->_state[num].addr[6], _pSensorState->_state[num].addr[7] );
-  return (char *)sensorState::_idStr;
 }
-
-const char * sensorState::nameFromId( const char * id ) {
-  if ( VALID_ID_LENGTH != strlen( id ) ) return "";
-  return sensorPreferences.getString( id, UNKNOWN_SENSOR ).c_str();
-}
-
+/*
+  bool sensorState::nameFromId( const sensorIdStr_t id, sensorName_t buf ) {
+  String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
+  if ( !result ) return false;
+  strncpy( buf, result.c_str(), sizeof( sensorName_t ) );
+  return true;
+  }
+*/
 void sensorState::run( void * data ) {
   sensorPreferences.begin( "sensors", false );
 

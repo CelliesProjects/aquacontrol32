@@ -230,6 +230,7 @@ void newSensors()
   tft.writeFillRect( 210, 60, TFT_BUTTON_WIDTH, 120, TFT_BACK_COLOR );
   tft.endWrite();
 
+  sensorName_t sensorName;
   for ( uint8_t num = 0; num < sensor.count(); num++ )
   {
     tempArea[num].x = 220;
@@ -239,14 +240,19 @@ void newSensors()
     tempArea[num].color = TFT_BACK_COLOR;
     tempArea[num].labelcolor = ILI9341_WHITE;
     tempArea[num].fontsize = size2;
-    button.updateSensorLabel( tempArea[num], (char *)sensor.name( num ) );
+    sensor.getName( num, sensorName );
+    button.updateSensorLabel( tempArea[num], sensorName );
   }
 }
 
 void updateSensorLabels(  )
 {
+  sensorName_t sensorName;
   for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
-    button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.name( thisSensor ) );
+  {
+    sensor.getName( thisSensor, sensorName );
+    button.updateSensorLabel( tempArea[thisSensor], sensorName );
+  }
 }
 
 static inline __attribute__((always_inline)) void showStatus()
@@ -365,10 +371,12 @@ static inline __attribute__((always_inline)) void showStatus()
   for ( uint8_t num = 0; num < sensor.count(); num++ )
   {
     //if the name changed update the display
-    if ( strcmp(lastState[num].name, sensor.name(num)) )
+    sensorName_t sensorName;
+    sensor.getName( num, sensorName );
+    if ( strcmp( lastState[num].name, sensorName ) )
     {
-      button.updateSensorLabel(tempArea[num], (char *)sensor.name(num));
-      memcpy(lastState[num].name, sensor.name(num), sizeof( sensorState::sensorState_t::name) );
+      button.updateSensorLabel( tempArea[num], sensorName );
+      memcpy(lastState[num].name, sensorName, sizeof( sensorName_t ) );
     }
 
     // if the temperature changed update the display
@@ -507,7 +515,11 @@ static inline __attribute__((always_inline)) void showIPAddress( )
 void drawSensors()
 {
   for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
-    button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.name(thisSensor) );
+  {
+    sensorName_t sensorName;
+    sensor.getName( thisSensor, sensorName );
+    button.updateSensorLabel( tempArea[thisSensor], sensorName );
+  }
 }
 
 //tftButton:: functions

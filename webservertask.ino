@@ -264,10 +264,16 @@ void webServerTask ( void * pvParameters )
       if ( sensorNumber >= sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
 
       response = request->beginResponseStream( HEADER_HTML );
+
+      sensorIdStr_t sensorId;
+      sensorName_t sensorName;
+
+      sensor.idToStr( sensorNumber, sensorId );
+      sensor.getName( sensorNumber, sensorName );
       response->printf( "%s\n%.3f\n%s\n",
-                        sensor.name( sensorNumber ),
+                        sensorName,
                         sensor.temp( sensorNumber ),
-                        sensor.id( sensorNumber ) );
+                        sensorId );
       return request->send( response );
     }
 
@@ -298,7 +304,9 @@ void webServerTask ( void * pvParameters )
       {
         return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
       }
-      return request->send( 200, HEADER_HTML, sensor.name( sensorNumber ) );
+      sensorName_t sensorName;
+      sensor.getName( sensorNumber, sensorName );
+      return request->send( 200, HEADER_HTML, sensorName );
     }
 
     else if ( request->hasArg( "status" ) )
@@ -322,8 +330,9 @@ void webServerTask ( void * pvParameters )
 
       for ( uint8_t sensorNumber = 0; sensorNumber < sensor.count(); sensorNumber++ )
       {
-        //if ( !sensor.error( sensorNumber ) )
-        response->printf( "%s,%.3f\n", sensor.name( sensorNumber ), sensor.temp( sensorNumber ) );
+        sensorName_t sensorName;
+        sensor.getName( sensorNumber, sensorName );
+        response->printf( "%s,%.3f\n", sensorName, sensor.temp( sensorNumber ) );
       }
       return request->send( response );
     }
@@ -631,18 +640,19 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "sensorname" ) )
     {
-      if ( request->arg( "sensorname" ).length() > sizeof( sensorState::sensorState_t::name ) - 1 )
+      if ( request->arg( "sensorname" ).length() > sizeof( sensorState::sensorState_t::name ) )
         return request->send( 400, HEADER_HTML, "Sensorname too long" );
 
       if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
 
       uint8_t sensorNumber = request->arg( "number" ).toInt();
       if ( sensorNumber > sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
-
-      if ( !sensor.setName( sensor.id( sensorNumber ), request->arg( "sensorname" ).c_str() ) )
-        ESP_LOGI( TAG, " Error saving name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensor.id( sensorNumber ) );
+      sensorIdStr_t sensorId;
+      sensor.idToStr( sensorNumber, sensorId );
+      if ( !sensor.setName( sensorId, request->arg( "sensorname" ).c_str() ) )
+        ESP_LOGI( TAG, " Error saving name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensorId );
       else
-        ESP_LOGI( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensor.id( sensorNumber ) );
+        ESP_LOGI( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensorId );
       return request->send( 200, HEADER_HTML, request->arg( "sensorname" ).c_str() );
     }
 

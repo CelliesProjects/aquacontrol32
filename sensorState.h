@@ -10,6 +10,10 @@
 #define SAVED_LOGFILES          30
 #define SENSOR_PIN              5
 #define MAX_NUMBER_OF_SENSORS   3
+#define VALID_ID_LENGTH         14
+
+typedef char sensorIdStr_t[VALID_ID_LENGTH + 1];
+typedef char sensorName_t[15];
 
 class sensorState: public Task {
 
@@ -17,24 +21,24 @@ class sensorState: public Task {
 
     struct sensorState_t                  /* struct to keep track of Dallas DS18B20 sensors */
     {
-      byte     addr[8] = {};
-      float    tempCelcius = NAN;
-      char     name[15] = "";
-      bool     error = true;
+      byte             addr[8] = {};
+      float            tempCelcius = NAN;
+      sensorName_t     name = "";
+      bool             error = true;
     };
 
     sensorState();
     virtual ~sensorState();
 
     bool                  startTask();
-    uint8_t               count() const;
-    float                 temp( uint8_t num ) const;
-    float                 tempFromId( const char * sensorId );
-    bool                  error( uint8_t num ) const;
-    const char *          name( uint8_t num );
-    const char *          nameFromId( const char * id );
-    char *                id( uint8_t num );
-    bool                  setName( const char * id, const char * name );
+    uint8_t               count() ;
+    float                 temp( const uint8_t num );
+    float                 tempFromId( const sensorIdStr_t id );
+    bool                  error( const uint8_t num );
+    bool                  getName( const uint8_t num, sensorName_t name );
+//    bool                  nameFromId( const sensorIdStr_t id, sensorName_t name );
+    void                  idToStr( const uint8_t num, sensorIdStr_t str );
+    bool                  setName( const sensorIdStr_t id, const char * name );
     bool                  logging();
     bool                  setLogging( bool state );
     bool                  errorLogging();
@@ -45,10 +49,9 @@ class sensorState: public Task {
     void                  run( void * data );
     uint8_t               _count = 0;
     uint8_t               _scanSensors();
-    sensorState_t          _state[MAX_NUMBER_OF_SENSORS];
+    sensorState_t         _state[MAX_NUMBER_OF_SENSORS];
     sensorState_t         _tempState[MAX_NUMBER_OF_SENSORS];
     sensorState *         _pSensorState = nullptr;
-    char                  _idStr[15];
     bool                  _errorlogging = false;
     bool                  _logError( uint8_t num, const char * path, const char * message, const byte data[9] );
     bool                  _rescan = false;

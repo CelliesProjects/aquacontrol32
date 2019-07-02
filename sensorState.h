@@ -13,7 +13,7 @@
 
 #define VALID_ID_LENGTH         14
 
-typedef char sensorIdStr_t[VALID_ID_LENGTH + 1];
+typedef char sensorId_t[VALID_ID_LENGTH + 1];
 typedef char sensorName_t[15];
 
 class sensorState: public Task {
@@ -32,12 +32,12 @@ class sensorState: public Task {
     virtual ~sensorState();
 
     bool                  startSensors();
-    uint8_t               count() ;
+    uint8_t               count();
     float                 temp( const uint8_t num );
     bool                  error( const uint8_t num );
     bool                  getName( const uint8_t num, sensorName_t &name );
-    void                  getId( const uint8_t num, sensorIdStr_t &id );
-    bool                  setName( const sensorIdStr_t &id, const char * name );
+    void                  getId( const uint8_t num, sensorId_t &id );
+    bool                  setName( const sensorId_t &id, const char * name );
     bool                  logging();
     bool                  setLogging( const bool state );
     bool                  errorLogging();

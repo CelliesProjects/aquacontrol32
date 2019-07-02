@@ -74,7 +74,7 @@ bool sensorState::error( const uint8_t num )
 bool sensorState::getName( const uint8_t num, sensorName_t &name )
 {
   if ( nullptr == _pSensorState ) return false;
-  sensorIdStr_t id;
+  sensorId_t id;
   getId( num, id );
   String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
   if ( !result ) return false;
@@ -93,7 +93,7 @@ uint8_t sensorState::_scanSensors()
   while ( ds.search( currentAddr ) && ( currentSensor < MAX_NUMBER_OF_SENSORS ) )
   {
     memcpy( _tempState[currentSensor].addr, currentAddr, sizeof( sensorState_t::addr ) );
-    sensorIdStr_t sensorId;
+    sensorId_t sensorId;
     snprintf( sensorId, sizeof( sensorId ), "%02x%02x%02x%02x%02x%02x%02x",
               currentAddr[1], currentAddr[2], currentAddr[3], currentAddr[4], currentAddr[5], currentAddr[6], currentAddr[7]  );
     /* and read value from NVS or use default name */
@@ -108,14 +108,14 @@ uint8_t sensorState::_scanSensors()
   return currentSensor;
 }
 
-bool sensorState::setName( const sensorIdStr_t &id, const char * name )  {
+bool sensorState::setName( const sensorId_t &id, const char * name )  {
   if ( 0 == strlen( name ) ) return sensorPreferences.remove( id );
   if ( strlen( name ) > sizeof( sensorName_t ) ) return false;
   return sensorPreferences.putString( id, name );
 }
 
-void sensorState::getId( const uint8_t num, sensorIdStr_t &id ) {
-  snprintf( id, sizeof( sensorIdStr_t ), "%02x%02x%02x%02x%02x%02x%02x",
+void sensorState::getId( const uint8_t num, sensorId_t &id ) {
+  snprintf( id, sizeof( sensorId_t ), "%02x%02x%02x%02x%02x%02x%02x",
             _pSensorState->_state[num].addr[1], _pSensorState->_state[num].addr[2], _pSensorState->_state[num].addr[3], _pSensorState->_state[num].addr[4],
             _pSensorState->_state[num].addr[5], _pSensorState->_state[num].addr[6], _pSensorState->_state[num].addr[7] );
 }

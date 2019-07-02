@@ -265,7 +265,7 @@ void webServerTask ( void * pvParameters )
 
       response = request->beginResponseStream( HEADER_HTML );
 
-      sensorIdStr_t sensorId;
+      sensorId_t sensorId;
       sensorName_t sensorName;
 
       sensor.getId( sensorNumber, sensorId );
@@ -647,7 +647,7 @@ void webServerTask ( void * pvParameters )
 
       uint8_t sensorNumber = request->arg( "number" ).toInt();
       if ( sensorNumber > sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
-      sensorIdStr_t sensorId;
+      sensorId_t sensorId;
       sensor.getId( sensorNumber, sensorId );
       if ( !sensor.setName( sensorId, request->arg( "sensorname" ).c_str() ) )
         ESP_LOGI( TAG, " Error saving name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensorId );

@@ -86,12 +86,6 @@ const char * sketchVersion = "ARDUINO IDE";
 
 
 /**************************************************************************
-       maximum number of Dallas sensors
-**************************************************************************/
-#define MAX_NUMBER_OF_SENSORS               3
-
-
-/**************************************************************************
        default hostname if no hostname is set
 **************************************************************************/
 #define DEFAULT_HOSTNAME_PREFIX             "aquacontrol32_"
@@ -249,7 +243,7 @@ void setup()
   {
     touch.begin();
 
-    ESP_LOGI( TAG, "An SPI ILI9341 display has been %s.", TFT_HAS_NO_MISO ? "forced" : "found" );
+    ESP_LOGI( TAG, "%s an ILI9341 display on SPI.", TFT_HAS_NO_MISO ? "Forced" : "Found" );
 
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */

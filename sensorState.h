@@ -23,7 +23,7 @@ class sensorState: public Task {
     struct sensorState_t                  /* struct to keep track of Dallas DS18B20 sensors */
     {
       byte             addr[8] = {};
-      float            tempCelcius = NAN;
+      float            tempCelsius = NAN;
       sensorName_t     name = "";
       bool             error = true;
     };

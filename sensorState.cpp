@@ -63,7 +63,7 @@ uint8_t sensorState::count()
 
 float sensorState::temp( const uint8_t num )
 {
-  return ( nullptr == _pSensorState ) ? NAN : _pSensorState->_state[num].tempCelcius;
+  return ( nullptr == _pSensorState ) ? NAN : _pSensorState->_state[num].tempCelsius;
 };
 
 bool sensorState::error( const uint8_t num )
@@ -198,9 +198,9 @@ void sensorState::run( void * data ) {
           else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
           //// default is 12 bit resolution, 750 ms conversion time
         }
-        _tempState[thisSensor].tempCelcius = raw / 16.0;
+        _tempState[thisSensor].tempCelsius = raw / 16.0;
 
-        if ( _tempState[thisSensor].tempCelcius <= -40.0 || _tempState[thisSensor].tempCelcius  >= 85.0 )
+        if ( _tempState[thisSensor].tempCelsius <= -40.0 || _tempState[thisSensor].tempCelsius  >= 85.0 )
         {
           _tempState[thisSensor].error = true;
           if ( _errorlogging && !_logError( thisSensor, ERROR_LOG_NAME, "BAD_TMP", data ) )
@@ -209,7 +209,7 @@ void sensorState::run( void * data ) {
         else
           _tempState[thisSensor].error = false;
       }
-      ESP_LOGD( TAG, "sensor %i: %.1f %s", thisSensor, _tempState[thisSensor].tempCelcius, _tempState[thisSensor].error ? "invalid" : "valid" );
+      ESP_LOGD( TAG, "sensor %i: %.1f %s", thisSensor, _tempState[thisSensor].tempCelsius, _tempState[thisSensor].error ? "invalid" : "valid" );
       thisSensor++;
     }
     memcpy( &_state, &_tempState, sizeof( sensorState_t[ MAX_NUMBER_OF_SENSORS ] ) );

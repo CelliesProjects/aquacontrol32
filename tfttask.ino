@@ -380,11 +380,11 @@ static inline __attribute__((always_inline)) void showStatus()
     }
 
     // if the temperature changed update the display
-    if ( lastState[num].tempCelcius != sensor.temp( num ) && !sensor.error( num ) )
+    if ( lastState[num].tempCelsius != sensor.temp( num ) && !sensor.error( num ) )
     {
       snprintf( tempArea[num].text, sizeof( tempArea[num].text ), " %.1f%c ", sensor.temp( num ), char(247) );
       button.updateText( tempArea[num] );
-      lastState[num].tempCelcius = sensor.temp( num );
+      lastState[num].tempCelsius = sensor.temp( num );
     }
   }
 

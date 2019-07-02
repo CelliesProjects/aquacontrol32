@@ -10,6 +10,7 @@
 #define SAVED_LOGFILES          30
 #define SENSOR_PIN              5
 #define MAX_NUMBER_OF_SENSORS   3
+
 #define VALID_ID_LENGTH         14
 
 typedef char sensorIdStr_t[VALID_ID_LENGTH + 1];
@@ -33,12 +34,10 @@ class sensorState: public Task {
     bool                  startTask();
     uint8_t               count() ;
     float                 temp( const uint8_t num );
-    float                 tempFromId( const sensorIdStr_t id );
     bool                  error( const uint8_t num );
-    bool                  getName( const uint8_t num, sensorName_t name );
-//    bool                  nameFromId( const sensorIdStr_t id, sensorName_t name );
-    void                  idToStr( const uint8_t num, sensorIdStr_t str );
-    bool                  setName( const sensorIdStr_t id, const char * name );
+    bool                  getName( const uint8_t num, sensorName_t &name );
+    void                  getId( const uint8_t num, sensorIdStr_t &id );
+    bool                  setName( const sensorIdStr_t &id, const char * name );
     bool                  logging();
     bool                  setLogging( bool state );
     bool                  errorLogging();
@@ -53,7 +52,7 @@ class sensorState: public Task {
     sensorState_t         _tempState[MAX_NUMBER_OF_SENSORS];
     sensorState *         _pSensorState = nullptr;
     bool                  _errorlogging = false;
-    bool                  _logError( uint8_t num, const char * path, const char * message, const byte data[9] );
+    bool                  _logError( const uint8_t num, const char * path, const char * message, const byte data[9] );
     bool                  _rescan = false;
 };
 

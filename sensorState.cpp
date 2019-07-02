@@ -27,6 +27,7 @@ bool sensorState::startTask()
     ESP_LOGE( TAG, "Sensors not created. (low mem?) Exiting." );
     return false;
   }
+  sensorPreferences.begin( "sensors", false );
   _pSensorState->setStackSize(3000);
   _pSensorState->setCore(0);
   _pSensorState->setPriority(0);
@@ -70,11 +71,11 @@ bool sensorState::error( const uint8_t num )
   return ( nullptr == _pSensorState ) ? true : _pSensorState->_state[num].error;
 };
 
-bool sensorState::getName( const uint8_t num, sensorName_t name )
+bool sensorState::getName( const uint8_t num, sensorName_t &name )
 {
   if ( nullptr == _pSensorState ) return false;
   sensorIdStr_t id;
-  idToStr( num, id );
+  getId( num, id );
   String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
   if ( !result ) return false;
   strncpy( name, result.c_str(), sizeof( sensorName_t ) );
@@ -92,15 +93,12 @@ uint8_t sensorState::_scanSensors()
   while ( ds.search( currentAddr ) && ( currentSensor < MAX_NUMBER_OF_SENSORS ) )
   {
     memcpy( _tempState[currentSensor].addr, currentAddr, sizeof( sensorState_t::addr ) );
-
-    /* make a key field -in sensorUniqueId- for NVS */
-    char sensorUniqueId[17];
-    snprintf( sensorUniqueId, sizeof( sensorUniqueId ), "%02x%02x%02x%02x%02x%02x%02x",
+    sensorIdStr_t sensorId;
+    snprintf( sensorId, sizeof( sensorId ), "%02x%02x%02x%02x%02x%02x%02x",
               currentAddr[1], currentAddr[2], currentAddr[3], currentAddr[4], currentAddr[5], currentAddr[6], currentAddr[7]  );
-
     /* and read value from NVS or use default name */
-    snprintf( _tempState[currentSensor].name, sizeof( sensorState_t::name ),
-              sensorPreferences.getString( sensorUniqueId, UNKNOWN_SENSOR ).c_str() );
+    snprintf( _tempState[currentSensor].name, sizeof( sensorName_t ),
+              sensorPreferences.getString( sensorId, UNKNOWN_SENSOR ).c_str() );
 
     ESP_LOGD( TAG, "Found sensor %i id: %.15s name: '%s'", currentSensor, sensorUniqueId, _tempState[currentSensor].name );
 
@@ -110,42 +108,19 @@ uint8_t sensorState::_scanSensors()
   return currentSensor;
 }
 
-float sensorState::tempFromId( const sensorIdStr_t id )  {
-  if ( nullptr == _pSensorState ) return NAN;
-  uint8_t num = 0;
-  uint8_t total = count();
-  sensorIdStr_t buffer;
-  while ( num < total )
-  {
-    idToStr( num, buffer );
-    if ( 0 == strcmp( id, buffer ) ) return _pSensorState->_state[num].tempCelcius;
-    num++;
-  }
-  return NAN;
-}
-
-bool sensorState::setName( const sensorIdStr_t id, const char * name )  {
+bool sensorState::setName( const sensorIdStr_t &id, const char * name )  {
   if ( 0 == strlen( name ) ) return sensorPreferences.remove( id );
   if ( strlen( name ) > sizeof( sensorName_t ) ) return false;
   return sensorPreferences.putString( id, name );
 }
 
-void sensorState::idToStr( const uint8_t num, sensorIdStr_t str ) {
-  snprintf( str, sizeof( sensorIdStr_t ), "%02x%02x%02x%02x%02x%02x%02x",
+void sensorState::getId( const uint8_t num, sensorIdStr_t &id ) {
+  snprintf( id, sizeof( sensorIdStr_t ), "%02x%02x%02x%02x%02x%02x%02x",
             _pSensorState->_state[num].addr[1], _pSensorState->_state[num].addr[2], _pSensorState->_state[num].addr[3], _pSensorState->_state[num].addr[4],
             _pSensorState->_state[num].addr[5], _pSensorState->_state[num].addr[6], _pSensorState->_state[num].addr[7] );
 }
-/*
-  bool sensorState::nameFromId( const sensorIdStr_t id, sensorName_t buf ) {
-  String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
-  if ( !result ) return false;
-  strncpy( buf, result.c_str(), sizeof( sensorName_t ) );
-  return true;
-  }
-*/
-void sensorState::run( void * data ) {
-  sensorPreferences.begin( "sensors", false );
 
+void sensorState::run( void * data ) {
   uint8_t loopCounter = _scanSensors();
 
   while (1)
@@ -241,7 +216,7 @@ void sensorState::run( void * data ) {
   }
 }
 
-bool sensorState::_logError( uint8_t num, const char * path, const char * message, const byte data[9] )
+bool sensorState::_logError( const uint8_t num, const char * path, const char * message, const byte data[9] )
 {
   File file = FFat.open( path, FILE_APPEND );
   if ( !file ) return false;

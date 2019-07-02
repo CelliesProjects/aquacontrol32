@@ -226,7 +226,7 @@ void setup()
   ESP_LOGI( TAG, "aquacontrol32 %s", sketchVersion );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
-  sensor.startTask();
+  sensor.startSensors();
 
   preferences.begin( "aquacontrol32", false );
 

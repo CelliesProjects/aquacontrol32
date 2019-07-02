@@ -14,7 +14,7 @@ sensorState::sensorState() {}
 
 sensorState::~sensorState() {}
 
-bool sensorState::startTask()
+bool sensorState::startSensors()
 {
   if ( nullptr != _pSensorState )
   {

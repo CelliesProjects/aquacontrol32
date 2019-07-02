@@ -39,9 +39,9 @@ class sensorState: public Task {
     void                  getId( const uint8_t num, sensorIdStr_t &id );
     bool                  setName( const sensorIdStr_t &id, const char * name );
     bool                  logging();
-    bool                  setLogging( bool state );
+    bool                  setLogging( const bool state );
     bool                  errorLogging();
-    void                  setErrorLogging( bool state );
+    void                  setErrorLogging( const bool state );
 
   private:
 

@@ -28,7 +28,7 @@ bool sensorState::startTask()
     return false;
   }
   sensorPreferences.begin( "sensors", false );
-  _pSensorState->setStackSize(3000);
+  _pSensorState->setStackSize(1800);
   _pSensorState->setCore(0);
   _pSensorState->setPriority(0);
   _pSensorState->start();
@@ -41,7 +41,7 @@ bool sensorState::logging()
   return sensorPreferences.getBool( "logging", false );
 }
 
-bool sensorState::setLogging( bool state )
+bool sensorState::setLogging( const bool state )
 {
   return sensorPreferences.putBool( "logging", state );
 };
@@ -51,7 +51,7 @@ bool sensorState::errorLogging()
   return ( nullptr == _pSensorState ) ? false : _pSensorState->_errorlogging;
 };
 
-void sensorState::setErrorLogging( bool state )
+void sensorState::setErrorLogging( const bool state )
 {
   if ( nullptr != _pSensorState ) _pSensorState->_errorlogging = state;
 };
@@ -125,6 +125,7 @@ void sensorState::run( void * data ) {
 
   while (1)
   {
+    ESP_LOGD( TAG, "Stack words left: %i",uxTaskGetStackHighWaterMark(NULL) );
     if ( _rescan ) loopCounter = _scanSensors();
 
     ds.reset();

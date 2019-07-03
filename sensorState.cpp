@@ -89,9 +89,13 @@ uint8_t sensorState::_scanSensors()
 
   ds.reset_search();
   ds.target_search(0x28);
-
+  vTaskPrioritySet(NULL, 10);
   while ( ds.search( currentAddr ) && ( currentSensor < MAX_NUMBER_OF_SENSORS ) )
   {
+    memset( _tempState[currentSensor].name, sizeof( sensorName_t ), 0); //wipe old name
+    _tempState[currentSensor].error = true;
+    _tempState[currentSensor].tempCelsius = NAN;
+
     memcpy( _tempState[currentSensor].addr, currentAddr, sizeof( sensorState_t::addr ) );
     sensorId_t sensorId;
     snprintf( sensorId, sizeof( sensorId ), "%02x%02x%02x%02x%02x%02x%02x",
@@ -100,12 +104,17 @@ uint8_t sensorState::_scanSensors()
     snprintf( _tempState[currentSensor].name, sizeof( sensorName_t ),
               sensorPreferences.getString( sensorId, UNKNOWN_SENSOR ).c_str() );
 
-    ESP_LOGD( TAG, "Found sensor %i id: %.15s name: '%s'", currentSensor, sensorUniqueId, _tempState[currentSensor].name );
+    ESP_LOGD( TAG, "Found sensor %i id: %.15s name: '%s'", currentSensor, sensorId, _tempState[currentSensor].name );
 
     currentSensor++;
   }
+  vTaskPrioritySet(NULL, 0);
   _rescan = false;
   return currentSensor;
+}
+
+void sensorState::scan() {
+  _pSensorState->_rescan = true;
 }
 
 bool sensorState::setName( const sensorId_t &id, const char * name )  {
@@ -122,11 +131,13 @@ void sensorState::getId( const uint8_t num, sensorId_t &id ) {
 
 void sensorState::run( void * data ) {
   uint8_t loopCounter = _scanSensors();
-
   while (1)
   {
-    ESP_LOGD( TAG, "Stack words left: %i",uxTaskGetStackHighWaterMark(NULL) );
-    if ( _rescan ) loopCounter = _scanSensors();
+    ESP_LOGD( TAG, "Stack words left: %i", uxTaskGetStackHighWaterMark(NULL) );
+    if ( _rescan )
+    {
+      loopCounter = _scanSensors();
+    }
 
     ds.reset();
     ds.write( 0xCC, 0); /* Skip ROM - All sensors */
@@ -143,10 +154,7 @@ void sensorState::run( void * data ) {
       ds.reset();
       ds.select( _tempState[thisSensor].addr );
       ds.write( 0xBE );         /* Read Scratchpad */
-      for ( byte i = 0; i < 9; i++)
-      { // we need 9 bytes
-        data[i] = ds.read(  );
-      }
+      for ( byte i = 0; i < 9; i++ ) data[i] = ds.read(); // we need 9 bytes
 
       ESP_LOGD( TAG, "Sensor %i '%s' data=%02x%02x%02x%02x%02x%02x%02x%02x%02x", thisSensor, _tempState[thisSensor].name,
                 data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );

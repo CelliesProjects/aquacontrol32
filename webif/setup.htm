@@ -112,11 +112,15 @@ input[type="range"]{
 input#timeZoneTextBox{
   width:450px;
 }
-.sensorBar{
+.sensorname, .sensorbutton{
   display:none;
 }
 input.sensorNameInput, input#hostNameInput, input#passwordInput{
   width:250px;
+}
+.collapsable{
+  height:45px;
+  overflow:hidden;
 }
 </style>
 <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
@@ -128,40 +132,45 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   <p class="item">Light and device setup.</p>
 </div>
 <div class="shadowedBox">
-  <h3>LIGHT SETUP</h3>
+  <p class="item"><span id="deviceStatus"></span></p>
+</div>
+<div class="shadowedBox collapsable">
+  <h3>DEVICE SETUP</h3>
+    <div class="settingsBox">
+    <p class="item"><span class="itemName">TIME ZONE<a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneTextBox"></span></p>
+    <p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
+    <p class="item"><span class="itemName">CHANGE ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
+    </div>
+</div>
+<div class="shadowedBox collapsable">
+  <h3>LIGHTS</h3>
   <p class="item"><span id="lightStatus"></span></p>
   <p class="item"><input id="lightsOn" type="button" value="LIGHTS ON" disabled/><input id="lightsOff" type="button" value="LIGHTS OFF" disabled/><input id="lightsProgram" type="button" value="LIGHTS AUTO" disabled/></p>
 </div>
-<div class="shadowedBox">
-  <h3>SETUP WARNINGS/MESSAGES</h3>
-  <p class="item"><span id="deviceStatus">Only authorized users can change settings.</span></p>
-</div>
-<div class="shadowedBox">
-  <h3>DEVICE SETUP</h3>
+<div class="shadowedBox collapsable">
+  <h3>SENSORS</h3>
   <div class="settingsBox">
-    <p class="item"><span class="itemName">TIME ZONE <a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneTextBox"></span></p>
-    <p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
-    <p class="item sensorBar"><span class="itemName">SENSOR 1 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
-    <p class="item sensorBar"><span class="itemName">SENSOR 2 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
-    <p class="item sensorBar"><span class="itemName">SENSOR 3 NAME</span><span><input type="text" class="sensorNameInput" value=""></span></p>
-    <p class="item sensorBar button"><span class="itemName">TEMPERATURE LOGGING</span><input type="button" id="sensorLogging"></p>
-    <p class="item sensorBar button"><span class="itemName">SENSOR ERROR LOGGING</span><input type="button" id="sensorErrorLogging"></p>
+    <p class="item"><span class="itemName">SEARCH FOR SENSORS</span><input type="button" id="sensorScan" value="SCAN"></p>
+    <p class="item sensorbutton"><span class="itemName">TEMPERATURE LOGGING</span><input type="button" id="sensorLogging"></p>
+    <p class="item sensorbutton"><span class="itemName">SENSOR ERROR LOGGING</span><input type="button" id="sensorErrorLogging"></p>
+    <p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
+    <p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
+    <p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
     <!--<p class="item"><span class="itemName">PWM FREQUENCY</span><span id="pwmFreqValue" class="itemValue">&nbsp;</span><input type="range" id="pwmFreqSlider" value="100" min="100" max="10000"></p>-->
     <!--<p class="item"><span class="itemName">PWM DEPTH</span><span id="pwmDepthValue" class="itemValue">&nbsp;</span><input type="range" id="pwmDepthSlider" value="11" min="11" max="16" step="1"></p>-->
+  </div>
+</div>
+<div class="shadowedBox collapsable">
+  <h3>DISPLAYS</h3>
+    <div class="settingsBox">
     <p class="item tftBar"><span class="itemName">TFT ORIENTATION</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
     <p class="item tftBar"><span class="itemName">TFT MAX BRIGHTNESS</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
     <p class="item oledBar"><span class="itemName">OLED ORIENTATION</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
     <p class="item oledBar"><span class="itemName">OLED CONTRAST</span><span id="oledContrastValue" class="itemValue">&nbsp;</span><input type="range" id="oledContrastSlider" value="11" min="0" max="15" step="1"></p>
   </div>
 </div>
-<div class="shadowedBox">
-  <h3>ADMIN SETUP</h3>
-    <div class="settingsBox">
-    <p class="item"><span class="itemName">CHANGE ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
-    </div>
-</div>
-<div class="shadowedBox">
-  <h3>DEVICE STATUS</h3>
+<div class="shadowedBox collapsable">
+  <h3>STATUS</h3>
   <div class="settingsBox">
     <p class="item" id="version"></p>
     <p class="item">SYSTEM START:&nbsp;&nbsp;<span id="bootTime"></span></p>
@@ -248,27 +257,21 @@ function getTftOrientation(){
     if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft orientation." );
   })
   .always( function( data ){
-    if ( getAllValues )
-    {
-      getSensorLoggingStatus();
-    }
+    if ( getAllValues ) getSensorLoggingStatus();
   });
 }
 function getSensorLoggingStatus(){
   $.get("/api/getdevice?sensorlogging=")
   .done( function( data ){
     $('#sensorLogging').prop('value', data);
-    $('.sensorBar.button').show();
+    $('.sensorbutton').show();
   })
   .fail( function( data ){
     if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting sensor status." );
     console.log(data);
   })
   .always( function( data ){
-    if ( getAllValues )
-    {
-      getSensorErrorLoggingStatus();
-    }
+    if ( getAllValues ) getSensorErrorLoggingStatus();
   });
 }
 function getSensorErrorLoggingStatus(){
@@ -281,10 +284,7 @@ function getSensorErrorLoggingStatus(){
     console.log(data);
   })
   .always( function( data ){
-    if ( getAllValues )
-    {
-      getTftMaxBrightness();
-    }
+    if ( getAllValues ) getTftMaxBrightness();
   });
 }
 function getTftMaxBrightness(){
@@ -297,10 +297,7 @@ function getTftMaxBrightness(){
     if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting tft brightness.");
   })
   .always( function( data ){
-    if ( getAllValues )
-    {
-      getTimeZone();
-    }
+    if ( getAllValues ) getTimeZone();
   });
 }
 function getTimeZone(){
@@ -312,10 +309,7 @@ function getTimeZone(){
     $( '#deviceStatus' ).html( data.statusText );
   })
   .always( function( data ){
-    if ( getAllValues )
-    {
-      getLightStatus();
-    }
+    if ( getAllValues ) getLightStatus();
   });
 }
 function getLightStatus(){
@@ -323,22 +317,68 @@ function getLightStatus(){
   .done( function( data ){
     var item = data.split('\n');
     $('#lightStatus').html( item[6] );
-    var sensor = 0;
-    while ( item[7 + sensor] ){
-      $('.sensorBar').eq( sensor ).show();
-      var temp = item[7 + sensor].split(',');
-      $('.sensorBar .itemName').eq( sensor ).prepend( temp[1].substring( 0,  temp[1].indexOf( "." ) + 2 ) + "°C - " );
-      $('.sensorNameInput').eq( sensor ).val( temp[0] );
-      sensor++;
-    }
   })
   .fail( function( data ){
     $( '#deviceStatus' ).html( "Error getting lightstatus." );
   })
   .always( function( data ){
-    if ( getAllValues ) getWifiSSID();
+    if ( getAllValues ) getSensors();
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+function getSensors(){
+  $.get( "/api/getdevice?sensors")
+  .done( function(data){
+    var item=data.split('\n');
+    var sensor=0;
+    while(item[sensor]){
+      var tempArray=item[sensor].split(',');
+      var name=tempArray[0];var temp=tempArray[1];var sensorid=tempArray[2];
+      if(temp!="nan")temp+="°C";       //TODO: round of temp
+      else{
+        $('.sensorname .itemName').eq(sensor).css("background-color","red");
+        temp = "ERROR!";
+      }
+      $('.sensorname .itemName').eq(sensor).html(String(sensorid).toUpperCase()+" - "+temp);
+      $('.sensorNameInput').eq(sensor).val(name);
+      $('.sensorname').eq(sensor).show();
+      sensor++;
+    }
+    $('#deviceStatus').html("");
+  })
+  .fail(function(data){
+    $('#deviceStatus').html("Error getting sensors.");
+  })
+  .always(function(data){if(getAllValues)getWifiSSID()});
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function getWifiSSID(){
   $.get( "/api/getdevice?wifissid=")
   .done( function( data ){
@@ -347,9 +387,7 @@ function getWifiSSID(){
   .fail( function( data ){
     $( '#wifissid' ).html( "Error getting wifi SSID: " + data.statusText );
   })
-  .always( function( data ){
-    if ( getAllValues ) getBootTime();
-  });
+  .always( function( data ){if(getAllValues)getBootTime();});
 }
 function getBootTime(){
   $.get( "/api/getdevice?boottime=")
@@ -359,9 +397,7 @@ function getBootTime(){
   .fail( function( data ){
     $( '#deviceStatus' ).html( "Error getting boottime: " + data.statusText );
   })
-  .always( function( data ){
-    if ( getAllValues ) getDiskSpace();
-  });
+  .always( function( data ){if ( getAllValues ) getDiskSpace();});
 }
 function getDiskSpace(){
   $.get( "/api/getdevice?diskspace=")
@@ -372,9 +408,7 @@ function getDiskSpace(){
   .fail( function( data ){
     if ( data.status != 501 ) $( '#deviceStatus' ).html( "Error getting diskspace: " + data.responseText );
   })
-  .always( function( data ){
-    if ( getAllValues ) getPwmDepth();
-  });
+  .always( function( data ){if ( getAllValues ) getPwmDepth();});
 }
 
 function getPwmDepth(){
@@ -385,9 +419,7 @@ function getPwmDepth(){
   .fail( function( data ){
     $( '#deviceStatus' ).html( "Error getting pwmdepth " + data.responseText );
   })
-  .always( function( data ){
-    if ( getAllValues ) getVersion();
-  });
+  .always( function( data ){if ( getAllValues ) getVersion();});
 }
 function getVersion()
 {
@@ -404,9 +436,7 @@ function getVersion()
   .fail( function( data ){
     $( '#deviceStatus' ).html( "Error getting version: " + data.responseText );
   })
-  .always( function( data ){
-    if ( getAllValues ) getPwmFrequency();
-  });
+  .always( function( data ){if ( getAllValues ) getPwmFrequency();});
 }
 function getPwmFrequency(){
   $.get( "/api/getdevice?pwmfrequency=")
@@ -612,6 +642,26 @@ $('.sensorNameInput').on('change', function( data ) {
   .fail(function( data ){
     $( '.sensorNameInput' ).eq( sensor ).css({'background':'red'});
   });
+});
+$('#sensorScan').on('click', function( data ) {
+  $( '#deviceStatus' ).html( "Scanning..." );
+  $.post("/api/setdevice",
+  {
+    sensorscan:true
+  })
+  .done(function(data){
+    var updateSensors = setTimeout( getSensors, 3000 );
+    $('p.item.sensorname').hide();
+  })
+  .fail(function(data){
+    console.log(data);
+  });
+});
+
+
+$('.collapsable').on('click', function() {
+  $('.collapsable').css('height','45px').css('cursor','pointer');
+  $(this).css('height','auto').css('cursor','');
 });
 </script>
 </body>

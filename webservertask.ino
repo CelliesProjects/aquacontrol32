@@ -267,7 +267,6 @@ void webServerTask ( void * pvParameters )
 
       sensorId_t sensorId;
       sensorName_t sensorName;
-
       sensor.getId( sensorNumber, sensorId );
       sensor.getName( sensorNumber, sensorName );
       response->printf( "%s\n%.3f\n%s\n",
@@ -276,6 +275,75 @@ void webServerTask ( void * pvParameters )
                         sensorId );
       return request->send( response );
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    else if ( request->hasArg( "sensors" ) )
+    {
+      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      sensorId_t id;
+      sensorName_t name;
+      response = request->beginResponseStream( HEADER_HTML );
+      for ( uint8_t num = 0; num < sensor.count(); num++ )
+      {
+        sensor.getId( num, id );
+        sensor.getName( num, name );
+        response->printf( "%s,%.3f,%s\n", name, sensor.error( num ) ? NAN : sensor.temp( num ), id );
+      }
+      return request->send( response );
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     else if ( request->hasArg( "sensorlogging" ) )
     {
@@ -655,6 +723,27 @@ void webServerTask ( void * pvParameters )
         ESP_LOGI( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), sensorId );
       return request->send( 200, HEADER_HTML, request->arg( "sensorname" ).c_str() );
     }
+
+
+
+
+
+
+
+    else if ( request->hasArg( "sensorscan" ) )
+    {
+      sensor.scan();
+      return request->send( 200, HEADER_HTML );
+    }
+
+
+
+
+
+
+
+
+
 
     else if ( request->hasArg( "tftorientation" ) )
     {

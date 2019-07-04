@@ -92,7 +92,7 @@ uint8_t sensorState::_scanSensors()
   vTaskPrioritySet(NULL, 10);
   while ( ds.search( currentAddr ) && ( currentSensor < MAX_NUMBER_OF_SENSORS ) )
   {
-    memset( _tempState[currentSensor].name, sizeof( sensorName_t ), 0); //wipe old name
+    memset( _tempState[currentSensor].name, 0, sizeof( sensorName_t ) ); //wipe old name
     _tempState[currentSensor].error = true;
     _tempState[currentSensor].tempCelsius = NAN;
 

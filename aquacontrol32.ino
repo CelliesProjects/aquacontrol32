@@ -140,11 +140,11 @@ const char* defaultTimerFile   = "/default.aqu";
 
 /* task priorities */
 const uint8_t dimmerTaskPriority       = 8;
-const uint8_t tftTaskPriority          = 5;
-const uint8_t ntpTaskPriority          = 4;
-const uint8_t oledTaskPriority         = 3;
-const uint8_t wifiTaskPriority         = 2;
-const uint8_t loggerTaskPriority       = 1;
+const uint8_t tftTaskPriority          = 6;
+const uint8_t ntpTaskPriority          = 5;
+const uint8_t oledTaskPriority         = 4;
+const uint8_t wifiTaskPriority         = 3;
+const uint8_t loggerTaskPriority       = 2;
 const uint8_t webserverTaskPriority    = 1;
 const uint8_t moonSimtaskPriority      = 0;
 

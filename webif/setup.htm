@@ -325,18 +325,6 @@ function getLightStatus(){
     if ( getAllValues ) getSensors();
   });
 }
-
-
-
-
-
-
-
-
-
-
-
-
 function getSensors(){
   $.get( "/api/getdevice?sensors")
   .done( function(data){
@@ -357,28 +345,9 @@ function getSensors(){
     }
     $('#deviceStatus').html("");
   })
-  .fail(function(data){
-    $('#deviceStatus').html("Error getting sensors.");
-  })
-  .always(function(data){if(getAllValues)getWifiSSID()});
+  .fail(function(){$('#deviceStatus').html("Error getting sensors.");})
+  .always(function(){if(getAllValues)getWifiSSID()});
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function getWifiSSID(){
   $.get( "/api/getdevice?wifissid=")
   .done( function( data ){

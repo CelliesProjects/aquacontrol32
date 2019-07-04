@@ -57,4 +57,4 @@ class sensorState: public Task {
     bool                  _rescan = false;
 };
 
-#endif
+#endif //SENSORSTATE_H

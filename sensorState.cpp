@@ -28,7 +28,7 @@ bool sensorState::startSensors()
     return false;
   }
   sensorPreferences.begin( "sensors", false );
-  _pSensorState->setStackSize(1800);
+  _pSensorState->setStackSize(3000);
   _pSensorState->setCore(0);
   _pSensorState->setPriority(0);
   _pSensorState->start();
@@ -133,7 +133,7 @@ void sensorState::run( void * data ) {
   uint8_t loopCounter = _scanSensors();
   while (1)
   {
-    ESP_LOGD( TAG, "Stack words left: %i", uxTaskGetStackHighWaterMark(NULL) );
+    ESP_LOGD( TAG, "Stack watermark: %i", uxTaskGetStackHighWaterMark(NULL) );
     if ( _rescan )
     {
       loopCounter = _scanSensors();
@@ -208,14 +208,17 @@ void sensorState::run( void * data ) {
         }
         _tempState[thisSensor].tempCelsius = raw / 16.0;
 
-        if ( _tempState[thisSensor].tempCelsius <= -40.0 || _tempState[thisSensor].tempCelsius  >= 85.0 )
+        if ( _tempState[thisSensor].tempCelsius > -55.0 && _tempState[thisSensor].tempCelsius  < 85.0 )
+        {
+          _tempState[thisSensor].error = false;
+        }
+        else
         {
           _tempState[thisSensor].error = true;
+          _tempState[thisSensor].tempCelsius  = NAN;
           if ( _errorlogging && !_logError( thisSensor, ERROR_LOG_NAME, "BAD_TMP", data ) )
             ESP_LOGE( TAG, "%s", "Error writing errorlog.(disk full?)" );
         }
-        else
-          _tempState[thisSensor].error = false;
       }
       ESP_LOGD( TAG, "sensor %i: %.1f %s", thisSensor, _tempState[thisSensor].tempCelsius, _tempState[thisSensor].error ? "invalid" : "valid" );
       thisSensor++;

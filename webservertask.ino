@@ -670,26 +670,11 @@ void webServerTask ( void * pvParameters )
       return request->send( 200, HEADER_HTML, request->arg( "sensorname" ).c_str() );
     }
 
-
-
-
-
-
-
     else if ( request->hasArg( "sensorscan" ) )
     {
       sensor.scan();
       return request->send( 200, HEADER_HTML );
     }
-
-
-
-
-
-
-
-
-
 
     else if ( request->hasArg( "tftorientation" ) )
     {

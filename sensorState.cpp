@@ -134,10 +134,7 @@ void sensorState::run( void * data ) {
   while (1)
   {
     ESP_LOGD( TAG, "Stack watermark: %i", uxTaskGetStackHighWaterMark(NULL) );
-    if ( _rescan )
-    {
-      loopCounter = _scanSensors();
-    }
+    if ( _rescan ) loopCounter = _scanSensors();
 
     ds.reset();
     ds.write( 0xCC, 0); /* Skip ROM - All sensors */

@@ -41,15 +41,12 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
 
   leds.setState( LIGHTS_AUTO );
 
-  //lightState_t lastState = leds.state();
-
   xLastWakeTime = xTaskGetTickCount();
 
   ESP_LOGI( TAG, "Lights running after %.1f seconds.", millis() / 1000.0 );
 
   while (1)
   {
-    
     if ( leds.state() != LIGHTS_AUTO )
     {
       uint16_t pwmValue = ( leds.state() == LIGHTS_OFF ) ? 0 : ledcMaxValue;

@@ -276,34 +276,6 @@ void webServerTask ( void * pvParameters )
       return request->send( response );
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     else if ( request->hasArg( "sensors" ) )
     {
       if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
@@ -318,32 +290,6 @@ void webServerTask ( void * pvParameters )
       }
       return request->send( response );
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     else if ( request->hasArg( "sensorlogging" ) )
     {

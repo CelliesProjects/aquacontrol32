@@ -372,12 +372,12 @@ static inline __attribute__((always_inline)) void showStatus()
   for ( uint8_t num = 0; num < sensor.count(); num++ )
   {
     //if the name changed update the display
-    sensorName_t sensorName;
-    sensor.getName( num, sensorName );
-    if ( strcmp( displayedName[num], sensorName ) )
+    sensorName_t name;
+    sensor.getName( num, name );
+    if ( strcmp( displayedName[num], name ) )
     {
-      button.updateSensorLabel( tempArea[num], sensorName );
-      memcpy( displayedName[num], sensorName, sizeof( sensorName_t ) );
+      button.updateSensorLabel( tempArea[num], name );
+      memcpy( displayedName[num], name, sizeof( sensorName_t ) );
     }
 
     // if the temperature changed update the display

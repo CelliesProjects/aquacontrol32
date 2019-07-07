@@ -11,19 +11,15 @@ OneWire ds( SENSOR_PIN );
 Preferences sensorPreferences;
 
 sensorState::sensorState() {}
-
 sensorState::~sensorState() {}
 
-bool sensorState::startSensors()
-{
-  if ( nullptr != _pSensorState )
-  {
+bool sensorState::startSensors() {
+  if ( nullptr != _pSensorState ) {
     ESP_LOGE( TAG, "Sensors already running. Exiting." );
     return false;
   }
   _pSensorState = new sensorState();
-  if ( nullptr == _pSensorState )
-  {
+  if ( nullptr == _pSensorState ) {
     ESP_LOGE( TAG, "Sensors not created. (low mem?) Exiting." );
     return false;
   }
@@ -36,74 +32,40 @@ bool sensorState::startSensors()
   return true;
 }
 
-bool sensorState::logging()
-{
-  return sensorPreferences.getBool( "logging", false );
+void sensorState::scan() {
+  _pSensorState->_rescan = true;
 }
 
-bool sensorState::setLogging( const bool state )
-{
-  return sensorPreferences.putBool( "logging", state );
-};
-
-bool sensorState::errorLogging()
-{
-  return ( nullptr == _pSensorState ) ? false : _pSensorState->_errorlogging;
-};
-
-void sensorState::setErrorLogging( const bool state )
-{
-  if ( nullptr != _pSensorState ) _pSensorState->_errorlogging = state;
-};
-
-uint8_t sensorState::count()
-{
+uint8_t sensorState::count() {
   return ( nullptr == _pSensorState ) ? 0 : _pSensorState->_count;
 };
 
-float sensorState::temp( const uint8_t num )
-{
+float sensorState::temp( const uint8_t num ) {
   return ( nullptr == _pSensorState ) ? NAN : _pSensorState->_state[num].tempCelsius;
 };
 
-bool sensorState::error( const uint8_t num )
-{
+bool sensorState::error( const uint8_t num ) {
   return ( nullptr == _pSensorState ) ? true : _pSensorState->_state[num].error;
 };
 
-bool sensorState::getName( const uint8_t num, sensorName_t &name )
-{
-  if ( nullptr == _pSensorState ) return false;
+const char * sensorState::readNVS( const sensorName_t &id, sensorName_t &name ){
+  String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
+  if ( result ) strncpy( name, result.c_str(), sizeof( sensorName_t ) );
+  return name;
+}
+
+const char * sensorState::getName( const uint8_t num, sensorName_t &name ) {
+  if ( nullptr == _pSensorState ) return name;
   sensorId_t id;
   getId( num, id );
-  String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
-  if ( !result ) return false;
-  strncpy( name, result.c_str(), sizeof( sensorName_t ) );
-  return true;
+  return readNVS( id, name );
 }
 
-uint8_t sensorState::_scanSensors()
-{
-  uint8_t currentSensor = 0;
-  byte    currentAddr[ sizeof( sensorState_t::addr ) ];
-
-  ds.reset_search();
-  ds.target_search(0x28);
-  vTaskPrioritySet( NULL, 10);
-  while ( ds.search( currentAddr ) && ( currentSensor < MAX_NUMBER_OF_SENSORS ) )
-  {
-    _tempState[currentSensor].error = true;
-    _tempState[currentSensor].tempCelsius = NAN;
-    memcpy( _tempState[currentSensor].addr, currentAddr, sizeof( sensorState_t::addr ) );
-    currentSensor++;
-  }
-  vTaskPrioritySet( NULL, 0);
-  _rescan = false;
-  return currentSensor;
-}
-
-void sensorState::scan() {
-  _pSensorState->_rescan = true;
+const char * sensorState::getId( const uint8_t num, sensorId_t &id ) {
+  snprintf( id, sizeof( sensorId_t ), "%02x%02x%02x%02x%02x%02x%02x",
+            _pSensorState->_state[num].addr[1], _pSensorState->_state[num].addr[2], _pSensorState->_state[num].addr[3], _pSensorState->_state[num].addr[4],
+            _pSensorState->_state[num].addr[5], _pSensorState->_state[num].addr[6], _pSensorState->_state[num].addr[7] );
+  return id;
 }
 
 bool sensorState::setName( const sensorId_t &id, const char * name )  {
@@ -112,11 +74,21 @@ bool sensorState::setName( const sensorId_t &id, const char * name )  {
   return sensorPreferences.putString( id, name );
 }
 
-void sensorState::getId( const uint8_t num, sensorId_t &id ) {
-  snprintf( id, sizeof( sensorId_t ), "%02x%02x%02x%02x%02x%02x%02x",
-            _pSensorState->_state[num].addr[1], _pSensorState->_state[num].addr[2], _pSensorState->_state[num].addr[3], _pSensorState->_state[num].addr[4],
-            _pSensorState->_state[num].addr[5], _pSensorState->_state[num].addr[6], _pSensorState->_state[num].addr[7] );
+bool sensorState::logging() {
+  return sensorPreferences.getBool( "logging", false );
 }
+
+bool sensorState::setLogging( const bool state ) {
+  return sensorPreferences.putBool( "logging", state );
+};
+
+bool sensorState::errorLogging() {
+  return ( nullptr == _pSensorState ) ? false : _pSensorState->_errorlogging;
+};
+
+void sensorState::setErrorLogging( const bool state ) {
+  if ( nullptr != _pSensorState ) _pSensorState->_errorlogging = state;
+};
 
 void sensorState::run( void * data ) {
   uint8_t loopCounter = _scanSensors();
@@ -215,6 +187,25 @@ void sensorState::run( void * data ) {
   }
 }
 
+uint8_t sensorState::_scanSensors() {
+  uint8_t currentSensor = 0;
+  byte    currentAddr[ sizeof( sensorState_t::addr ) ];
+
+  ds.reset_search();
+  ds.target_search(0x28);
+  vTaskPrioritySet( NULL, 10);
+  while ( ds.search( currentAddr ) && ( currentSensor < MAX_NUMBER_OF_SENSORS ) )
+  {
+    _tempState[currentSensor].error = true;
+    _tempState[currentSensor].tempCelsius = NAN;
+    memcpy( _tempState[currentSensor].addr, currentAddr, sizeof( sensorState_t::addr ) );
+    currentSensor++;
+  }
+  vTaskPrioritySet( NULL, 0);
+  _rescan = false;
+  return currentSensor;
+}
+
 bool sensorState::_logError( const uint8_t num, const char * path, const char * message, const byte data[9] )
 {
   File file = FFat.open( path, FILE_APPEND );
@@ -225,7 +216,7 @@ bool sensorState::_logError( const uint8_t num, const char * path, const char * 
   time ( &rawtime );
   timeinfo = localtime ( &rawtime );
   char timeBuff[20];
-  strftime ( timeBuff, sizeof(timeBuff), "%x %X", timeinfo );
+  strftime ( timeBuff, sizeof( timeBuff ), "%x %X", timeinfo );
   char buffer[100];
   snprintf( buffer, sizeof( buffer ), "%s - sensor:%i %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, num, message,
             data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );

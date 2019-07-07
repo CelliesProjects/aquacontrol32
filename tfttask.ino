@@ -358,11 +358,13 @@ static inline __attribute__((always_inline)) void showStatus()
 
   ledcWrite( TFT_BACKLIGHT_CHANNEL, ( averageLedBrightness > rawBrightness ) ? rawBrightness : averageLedBrightness );
 
-  static uint8_t lastCount{0};
-  static sensorState::sensorState_t lastState[MAX_NUMBER_OF_SENSORS];
+  static uint8_t      lastCount{0};
+  static sensorName_t displayedName[MAX_NUMBER_OF_SENSORS];
+  static float        displayedTemp[MAX_NUMBER_OF_SENSORS];
+
   if ( tftClearScreen || sensor.count() != lastCount )
   {
-    memset( lastState, 0, sizeof( lastState ) );
+    memset( displayedName, 0, sizeof( displayedName ) );
     newSensors();
     lastCount = sensor.count();
     tftClearScreen = false;
@@ -373,18 +375,18 @@ static inline __attribute__((always_inline)) void showStatus()
     //if the name changed update the display
     sensorName_t sensorName;
     sensor.getName( num, sensorName );
-    if ( strcmp( lastState[num].name, sensorName ) )
+    if ( strcmp( displayedName[num], sensorName ) )
     {
       button.updateSensorLabel( tempArea[num], sensorName );
-      memcpy(lastState[num].name, sensorName, sizeof( sensorName_t ) );
+      memcpy( displayedName, sensorName, sizeof( sensorName_t ) );
     }
 
     // if the temperature changed update the display
-    if ( lastState[num].tempCelsius != sensor.temp( num ) && !sensor.error( num ) )
+    if ( displayedTemp[num] != sensor.temp( num ) && !sensor.error( num ) )
     {
       snprintf( tempArea[num].text, sizeof( tempArea[num].text ), " %.1f%c ", sensor.temp( num ), char(247) );
       button.updateText( tempArea[num] );
-      lastState[num].tempCelsius = sensor.temp( num );
+      displayedTemp[num] = sensor.temp( num );
     }
   }
 

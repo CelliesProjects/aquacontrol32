@@ -24,7 +24,6 @@ class sensorState: public Task {
     {
       byte             addr[8] = {};
       float            tempCelsius = NAN;
-      sensorName_t     name = "";
       bool             error = true;
     };
 

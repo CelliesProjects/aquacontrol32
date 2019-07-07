@@ -654,7 +654,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "sensorname" ) )
     {
-      if ( request->arg( "sensorname" ).length() > sizeof( sensorState::sensorState_t::name ) )
+      if ( request->arg( "sensorname" ).length() > sizeof( sensorName_t ) )
         return request->send( 400, HEADER_HTML, "Sensorname too long" );
 
       if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );

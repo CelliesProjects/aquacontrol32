@@ -28,8 +28,8 @@ bool sensorState::startSensors()
     return false;
   }
   sensorPreferences.begin( "sensors", false );
-  _pSensorState->setStackSize(3000);
-  _pSensorState->setCore(0);
+  _pSensorState->setStackSize(3500);
+  _pSensorState->setCore(1);
   _pSensorState->setPriority(0);
   _pSensorState->start();
   ESP_LOGI( TAG, "Sensors started." );
@@ -80,7 +80,7 @@ bool sensorState::getName( const uint8_t num, sensorName_t &name )
   if ( !result ) return false;
   strncpy( name, result.c_str(), sizeof( sensorName_t ) );
   return true;
-};
+}
 
 uint8_t sensorState::_scanSensors()
 {
@@ -89,26 +89,15 @@ uint8_t sensorState::_scanSensors()
 
   ds.reset_search();
   ds.target_search(0x28);
-  vTaskPrioritySet(NULL, 10);
+  vTaskPrioritySet( NULL, 10);
   while ( ds.search( currentAddr ) && ( currentSensor < MAX_NUMBER_OF_SENSORS ) )
   {
-    memset( _tempState[currentSensor].name, 0, sizeof( sensorName_t ) ); //wipe old name
     _tempState[currentSensor].error = true;
     _tempState[currentSensor].tempCelsius = NAN;
-
     memcpy( _tempState[currentSensor].addr, currentAddr, sizeof( sensorState_t::addr ) );
-    sensorId_t sensorId;
-    snprintf( sensorId, sizeof( sensorId ), "%02x%02x%02x%02x%02x%02x%02x",
-              currentAddr[1], currentAddr[2], currentAddr[3], currentAddr[4], currentAddr[5], currentAddr[6], currentAddr[7]  );
-    /* and read value from NVS or use default name */
-    snprintf( _tempState[currentSensor].name, sizeof( sensorName_t ),
-              sensorPreferences.getString( sensorId, UNKNOWN_SENSOR ).c_str() );
-
-    ESP_LOGD( TAG, "Found sensor %i id: %.15s name: '%s'", currentSensor, sensorId, _tempState[currentSensor].name );
-
     currentSensor++;
   }
-  vTaskPrioritySet(NULL, 0);
+  vTaskPrioritySet( NULL, 0);
   _rescan = false;
   return currentSensor;
 }
@@ -133,7 +122,7 @@ void sensorState::run( void * data ) {
   uint8_t loopCounter = _scanSensors();
   while (1)
   {
-    ESP_LOGD( TAG, "Stack watermark: %i", uxTaskGetStackHighWaterMark(NULL) );
+    ESP_LOGD( TAG, "Stack watermark: %i", uxTaskGetStackHighWaterMark( NULL ) );
     if ( _rescan ) loopCounter = _scanSensors();
 
     ds.reset();
@@ -179,6 +168,7 @@ void sensorState::run( void * data ) {
       if ( OneWire::crc8( data, 8 ) != data[8] )
       {
         _tempState[thisSensor].error = true;
+        _tempState[thisSensor].tempCelsius  = NAN;
         if ( _errorlogging && !_logError( thisSensor, ERROR_LOG_NAME, "BAD_CRC", data ) )
           ESP_LOGE( TAG, "%s", "Error writing errorlog.(disk full?)" );
       }
@@ -237,9 +227,9 @@ bool sensorState::_logError( const uint8_t num, const char * path, const char * 
   char timeBuff[20];
   strftime ( timeBuff, sizeof(timeBuff), "%x %X", timeinfo );
   char buffer[100];
-  snprintf( buffer, sizeof( buffer ), "%s - sensor: '%s' %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, _tempState[num].name, message,
+  snprintf( buffer, sizeof( buffer ), "%s - sensor:%i %s %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", timeBuff, num, message,
             data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
-  ESP_LOGE( TAG, "%s", buffer );
+  ESP_LOGD( TAG, "%s", buffer );
 
   if ( !file.println( buffer ) )
   {

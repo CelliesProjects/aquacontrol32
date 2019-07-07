@@ -240,8 +240,7 @@ void newSensors()
     tempArea[num].color = TFT_BACK_COLOR;
     tempArea[num].labelcolor = ILI9341_WHITE;
     tempArea[num].fontsize = size2;
-    sensor.getName( num, sensorName );
-    button.updateSensorLabel( tempArea[num], sensorName );
+    button.updateSensorLabel( tempArea[num], (char *)sensor.getName( num, sensorName ) );
   }
 }
 
@@ -249,10 +248,7 @@ void updateSensorLabels(  )
 {
   sensorName_t sensorName;
   for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
-  {
-    sensor.getName( thisSensor, sensorName );
-    button.updateSensorLabel( tempArea[thisSensor], sensorName );
-  }
+    button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.getName( thisSensor, sensorName ) );
 }
 
 static inline __attribute__((always_inline)) void showStatus()
@@ -516,12 +512,9 @@ static inline __attribute__((always_inline)) void showIPAddress( )
 
 void drawSensors()
 {
+  sensorName_t sensorName;
   for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
-  {
-    sensorName_t sensorName;
-    sensor.getName( thisSensor, sensorName );
-    button.updateSensorLabel( tempArea[thisSensor], sensorName );
-  }
+    button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.getName( thisSensor, sensorName ) );
 }
 
 //tftButton:: functions

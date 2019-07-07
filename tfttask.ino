@@ -367,7 +367,6 @@ static inline __attribute__((always_inline)) void showStatus()
     memset( displayedName, 0, sizeof( displayedName ) );
     newSensors();
     lastCount = sensor.count();
-    tftClearScreen = false;
   }
 
   for ( uint8_t num = 0; num < sensor.count(); num++ )
@@ -378,16 +377,17 @@ static inline __attribute__((always_inline)) void showStatus()
     if ( strcmp( displayedName[num], sensorName ) )
     {
       button.updateSensorLabel( tempArea[num], sensorName );
-      memcpy( displayedName, sensorName, sizeof( sensorName_t ) );
+      memcpy( displayedName[num], sensorName, sizeof( sensorName_t ) );
     }
 
     // if the temperature changed update the display
-    if ( displayedTemp[num] != sensor.temp( num ) && !sensor.error( num ) )
+    if ( tftClearScreen || displayedTemp[num] != sensor.temp( num ) )
     {
       snprintf( tempArea[num].text, sizeof( tempArea[num].text ), " %.1f%c ", sensor.temp( num ), char(247) );
       button.updateText( tempArea[num] );
       displayedTemp[num] = sensor.temp( num );
     }
+    tftClearScreen = false;
   }
 
   struct tm timeinfo;

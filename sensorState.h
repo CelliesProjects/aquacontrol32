@@ -35,8 +35,8 @@ class sensorState: public Task {
     uint8_t               count();
     float                 temp( const uint8_t num );
     bool                  error( const uint8_t num );
-    const char *          readNVS( const sensorName_t &id, sensorName_t &name );
     const char *          getName( const uint8_t num, sensorName_t &name );
+    const char *          getName( const sensorName_t &id, sensorName_t &name );
     const char *          getId( const uint8_t num, sensorId_t &id );
     bool                  setName( const sensorId_t &id, const char * name );
     bool                  logging();

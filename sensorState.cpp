@@ -28,7 +28,6 @@ bool sensorState::startSensors() {
   _pSensorState->setCore(1);
   _pSensorState->setPriority(0);
   _pSensorState->start();
-  ESP_LOGI( TAG, "Sensors started." );
   return true;
 }
 
@@ -48,20 +47,21 @@ bool sensorState::error( const uint8_t num ) {
   return ( nullptr == _pSensorState ) ? true : _pSensorState->_state[num].error;
 };
 
-const char * sensorState::readNVS( const sensorName_t &id, sensorName_t &name ){
+const char * sensorState::getName( const uint8_t num, sensorName_t &name ) {
+  if ( nullptr == _pSensorState ) return name;
+  sensorId_t id;
+  getId( num, id );
+  return getName( id, name );
+}
+
+const char * sensorState::getName( const sensorName_t &id, sensorName_t &name ){
   String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
   if ( result ) strncpy( name, result.c_str(), sizeof( sensorName_t ) );
   return name;
 }
 
-const char * sensorState::getName( const uint8_t num, sensorName_t &name ) {
-  if ( nullptr == _pSensorState ) return name;
-  sensorId_t id;
-  getId( num, id );
-  return readNVS( id, name );
-}
-
 const char * sensorState::getId( const uint8_t num, sensorId_t &id ) {
+  if ( nullptr == _pSensorState ) return id;
   snprintf( id, sizeof( sensorId_t ), "%02x%02x%02x%02x%02x%02x%02x",
             _pSensorState->_state[num].addr[1], _pSensorState->_state[num].addr[2], _pSensorState->_state[num].addr[3], _pSensorState->_state[num].addr[4],
             _pSensorState->_state[num].addr[5], _pSensorState->_state[num].addr[6], _pSensorState->_state[num].addr[7] );
@@ -92,6 +92,7 @@ void sensorState::setErrorLogging( const bool state ) {
 
 void sensorState::run( void * data ) {
   uint8_t loopCounter = _scanSensors();
+  ESP_LOGI( TAG, "Sensors scanned: %i sensors found.", loopCounter );
   while (1)
   {
     ESP_LOGD( TAG, "Stack watermark: %i", uxTaskGetStackHighWaterMark( NULL ) );

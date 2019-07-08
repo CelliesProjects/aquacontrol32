@@ -55,6 +55,7 @@ const char * sensorState::getName( const uint8_t num, sensorName_t &name ) {
 }
 
 const char * sensorState::getName( const sensorName_t &id, sensorName_t &name ){
+  if ( nullptr == _pSensorState ) return name;
   String result = sensorPreferences.getString( id, UNKNOWN_SENSOR );
   if ( result ) strncpy( name, result.c_str(), sizeof( sensorName_t ) );
   return name;
@@ -92,7 +93,7 @@ void sensorState::setErrorLogging( const bool state ) {
 
 void sensorState::run( void * data ) {
   uint8_t loopCounter = _scanSensors();
-  ESP_LOGI( TAG, "Sensors scanned: %i sensors found.", loopCounter );
+  ESP_LOGI( TAG, "Sensors scanned: %i found.", loopCounter );
   while (1)
   {
     ESP_LOGD( TAG, "Stack watermark: %i", uxTaskGetStackHighWaterMark( NULL ) );

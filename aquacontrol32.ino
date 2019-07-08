@@ -7,12 +7,12 @@
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
 #include <WiFi.h>                  /* should be installed together with ESP32 Arduino install */
-#include <Adafruit_ILI9341.h>      /* Install 1.3.6 via 'Manage Libraries' in Arduino IDE */
-#include <Adafruit_GFX.h>          /* Install 1.4.11 via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_ILI9341.h>      /* Install 1.5.1 via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_GFX.h>          /* Install 1.5.6 via 'Manage Libraries' in Arduino IDE */
 #include <SSD1306.h>               /* Install 4.0.0 via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */
-#include <XPT2046_Touchscreen.h>   /* Install 1.3.0 via 'Manage Libraries' in Arduino IDE */
-#include <AsyncTCP.h>              /* https://github.com/me-no-dev/AsyncTCP */
-#include <ESPAsyncWebServer.h>     /* https://github.com/me-no-dev/ESPAsyncWebServer */
+#include <XPT2046_Touchscreen.h>   /* Install 1.3 via 'Manage Libraries' in Arduino IDE */
+#include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
+#include <ESPAsyncWebServer.h>     /* Reports as 1.2.2 https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
 
 #include "sensorState.h"

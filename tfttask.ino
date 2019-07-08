@@ -370,7 +370,7 @@ static inline __attribute__((always_inline)) void showStatus()
     //if the name changed update the display
     sensorName_t name;
     sensor.getName( num, name );
-    if ( strcmp( displayedName[num], name ) )
+    if ( tftClearScreen || strcmp( displayedName[num], name ) )
     {
       button.updateSensorLabel( tempArea[num], name );
       memcpy( displayedName[num], name, sizeof( sensorName_t ) );
@@ -383,8 +383,9 @@ static inline __attribute__((always_inline)) void showStatus()
       button.updateText( tempArea[num] );
       displayedTemp[num] = sensor.temp( num );
     }
-    tftClearScreen = false;
   }
+
+  tftClearScreen = false;
 
   struct tm timeinfo;
 

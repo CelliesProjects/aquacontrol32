@@ -1,3 +1,8 @@
+if [ $(grep GIT_TAG deviceSetup.h | grep -ic TRUE) != "1" ]
+then
+  echo ERROR! GIT_TAG not set to true in deviceSetup.h.
+  exit 1
+fi
 currentVersion=""
 if [ $(git branch | grep \* | cut -d ' ' -f2) == "master" ]
 then

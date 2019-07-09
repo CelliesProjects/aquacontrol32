@@ -105,23 +105,23 @@ void sensorState::run( void * data ) {
 
     vTaskDelay( 750 ); //wait for conversion ready
 
-    uint8_t thisSensor = 0;
-    while ( thisSensor < loopCounter )
+    uint8_t num = 0;
+    while ( num < loopCounter )
     {
       byte data[12];
 
-      _tempState[thisSensor].error = true; /* we start with an error, which will be cleared if the CRC checks out. */
+      _tempState[num].error = true; /* we start with an error, which will be cleared if the CRC checks out. */
       ds.reset();
-      ds.select( _tempState[thisSensor].addr );
+      ds.select( _tempState[num].addr );
       ds.write( 0xBE );         /* Read Scratchpad */
       for ( byte i = 0; i < 9; i++ ) data[i] = ds.read(); // we need 9 bytes
 
-      ESP_LOGD( TAG, "Sensor %i '%s' data=%02x%02x%02x%02x%02x%02x%02x%02x%02x", thisSensor, _tempState[thisSensor].name,
+      ESP_LOGD( TAG, "Sensor %i '%s' data=%02x%02x%02x%02x%02x%02x%02x%02x%02x", num, _tempState[num].name,
                 data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8] );
 
       byte type_s;
       // the first ROM byte indicates which chip
-      switch ( _tempState[thisSensor].addr[0] )
+      switch ( _tempState[num].addr[0] )
       {
         case 0x10:
           ESP_LOGD( TAG, "Dallas sensor type : DS18S20" );  /* or old DS1820 */
@@ -141,9 +141,9 @@ void sensorState::run( void * data ) {
 
       if ( OneWire::crc8( data, 8 ) != data[8] )
       {
-        _tempState[thisSensor].error = true;
-        _tempState[thisSensor].tempCelsius  = NAN;
-        if ( _errorlogging && !_logError( thisSensor, ERROR_LOG_NAME, "BAD_CRC", data ) )
+        _tempState[num].error = true;
+        _tempState[num].tempCelsius  = NAN;
+        if ( _errorlogging && !_logError( num, ERROR_LOG_NAME, "BAD_CRC", data ) )
           ESP_LOGE( TAG, "%s", "Error writing errorlog.(disk full?)" );
       }
       else
@@ -167,22 +167,22 @@ void sensorState::run( void * data ) {
           else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
           //// default is 12 bit resolution, 750 ms conversion time
         }
-        _tempState[thisSensor].tempCelsius = raw / 16.0;
+        _tempState[num].tempCelsius = raw / 16.0;
 
-        if ( _tempState[thisSensor].tempCelsius > -55.0 && _tempState[thisSensor].tempCelsius  < 85.0 )
+        if ( _tempState[num].tempCelsius > -55.0 && _tempState[num].tempCelsius  < 85.0 )
         {
-          _tempState[thisSensor].error = false;
+          _tempState[num].error = false;
         }
         else
         {
-          _tempState[thisSensor].error = true;
-          _tempState[thisSensor].tempCelsius  = NAN;
-          if ( _errorlogging && !_logError( thisSensor, ERROR_LOG_NAME, "BAD_TMP", data ) )
+          _tempState[num].error = true;
+          _tempState[num].tempCelsius  = NAN;
+          if ( _errorlogging && !_logError( num, ERROR_LOG_NAME, "BAD_TMP", data ) )
             ESP_LOGE( TAG, "%s", "Error writing errorlog.(disk full?)" );
         }
       }
-      ESP_LOGD( TAG, "sensor %i: %.1f %s", thisSensor, _tempState[thisSensor].tempCelsius, _tempState[thisSensor].error ? "invalid" : "valid" );
-      thisSensor++;
+      ESP_LOGD( TAG, "sensor %i: %.1f %s", num, _tempState[num].tempCelsius, _tempState[num].error ? "invalid" : "valid" );
+      num++;
     }
     memcpy( &_state, &_tempState, sizeof( sensorState_t[ MAX_NUMBER_OF_SENSORS ] ) );
     _count = loopCounter;
@@ -190,22 +190,22 @@ void sensorState::run( void * data ) {
 }
 
 uint8_t sensorState::_scanSensors() {
-  uint8_t currentSensor = 0;
+  uint8_t num = 0;
   byte    currentAddr[ sizeof( sensorState_t::addr ) ];
 
   ds.reset_search();
   ds.target_search(0x28);
   vTaskPrioritySet( NULL, 10);
-  while ( ds.search( currentAddr ) && ( currentSensor < MAX_NUMBER_OF_SENSORS ) )
+  while ( ds.search( currentAddr ) && ( num < MAX_NUMBER_OF_SENSORS ) )
   {
-    _tempState[currentSensor].error = true;
-    _tempState[currentSensor].tempCelsius = NAN;
-    memcpy( _tempState[currentSensor].addr, currentAddr, sizeof( sensorState_t::addr ) );
-    currentSensor++;
+    _tempState[num].error = true;
+    _tempState[num].tempCelsius = NAN;
+    memcpy( _tempState[num].addr, currentAddr, sizeof( sensorState_t::addr ) );
+    num++;
   }
   vTaskPrioritySet( NULL, 0);
   _rescan = false;
-  return currentSensor;
+  return num;
 }
 
 bool sensorState::_logError( const uint8_t num, const char * path, const char * message, const byte data[9] )

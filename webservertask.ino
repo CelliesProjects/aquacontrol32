@@ -163,7 +163,6 @@ void webServerTask ( void * pvParameters )
     {
       response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%lu", FFat.freeBytes() );
-      //response->print( String(FFat.totalBytes() - FFat.freeBytes()) );
       return request->send( response );
     }
 
@@ -257,48 +256,49 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "sensor" ) )
     {
-      if ( !numberOfFoundSensors )
-      {
-        return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
-      }
-      if ( !request->hasArg( "number" ) )
-      {
-        return request->send( 400, HEADER_HTML, "No sensornumber" );
-      }
-      uint8_t sensorNumber = request->arg( "number" ).toInt();
-      if ( sensorNumber >= numberOfFoundSensors )
-      {
-        return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
-      }
+      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
+      uint8_t num = request->arg( "number" ).toInt();
+      if ( num >= sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
       response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "%s\n%.3f\n%x\n",
-                        sensor[sensorNumber].name,
-                        sensor[sensorNumber].tempCelcius,
-                        sensor[sensorNumber].addr );
+      sensorName_t name;
+      sensorId_t id;
+      response->printf( "%s\n%.3f\n%s\n", sensor.getName( num, name ), sensor.temp( num ), sensor.getId( num, id ) );
+      return request->send( response );
+    }
+
+    else if ( request->hasArg( "sensors" ) )
+    {
+      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      sensorName_t name;
+      sensorId_t id;
+      response = request->beginResponseStream( HEADER_HTML );
+      for ( uint8_t num = 0; num < sensor.count(); num++ )
+        response->printf( "%s,%.3f,%s\n", sensor.getName( num, name ), sensor.temp( num ), sensor.getId( num, id ) );
+
       return request->send( response );
     }
 
     else if ( request->hasArg( "sensorlogging" ) )
     {
-      return request->send( 200, HEADER_HTML, LOG_SENSOR_ERRORS ? "ON" : "OFF" );
+      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      return request->send( 200, HEADER_HTML, sensor.logging() ? "ON" : "OFF" );
+    }
+
+    else if ( request->hasArg( "sensorerrorlogging" ) )
+    {
+      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      return request->send( 200, HEADER_HTML, sensor.errorLogging() ? "ON" : "OFF" );
     }
 
     else if ( request->hasArg( "sensorname" ) )
     {
-      if ( !numberOfFoundSensors )
-      {
-        return request->send( 501, HEADER_HTML, "No sensors present." );
-      }
-      if ( !request->hasArg( "number" ) )
-      {
-        return request->send( 400, HEADER_HTML, "No sensornumber" );
-      }
-      uint8_t sensorNumber = request->arg( "number" ).toInt();
-      if ( sensorNumber >= numberOfFoundSensors )
-      {
-        return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
-      }
-      return request->send( 200, HEADER_HTML, sensor[sensorNumber].name );
+      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
+      uint8_t num = request->arg( "number" ).toInt();
+      if ( num >= sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
+      sensorName_t name;
+      return request->send( 200, HEADER_HTML, sensor.getName( num, name ) );
     }
 
     else if ( request->hasArg( "status" ) )
@@ -319,16 +319,11 @@ void webServerTask ( void * pvParameters )
         then = now;
       }
       response->printf( "%s\n%s\n", timeStr, leds.stateString() );
-      if ( numberOfFoundSensors )
-      {
-        for ( uint8_t sensorNumber = 0; sensorNumber < numberOfFoundSensors; sensorNumber++ )
-        {
-          if ( !sensor[sensorNumber].error )
-            response->printf( "%s,%.3f\n", sensor[sensorNumber].name, sensor[sensorNumber].tempCelcius );
-          else
-            response->printf( "%s,ERROR\n", sensor[sensorNumber].name );
-        }
-      }
+
+      sensorName_t name;
+      for ( uint8_t num = 0; num < sensor.count(); num++ )
+        response->printf( "%s,%.3f\n", sensor.getName( num, name ), sensor.temp( num ) );
+
       return request->send( response );
     }
 
@@ -596,14 +591,38 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "sensorlogging" ) )
     {
+      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+
       if ( request->arg( "sensorlogging").equalsIgnoreCase( "on" ) )
       {
-        LOG_SENSOR_ERRORS = true;
+        sensor.setLogging( true );
+        if ( !xLoggerTaskHandle )
+        {
+          BaseType_t xReturned = startLogger();
+          ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
+        }
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorlogging" ).equalsIgnoreCase( "off" ) )
       {
-        LOG_SENSOR_ERRORS = false;
+        sensor.setLogging( false );
+        return request->send( 200, HEADER_HTML, "OFF" );
+      }
+      else return request->send( 400, HEADER_HTML, "Invalid option." );
+    }
+
+    else if ( request->hasArg( "sensorerrorlogging" ) )
+    {
+      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+
+      if ( request->arg( "sensorerrorlogging").equalsIgnoreCase( "on" ) )
+      {
+        sensor.setErrorLogging( true );
+        return request->send( 200, HEADER_HTML, "ON" );
+      }
+      else if ( request->arg( "sensorerrorlogging" ).equalsIgnoreCase( "off" ) )
+      {
+        sensor.setErrorLogging( false );
         return request->send( 200, HEADER_HTML, "OFF" );
       }
       else return request->send( 400, HEADER_HTML, "Invalid option." );
@@ -611,32 +630,26 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "sensorname" ) )
     {
-      if ( request->arg( "sensorname" ).length() >= sizeof( sensor->name ) )
-      {
+      if ( request->arg( "sensorname" ).length() > sizeof( sensorName_t ) )
         return request->send( 400, HEADER_HTML, "Sensorname too long" );
-      }
-      if ( !request->hasArg( "number" ) )
-      {
-        return request->send( 400, HEADER_HTML, "No sensornumber" );
-      }
 
-      uint8_t sensorNumber = request->arg( "number" ).toInt();
+      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
 
-      if ( sensorNumber > numberOfFoundSensors )
-      {
-        return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
-      }
-      snprintf( sensor[sensorNumber].name, sizeof( sensor->name ), "%s", request->arg( "sensorname" ).c_str() );
-
-      //get the sensor id and save under that key
-      char nvsKeyname[16];
-
-      snprintf( nvsKeyname, sizeof( nvsKeyname ), "%02x%02x%02x%02x%02x%02x%02x", sensor[sensorNumber].addr[1], sensor[sensorNumber].addr[2], sensor[sensorNumber].addr[3], sensor[sensorNumber].addr[4], sensor[sensorNumber].addr[5], sensor[sensorNumber].addr[6], sensor[sensorNumber].addr[7] );
-      preferences.putString( nvsKeyname, request->arg( "sensorname" ).c_str() );
-
-      ESP_LOGI( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), nvsKeyname );
-
+      uint8_t num = request->arg( "number" ).toInt();
+      if ( num > sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
+      sensorId_t id;
+      sensor.getId( num, id );
+      if ( !sensor.setName( id, request->arg( "sensorname" ).c_str() ) )
+        ESP_LOGE( TAG, " Error saving name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), id );
+      else
+        ESP_LOGD( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), id );
       return request->send( 200, HEADER_HTML, request->arg( "sensorname" ).c_str() );
+    }
+
+    else if ( request->hasArg( "sensorscan" ) )
+    {
+      sensor.rescan();
+      return request->send( 200, HEADER_HTML );
     }
 
     else if ( request->hasArg( "tftorientation" ) )

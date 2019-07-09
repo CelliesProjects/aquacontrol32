@@ -18,4 +18,3 @@ void IRAM_ATTR moonSimtask ( void * pvParameters )
     vTaskDelay( moonSimdelayTime / portTICK_PERIOD_MS );
   }
 }
-

@@ -138,10 +138,9 @@ function updateBargraph() {
       sensorNumber++;
     }
     if (sensorNumber)
-//    if (str.length)
     {
-      $( "#tempBox" ).show();
       $( "#tempStats" ).html( str );
+      $( "#tempBox" ).show();
     }
     else
       $( "#tempBox" ).hide();
@@ -149,9 +148,7 @@ function updateBargraph() {
 }
 </script>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
-<div id="titleBox" class="shadowedBox">
-  <h3 id="hostName">Loading...</h3>
-</div>
+<div id="titleBox" class="shadowedBox"><h3 id="hostName">Loading...</h3></div>
 <div id="statusBox" class="shadowedBox" style="background-color:beige;"><p id="sysTime" class="tempStr">Loading...<br>&nbsp;</p><p class="tempStr" id="lightStatus">Loading...<br>&nbsp;</p></div>
 <div id="barsBox" class="shadowedBox">
   <div class="bar" style="left:0%;height:0%;"></div>
@@ -175,50 +172,47 @@ function updateBargraph() {
 $( document ).ready( function() {
   // get the hostname, then the channelcolors and finally the channelnames
   $.get( "/api/getdevice?hostname=")
-    .done(function( data ){
-      $( "#hostName" ).html( data );
-      document.title = data.toUpperCase();
-    })
-    .fail(function(){
-      console.log("failed getting hostname");
-    })
-    .always(function(){
-      getChannelColors();
-    });
+  .done(function( data ){
+    $( "#hostName" ).html( data );
+    document.title = data.toUpperCase();
+  })
+  .fail(function(){
+    console.log("failed getting hostname");
+  })
+  .always(function(){
+    getChannelColors();
+  });
 });
-
-//functions
 function getChannelColors(){
   $.get( "/api/getdevice?channelcolors=" )
-    .done(function( data ){
-      channelColor = data.split("\n");
-      channelColor.forEach( function( item, index ){
-        $('.bar').eq(index).css( { 'background-color': item, 'box-shadow': "0px 0px 43px 0px " + item } );
-      })
+  .done(function( data ){
+    channelColor = data.split("\n");
+    channelColor.forEach( function( item, index ){
+      $('.bar').eq(index).css( { 'background-color': item, 'box-shadow': "0px 0px 43px 0px " + item } );
     })
-    .fail(function(){
-      console.log("failed getting channelcolors");
-    })
-    .always(function(){
-      getChannelNames();
-    });
+  })
+  .fail(function(){
+    console.log("failed getting channelcolors");
+  })
+  .always(function(){
+    getChannelNames();
+  });
 }
-
 function getChannelNames(){
   $.get( "/api/getdevice?channelnames=" )
-    .done(function( data ){
-      var channelNames = data.split("\n");
-      channelNames.forEach( function( item, index ){
-        $('.name p').eq(index).html( item.trim() );
-      })
+  .done(function( data ){
+    var channelNames = data.split("\n");
+    channelNames.forEach( function( item, index ){
+      $('.name p').eq(index).html( item.trim() );
     })
-    .fail(function(){
-      console.log("failed getting channelnames");
-    })
-    .always(function(){
-      updateBargraph();
-      repeatTimer = setInterval( updateBargraph, 1000 );  //done with getting stuff
-    });
+  })
+  .fail(function(){
+    console.log("failed getting channelnames");
+  })
+  .always(function(){
+    updateBargraph();
+    repeatTimer = setInterval( updateBargraph, 1000 );  //done with getting stuff
+  });
 }
 </script>
 </body>

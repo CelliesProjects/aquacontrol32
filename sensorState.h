@@ -31,7 +31,7 @@ class sensorState: public Task {
     virtual ~sensorState();
 
     bool                  startSensors();
-    void                  scan();
+    void                  rescan();
     uint8_t               count();
     float                 temp( const uint8_t num );
     bool                  error( const uint8_t num );

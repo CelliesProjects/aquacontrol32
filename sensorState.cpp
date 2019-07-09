@@ -31,7 +31,7 @@ bool sensorState::startSensors() {
   return true;
 }
 
-void sensorState::scan() {
+void sensorState::rescan() {
   _pSensorState->_rescan = true;
 }
 
@@ -76,11 +76,11 @@ bool sensorState::setName( const sensorId_t &id, const char * name )  {
 }
 
 bool sensorState::logging() {
-  return sensorPreferences.getBool( "logging", false );
+  return ( nullptr == _pSensorState ) ? false : sensorPreferences.getBool( "logging", false );
 }
 
 bool sensorState::setLogging( const bool state ) {
-  return sensorPreferences.putBool( "logging", state );
+  return ( nullptr == _pSensorState ) ? false : sensorPreferences.putBool( "logging", state );
 };
 
 bool sensorState::errorLogging() {

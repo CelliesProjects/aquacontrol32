@@ -648,7 +648,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "sensorscan" ) )
     {
-      sensor.scan();
+      sensor.rescan();
       return request->send( 200, HEADER_HTML );
     }
 

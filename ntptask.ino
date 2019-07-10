@@ -31,6 +31,8 @@ void ntpTask( void * pvParameters )
 
   /* start time dependent tasks */
 
+  sensor.startSensors();
+
   BaseType_t xReturned;
 
   xReturned = xTaskCreatePinnedToCore(
@@ -43,12 +45,6 @@ void ntpTask( void * pvParameters )
                 1);                             /* Core where the task should run */
 
   ESP_LOGI( TAG, "DimmerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
-
-  if ( sensor.logging() )
-  {
-    xReturned = startLogger();
-    ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
-  }
 
   if ( MOON_SIMULATOR )
   {
@@ -63,6 +59,7 @@ void ntpTask( void * pvParameters )
 
     ESP_LOGI( TAG, "moonSimtask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
   }
+
 
   vTaskDelete( NULL );
 }

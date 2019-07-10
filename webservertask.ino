@@ -595,17 +595,12 @@ void webServerTask ( void * pvParameters )
 
       if ( request->arg( "sensorlogging").equalsIgnoreCase( "on" ) )
       {
-        sensor.setLogging( true );
-        if ( !xLoggerTaskHandle )
-        {
-          BaseType_t xReturned = startLogger();
-          ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
-        }
+        sensor.startTemperatureLogging( 120 );
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorlogging" ).equalsIgnoreCase( "off" ) )
       {
-        sensor.setLogging( false );
+        sensor.stopTemperatureLogging();
         return request->send( 200, HEADER_HTML, "OFF" );
       }
       else return request->send( 400, HEADER_HTML, "Invalid option." );

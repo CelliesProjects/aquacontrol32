@@ -14,8 +14,8 @@
 #include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* Reports as 1.2.2 https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
+#include <sensorState.h>           /* https://github.com/CelliesProjects/sensorState */
 
-#include "sensorState.h"
 #include "ledState.h"
 
 #include "deviceSetup.h"
@@ -181,19 +181,6 @@ uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 void tftTask( void * pvParameters );
 void oledTask( void * pvParameters );
 void wifiTask( void * pvParameters );
-void loggerTask( void * pvParameters );
-
-BaseType_t startLogger()
-{
-  return xTaskCreatePinnedToCore(
-           loggerTask,                     /* Function to implement the task */
-           "loggerTask",                   /* Name of the task */
-           3000,                           /* Stack size in words */
-           NULL,                           /* Task input parameter */
-           loggerTaskPriority,             /* Priority of the task */
-           &xLoggerTaskHandle,             /* Task handle. */
-           1);
-}
 
 void setup()
 {
@@ -220,24 +207,16 @@ void setup()
   ESP_LOGI( TAG, "aquacontrol32 %s", sketchVersion );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
-  sensor.startSensors();
+  if ( FFat.begin() )
+    ESP_LOGI( TAG, "FFat partition mounted. Total space: %lu kB. Free space: %lu kB.", FFat.totalBytes() / 1024, FFat.freeBytes() / 1024 );
+  else
+    ESP_LOGE( TAG, "FATAL ERROR! Could not find FFat. Did you select the right partition scheme? (something with ffat)" );
 
   preferences.begin( "aquacontrol32", false );
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
 
   tft.begin( TFT_SPI_CLOCK );
-
-  ESP_LOGI( TAG, "Starting FFat. (format on fail)" );
-
-  if ( !FFat.begin( true ) )
-  {
-    ESP_LOGE( TAG, "FATAL ERROR! Could not mount FFat. Did you select the right partition scheme? (something with ffat)" );
-  }
-  else
-  {
-    ESP_LOGI( TAG, "FFat started. Total space: %lu kB. Free space:  %lu kB.", FFat.totalBytes() / 1024, FFat.freeBytes() / 1024 );
-  }
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
   {

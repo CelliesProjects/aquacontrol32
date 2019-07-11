@@ -31,6 +31,16 @@ void ntpTask( void * pvParameters )
 
   /* start time dependent tasks */
 
+  sensor.startSensors();
+
+  char timestr[20];
+  char content[100];
+
+  strftime( timestr , sizeof( timestr ), "%x %X", &timeinfo );
+  snprintf( content, sizeof( content ), "%s %s %s ", timestr, sensor.resetString( 0 ), sensor.resetString( 1 ) );
+
+  sensor.appendToFile( FFat, "/resetreasons.txt", content );
+
   BaseType_t xReturned;
 
   xReturned = xTaskCreatePinnedToCore(
@@ -53,8 +63,6 @@ void ntpTask( void * pvParameters )
                   NULL,                           /* Task handle. */
                   1);                             /* Core where the task should run */
   }
-
-  sensor.startSensors();
 
   vTaskDelete( NULL );
 }

@@ -144,7 +144,6 @@ const uint8_t tftTaskPriority          = 6;
 const uint8_t ntpTaskPriority          = 5;
 const uint8_t oledTaskPriority         = 4;
 const uint8_t wifiTaskPriority         = 3;
-const uint8_t loggerTaskPriority       = 2;
 const uint8_t webserverTaskPriority    = 1;
 const uint8_t moonSimtaskPriority      = 0;
 
@@ -158,7 +157,6 @@ MoonPhase::moonData     moonData;
 TaskHandle_t            xDimmerTaskHandle            = NULL;
 TaskHandle_t            xTftTaskHandle               = NULL;
 TaskHandle_t            xOledTaskHandle              = NULL;
-TaskHandle_t            xLoggerTaskHandle            = NULL;
 
 //Boot time is saved
 timeval                 systemStart;

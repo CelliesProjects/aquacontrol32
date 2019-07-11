@@ -113,7 +113,7 @@ void IRAM_ATTR wifiTask( void * pvParameters )
   xTaskCreatePinnedToCore(
     ntpTask,                        /* Function to implement the task */
     "ntpTask",                      /* Name of the task */
-    2000,                           /* Stack size in words */
+    3000,                           /* Stack size in words */
     NULL,                           /* Task input parameter */
     ntpTaskPriority,                /* Priority of the task */
     NULL,                           /* Task handle. */

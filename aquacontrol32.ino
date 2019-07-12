@@ -180,6 +180,43 @@ void tftTask( void * pvParameters );
 void oledTask( void * pvParameters );
 void wifiTask( void * pvParameters );
 
+
+bool logLineToFile( fs::FS &fs, const char * path, const char * message ) {
+  File file = fs.open( path, FILE_APPEND );
+  if ( !file ) return false;
+
+  if ( !file.println( message ) ) {
+    file.close();
+    return false;
+  }
+  file.close();
+  return true;
+}
+
+const char * resetString( const uint8_t core ) {
+  const char * resetStr[] =
+  {
+    "",
+    "POWERON_RESET",
+    "",
+    "SW_RESET",
+    "OWDT_RESET",
+    "DEEPSLEEP_RESET",
+    "SDIO_RESET",
+    "TG0WDT_SYS_RESET",
+    "TG1WDT_SYS_RESET",
+    "RTCWDT_SYS_RESET",
+    "INTRUSION_RESET",
+    "TGWDT_CPU_RESET",
+    "SW_CPU_RESET",
+    "RTCWDT_CPU_RESET",
+    "EXT_CPU_RESET",
+    "RTCWDT_BROWN_OUT_RESET",
+    "RTCWDT_RTC_RESET"
+  };
+  return resetStr[rtc_get_reset_reason( core )];
+}
+
 void setup()
 {
   pinMode( LED0_PIN, OUTPUT );

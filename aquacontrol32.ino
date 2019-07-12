@@ -15,12 +15,10 @@
 #include <ESPAsyncWebServer.h>     /* Reports as 1.2.2 https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
 #include <sensorState.h>           /* https://github.com/CelliesProjects/sensorState */
-
 #include "ledState.h"
 
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
-#include "mapFloat.h"
 
 #if GIT_TAG
 #include "gitTagVersion.h"
@@ -176,10 +174,16 @@ uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 /*****************************************************************************************
        end of global variables
 *****************************************************************************************/
+
+/* forward declarations  */
 void tftTask( void * pvParameters );
 void oledTask( void * pvParameters );
 void wifiTask( void * pvParameters );
 
+/* global functions */
+float mapFloat( const float &x, const float &in_min, const float &in_max, const float &out_min, const float &out_max) {
+  return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
+}
 
 bool logLineToFile( fs::FS &fs, const char * path, const char * message ) {
   File file = fs.open( path, FILE_APPEND );
@@ -215,6 +219,18 @@ const char * resetString( const uint8_t core ) {
     "RTCWDT_RTC_RESET"
   };
   return resetStr[rtc_get_reset_reason( core )];
+}
+
+void threeDigitPercentage( char *buffer, const uint8_t &bufferSize, const float &percentage, const bool &addPercentSign )
+{
+  if ( percentage < 0.005 )
+    snprintf( buffer, bufferSize, addPercentSign ? "  0%%  " : "  0  " );
+  else if ( percentage > 99.9 )
+    snprintf( buffer, bufferSize, addPercentSign ? " 100%% " : " 100 " );
+  else if ( percentage < 10 )
+    snprintf( buffer,  bufferSize , addPercentSign ? " %1.2f%% " : " %1.2f ", percentage );
+  else
+    snprintf( buffer,  bufferSize , addPercentSign ? " %2.1f%% " : " %2.1f ", percentage );
 }
 
 void setup()

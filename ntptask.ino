@@ -5,22 +5,16 @@ void ntpTask( void * pvParameters )
   static char NTPpoolAdress[20];
 
   if ( COUNTRY_CODE_ISO_3166 )
-  {
     snprintf( NTPpoolAdress, sizeof( NTPpoolAdress ), "%s.%s", COUNTRY_CODE_ISO_3166, NTPpool );
-  }
   else
-  {
     snprintf( NTPpoolAdress, sizeof( NTPpoolAdress ), "0.%s", NTPpool );
-  }
-
-  ESP_LOGI( TAG, "NTP syncing with %s.", NTPpoolAdress );
 
   configTzTime( preferences.getString( "timezone", defaultTimezone ).c_str(), NTPpoolAdress );
 
   struct tm timeinfo = {0};
 
   while ( !getLocalTime( &timeinfo ) )
-    vTaskDelay( 50 / portTICK_PERIOD_MS );
+    vTaskDelay( 10 / portTICK_PERIOD_MS );
 
   gettimeofday( &systemStart, NULL );
 
@@ -32,12 +26,11 @@ void ntpTask( void * pvParameters )
   snprintf( content, sizeof( content ), "%s %s %s ", timestr, resetString( 0 ), resetString( 1 ) );
   logLineToFile( FFat, "/resetreasons.txt", content );
 
-  ESP_LOGI( TAG, "NTP sync @ %s", timestr );
+  ESP_LOGI( TAG, "NTP sync @ %s from '%s'", timestr, NTPpoolAdress );
 
   /* start time dependent tasks */
 
   sensor.startSensors();
-
 
   BaseType_t xReturned;
 
@@ -50,8 +43,7 @@ void ntpTask( void * pvParameters )
                 &xDimmerTaskHandle,             /* Task handle. */
                 1);                             /* Core where the task should run */
 
-  if ( MOON_SIMULATOR )
-  {
+  if ( MOON_SIMULATOR ) {
     xReturned = xTaskCreatePinnedToCore(
                   moonSimtask,                    /* Function to implement the task */
                   "moonSimtask",                  /* Name of the task */

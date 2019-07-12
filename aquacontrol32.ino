@@ -258,12 +258,21 @@ void setup()
   ESP_LOGI( TAG, "aquacontrol32 %s", sketchVersion );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
-  if ( FFat.begin() )
-    ESP_LOGI( TAG, "FFat partition mounted. Total space: %lu kB. Free space: %lu kB.", FFat.totalBytes() / 1024, FFat.freeBytes() / 1024 );
-  else
-    ESP_LOGE( TAG, "FATAL ERROR! Could not find FFat. Did you select the right partition scheme? (something with ffat)" );
-
   preferences.begin( "aquacontrol32", false );
+
+  //check if a token in NVS is set...
+  if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
+    ESP_LOGI( TAG, "Formatting FFat..." );
+    char label[5] = "ffat";
+    FFat.format( true, label );
+    preferences.putString( "firstrun", "false" ); //set token
+  }
+
+  if ( FFat.begin() ) {
+    ESP_LOGI( TAG, "FFat mounted." );
+  } else {
+    ESP_LOGI( TAG, "Could not mount FFat." );
+  }
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
 

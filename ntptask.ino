@@ -18,15 +18,16 @@ void ntpTask( void * pvParameters )
 
   gettimeofday( &systemStart, NULL );
 
-  /* log reset reason */
-  char timestr[20];
-  char content[100];
+  /* save reset reason */
+  if ( preferences.getString("bootlog").equalsIgnoreCase("on") ) {
+    char content[100];
+    char timestr[20];
+    strftime( timestr , sizeof( timestr ), "%x %X", &timeinfo );
+    snprintf( content, sizeof( content ), "%s %s %s ", timestr, resetString( 0 ), resetString( 1 ) );
+    logLineToFile( FFat, "/reset_reasons.txt", content );
+  }
 
-  strftime( timestr , sizeof( timestr ), "%x %X", &timeinfo );
-  snprintf( content, sizeof( content ), "%s %s %s ", timestr, resetString( 0 ), resetString( 1 ) );
-  logLineToFile( FFat, "/resetreasons.txt", content );
-
-  ESP_LOGI( TAG, "NTP sync @ %s from '%s'", timestr, NTPpoolAdress );
+  ESP_LOGI( TAG, "NTP sync from '%s'", NTPpoolAdress );
 
   /* start time dependent tasks */
 

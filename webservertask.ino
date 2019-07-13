@@ -131,7 +131,13 @@ void webServerTask ( void * pvParameters )
   server.on( "/api/getdevice", HTTP_GET, []( AsyncWebServerRequest * request)
   {
     AsyncResponseStream *response;
-    if ( request->hasArg( "boottime" ) )
+
+    if ( request->hasArg( "bootlog" ) )
+    {
+      return request->send( 200, HEADER_HTML, preferences.getString( "bootlog", "OFF" ) );
+    }
+
+    else if ( request->hasArg( "boottime" ) )
     {
       char response[25];
 
@@ -482,6 +488,13 @@ void webServerTask ( void * pvParameters )
       return request->send( 200, HEADER_HTML, hostName );
     }
 
+    else if ( request->hasArg( "bootlog" ) )
+    {
+      if ( request->arg("bootlog").equalsIgnoreCase("on") || ( request->arg("bootlog").equalsIgnoreCase("off") ) )
+        preferences.putString( "bootlog", request->arg("bootlog") );
+      return request->send( 200, HEADER_HTML, request->arg("bootlog") );
+    }
+
     else if ( request->hasArg( "lightsoff" ) )
     {
       leds.setState( LIGHTS_OFF );
@@ -595,7 +608,7 @@ void webServerTask ( void * pvParameters )
 
       if ( request->arg( "sensorlogging").equalsIgnoreCase( "on" ) )
       {
-        sensor.startTemperatureLogging( 120 );
+        sensor.startTemperatureLogging( 240 );
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorlogging" ).equalsIgnoreCase( "off" ) )

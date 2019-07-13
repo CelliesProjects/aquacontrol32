@@ -131,13 +131,13 @@ void webServerTask ( void * pvParameters )
   server.on( "/api/getdevice", HTTP_GET, []( AsyncWebServerRequest * request)
   {
     AsyncResponseStream *response;
-
     if ( request->hasArg( "bootlog" ) )
     {
       return request->send( 200, HEADER_HTML, preferences.getString( "bootlog", "OFF" ) );
     }
 
     else if ( request->hasArg( "boottime" ) )
+    if ( request->hasArg( "boottime" ) )
     {
       char response[25];
 
@@ -147,7 +147,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "channelcolors" ) )
     {
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         response->printf( "%s\n", channel[channelNumber].color );
@@ -157,7 +157,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "channelnames" ) )
     {
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         response->printf( "%s\n", channel[channelNumber].name );
@@ -167,7 +167,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "diskspace" ) )
     {
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%lu", FFat.freeBytes() );
       return request->send( response );
     }
@@ -188,7 +188,7 @@ void webServerTask ( void * pvParameters )
       {
         return request->send( 404 );
       }
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       while ( file )
       {
         if ( !file.isDirectory() )
@@ -207,7 +207,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "minimumlevels" ) )
     {
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         response->printf( "%.2f\n", channel[channelNumber].minimumLevel );
@@ -221,7 +221,7 @@ void webServerTask ( void * pvParameters )
       {
         return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       }
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%i\n%.4f\n", moonData.angle, moonData.percentLit );
       return request->send( response );
     }
@@ -232,7 +232,7 @@ void webServerTask ( void * pvParameters )
       {
         return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       }
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%i", oledContrast );
       return request->send( response );
     }
@@ -248,14 +248,14 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "pwmdepth" ) )
     {
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%i", ledcNumberOfBits );
       return request->send( response );
     }
 
     else if ( request->hasArg( "pwmfrequency" ) )
     {
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%.0f", ledcActualFrequency );
       return request->send( response );
     }
@@ -266,7 +266,7 @@ void webServerTask ( void * pvParameters )
       if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
       uint8_t num = request->arg( "number" ).toInt();
       if ( num >= sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       sensorName_t name;
       sensorId_t id;
       response->printf( "%s\n%.3f\n%s\n", sensor.getName( num, name ), sensor.temp( num ), sensor.getId( num, id ) );
@@ -278,7 +278,7 @@ void webServerTask ( void * pvParameters )
       if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       sensorName_t name;
       sensorId_t id;
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       for ( uint8_t num = 0; num < sensor.count(); num++ )
         response->printf( "%s,%.3f,%s\n", sensor.getName( num, name ), sensor.temp( num ), sensor.getId( num, id ) );
 
@@ -309,7 +309,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "status" ) )
     {
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ )
       {
         char content[8];
@@ -339,7 +339,7 @@ void webServerTask ( void * pvParameters )
       {
         return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       }
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%.2f", tftBrightness );
       return request->send( response );
     }
@@ -355,7 +355,7 @@ void webServerTask ( void * pvParameters )
 
     else if ( request->hasArg( "timezone" ) )
     {
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%s", getenv( "TZ" ) );
       return request->send( response );
     }
@@ -456,7 +456,6 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/setdevice", HTTP_POST, []( AsyncWebServerRequest * request )
   {
-    AsyncResponseStream *response;
     if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) )
     {
       return request->requestAuthentication();
@@ -529,7 +528,7 @@ void webServerTask ( void * pvParameters )
       oledContrast = contrast;
       OLED.setContrast( contrast << 4 );
       preferences.putUInt( "oledcontrast", oledContrast );
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%i", contrast );
       return request->send( response );
     }
@@ -580,7 +579,7 @@ void webServerTask ( void * pvParameters )
         setupDimmerPWMfrequency( LEDC_MAXIMUM_FREQ, newPWMDepth );
         preferences.putUInt( "pwmdepth" , ledcNumberOfBits );
       }
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%i", ledcNumberOfBits );
       return request->send( response );
     }
@@ -597,7 +596,7 @@ void webServerTask ( void * pvParameters )
         setupDimmerPWMfrequency( tempPWMfrequency, ledcNumberOfBits );
         preferences.putDouble( "pwmfrequency", ledcActualFrequency );
       }
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%.0f", ledcActualFrequency );
       return request->send( response );
     }
@@ -677,7 +676,7 @@ void webServerTask ( void * pvParameters )
       tft.setRotation( tftOrientation );
       tftClearScreen = true;
       preferences.putString( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%s", preferences.getString( "tftorientation", "" ).c_str() );
       return request->send( response );
     }
@@ -691,7 +690,7 @@ void webServerTask ( void * pvParameters )
       }
       tftBrightness = brightness;
       preferences.putFloat( "tftbrightness", brightness );
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%.2f", tftBrightness );
       return request->send( response );
     }
@@ -706,7 +705,7 @@ void webServerTask ( void * pvParameters )
       {
         return request->send( 400, HEADER_HTML, "Error setting timezone." );
       }
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%s", getenv( "TZ" ) );
       return request->send( response );
     }

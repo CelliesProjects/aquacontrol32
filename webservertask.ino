@@ -382,7 +382,6 @@ void webServerTask ( void * pvParameters )
     {
       return request->requestAuthentication();
     }
-    AsyncResponseStream *response;
     uint8_t channelNumber;
     char   nvsKeyname[16];
     channelNumber = checkChannelNumber( request);
@@ -402,7 +401,7 @@ void webServerTask ( void * pvParameters )
       snprintf( channel[ channelNumber ].color, sizeof( channel[ channelNumber ].color ), "#%s", request->arg( "color" ).c_str() );
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelcolor%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].color );
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color );
       return request->send( response );
     }
@@ -417,7 +416,7 @@ void webServerTask ( void * pvParameters )
       channel[ channelNumber ].minimumLevel = minLevel;
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelminimum%i", channelNumber );
       preferences.putFloat( nvsKeyname, channel[channelNumber].minimumLevel );
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].minimumLevel );
       return request->send( response );
     }
@@ -443,7 +442,7 @@ void webServerTask ( void * pvParameters )
       }
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelname%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].name );
-      response = request->beginResponseStream( HEADER_HTML );
+      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name );
       return request->send( response );
     }

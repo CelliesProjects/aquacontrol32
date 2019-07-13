@@ -388,7 +388,6 @@ function getDiskSpace(){
   })
   .always( function( data ){if ( getAllValues ) getPwmDepth();});
 }
-
 function getPwmDepth(){
   $.get( "/api/getdevice?pwmdepth=")
   .done( function( data ){
@@ -399,8 +398,7 @@ function getPwmDepth(){
   })
   .always( function( data ){if ( getAllValues ) getVersion();});
 }
-function getVersion()
-{
+function getVersion(){
   $.get( "/api/getdevice?version=")
   .done( function( data ){
     $('#version').html( data );
@@ -426,6 +424,7 @@ function getPwmFrequency(){
     })
     .always( function( data ){
       getAllValues = false;
+      $('.collapsable').last().click();
       $('input').prop('disabled', false); /* and finally enable the inputs again */
       $('body').css('opacity','1');       /* and show the page */
     });
@@ -645,8 +644,8 @@ $('#sensorScan').on('click', function( data ) {
   });
 });
 $('.collapsable').on('click', function() {
-  $('.collapsable').css('height','45px').css('cursor','pointer');
-  $(this).css('height','auto').css('cursor','');
+  $('.collapsable').css('height','45px').css('cursor','pointer').css('background-color','beige').css('opacity',0.3);
+  $(this).css('height','auto').css('cursor','').css('background-color','').css('opacity',1);
 });
 </script>
 </body>

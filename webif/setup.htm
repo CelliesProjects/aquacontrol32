@@ -135,11 +135,12 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   <p class="item"><span id="deviceStatus"></span></p>
 </div>
 <div class="shadowedBox collapsable">
-  <h3>DEVICE SETUP</h3>
+  <h3>SYSTEM</h3>
     <div class="settingsBox">
     <p class="item"><span class="itemName">TIME ZONE<a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneTextBox"></span></p>
     <p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
     <p class="item"><span class="itemName">CHANGE ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
+    <p class="item"><span class="itemName">LOG RESET REASON</span><input type="button" id="bootlog"></p>
     </div>
 </div>
 <div class="shadowedBox collapsable">
@@ -150,7 +151,7 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
 <div class="shadowedBox collapsable">
   <h3>SENSORS</h3>
   <div class="settingsBox">
-    <p class="item"><span class="itemName">SEARCH FOR SENSORS</span><input type="button" id="sensorScan" value="SCAN"></p>
+    <p class="item"><span class="itemName">SCAN FOR SENSORS</span><input type="button" id="sensorScan" value="SCAN"></p>
     <p class="item sensorbutton"><span class="itemName">TEMPERATURE LOGGING</span><input type="button" id="sensorLogging"></p>
     <p class="item sensorbutton"><span class="itemName">SENSOR ERROR LOGGING</span><input type="button" id="sensorErrorLogging"></p>
     <p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
@@ -203,10 +204,18 @@ $(document).ready( function() {
   .always( function( data ){
     if ( getAllValues )
     {
-      getOledOrientation();
+      getBootlog();
     }
   });
-});
+})
+function getBootlog(){
+  $.get( "/api/getdevice?bootlog=" )
+  .done(function(data){$('#bootlog').val(data.toUpperCase());})
+  .fail(function(data){})
+  .always(function(data){
+    if(getAllValues){getOledOrientation();}
+  });
+}
 function getOledOrientation(){
   $.get( "/api/getdevice?oledorientation=")
   .done( function( data ){
@@ -431,6 +440,15 @@ $('input').on( 'input', function() {
 $('input[type="button"]').on( 'click', function() {
   $('#deviceStatus').html('');
 });
+$('#bootlog').on('click', function() {
+  var value;
+  if("OFF"==$(this).val())value="ON";
+  else if("ON"==$(this).val())value="OFF";
+  $.post("/api/setdevice",{bootlog:value})
+  .done(function(data){$('#bootlog').val(value)})
+  .fail(function(data){$('#deviceStatus').html(data.statusText)})
+  .always(function(data){});
+});
 $('#passwordInput').on('change', function( event ) {
   if (!confirm("You are about to change the admin password.\nAre you sure?") ) {
     return;
@@ -626,8 +644,6 @@ $('#sensorScan').on('click', function( data ) {
     console.log(data);
   });
 });
-
-
 $('.collapsable').on('click', function() {
   $('.collapsable').css('height','45px').css('cursor','pointer');
   $(this).css('height','auto').css('cursor','');

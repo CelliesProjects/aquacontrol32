@@ -130,7 +130,13 @@ void webServerTask ( void * pvParameters )
 
   server.on( "/api/getdevice", HTTP_GET, []( AsyncWebServerRequest * request)
   {
-    //AsyncResponseStream *response;
+    AsyncResponseStream *response;
+    if ( request->hasArg( "bootlog" ) )
+    {
+      return request->send( 200, HEADER_HTML, preferences.getString( "bootlog", "OFF" ) );
+    }
+
+    else if ( request->hasArg( "boottime" ) )
     if ( request->hasArg( "boottime" ) )
     {
       char response[25];
@@ -481,6 +487,13 @@ void webServerTask ( void * pvParameters )
       return request->send( 200, HEADER_HTML, hostName );
     }
 
+    else if ( request->hasArg( "bootlog" ) )
+    {
+      if ( request->arg("bootlog").equalsIgnoreCase("on") || ( request->arg("bootlog").equalsIgnoreCase("off") ) )
+        preferences.putString( "bootlog", request->arg("bootlog") );
+      return request->send( 200, HEADER_HTML, request->arg("bootlog") );
+    }
+
     else if ( request->hasArg( "lightsoff" ) )
     {
       leds.setState( LIGHTS_OFF );
@@ -594,17 +607,12 @@ void webServerTask ( void * pvParameters )
 
       if ( request->arg( "sensorlogging").equalsIgnoreCase( "on" ) )
       {
-        sensor.setLogging( true );
-        if ( !xLoggerTaskHandle )
-        {
-          BaseType_t xReturned = startLogger();
-          ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
-        }
+        sensor.startTemperatureLogging( 240 );
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorlogging" ).equalsIgnoreCase( "off" ) )
       {
-        sensor.setLogging( false );
+        sensor.stopTemperatureLogging();
         return request->send( 200, HEADER_HTML, "OFF" );
       }
       else return request->send( 400, HEADER_HTML, "Invalid option." );
@@ -616,12 +624,12 @@ void webServerTask ( void * pvParameters )
 
       if ( request->arg( "sensorerrorlogging").equalsIgnoreCase( "on" ) )
       {
-        sensor.setErrorLogging( true );
+        sensor.startErrorLogging();
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorerrorlogging" ).equalsIgnoreCase( "off" ) )
       {
-        sensor.setErrorLogging( false );
+        sensor.stopErrorLogging();
         return request->send( 200, HEADER_HTML, "OFF" );
       }
       else return request->send( 400, HEADER_HTML, "Invalid option." );

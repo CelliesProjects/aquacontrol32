@@ -14,13 +14,11 @@
 #include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* Reports as 1.2.2 https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
-
-#include "sensorState.h"
+#include <sensorState.h>           /* https://github.com/CelliesProjects/sensorState */
 #include "ledState.h"
 
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
-#include "mapFloat.h"
 
 #if GIT_TAG
 #include "gitTagVersion.h"
@@ -144,7 +142,6 @@ const uint8_t tftTaskPriority          = 6;
 const uint8_t ntpTaskPriority          = 5;
 const uint8_t oledTaskPriority         = 4;
 const uint8_t wifiTaskPriority         = 3;
-const uint8_t loggerTaskPriority       = 2;
 const uint8_t webserverTaskPriority    = 1;
 const uint8_t moonSimtaskPriority      = 0;
 
@@ -158,7 +155,6 @@ MoonPhase::moonData     moonData;
 TaskHandle_t            xDimmerTaskHandle            = NULL;
 TaskHandle_t            xTftTaskHandle               = NULL;
 TaskHandle_t            xOledTaskHandle              = NULL;
-TaskHandle_t            xLoggerTaskHandle            = NULL;
 
 //Boot time is saved
 timeval                 systemStart;
@@ -178,21 +174,63 @@ uint8_t                 oledOrientation               = OLED_ORIENTATION_NORMAL;
 /*****************************************************************************************
        end of global variables
 *****************************************************************************************/
+
+/* forward declarations  */
 void tftTask( void * pvParameters );
 void oledTask( void * pvParameters );
 void wifiTask( void * pvParameters );
-void loggerTask( void * pvParameters );
 
-BaseType_t startLogger()
+/* global functions */
+float mapFloat( const float &x, const float &in_min, const float &in_max, const float &out_min, const float &out_max) {
+  return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
+}
+
+bool logLineToFile( fs::FS &fs, const char * path, const char * message ) {
+  File file = fs.open( path, FILE_APPEND );
+  if ( !file ) return false;
+
+  if ( !file.println( message ) ) {
+    file.close();
+    return false;
+  }
+  file.close();
+  return true;
+}
+
+const char * resetString( const uint8_t core ) {
+  const char * resetStr[] =
+  {
+    "",
+    "POWERON_RESET",
+    "",
+    "SW_RESET",
+    "OWDT_RESET",
+    "DEEPSLEEP_RESET",
+    "SDIO_RESET",
+    "TG0WDT_SYS_RESET",
+    "TG1WDT_SYS_RESET",
+    "RTCWDT_SYS_RESET",
+    "INTRUSION_RESET",
+    "TGWDT_CPU_RESET",
+    "SW_CPU_RESET",
+    "RTCWDT_CPU_RESET",
+    "EXT_CPU_RESET",
+    "RTCWDT_BROWN_OUT_RESET",
+    "RTCWDT_RTC_RESET"
+  };
+  return resetStr[rtc_get_reset_reason( core )];
+}
+
+void threeDigitPercentage( char *buffer, const uint8_t &bufferSize, const float &percentage, const bool &addPercentSign )
 {
-  return xTaskCreatePinnedToCore(
-           loggerTask,                     /* Function to implement the task */
-           "loggerTask",                   /* Name of the task */
-           3000,                           /* Stack size in words */
-           NULL,                           /* Task input parameter */
-           loggerTaskPriority,             /* Priority of the task */
-           &xLoggerTaskHandle,             /* Task handle. */
-           1);
+  if ( percentage < 0.005 )
+    snprintf( buffer, bufferSize, addPercentSign ? "  0%%  " : "  0  " );
+  else if ( percentage > 99.9 )
+    snprintf( buffer, bufferSize, addPercentSign ? " 100%% " : " 100 " );
+  else if ( percentage < 10 )
+    snprintf( buffer,  bufferSize , addPercentSign ? " %1.2f%% " : " %1.2f ", percentage );
+  else
+    snprintf( buffer,  bufferSize , addPercentSign ? " %2.1f%% " : " %2.1f ", percentage );
 }
 
 void setup()
@@ -220,24 +258,25 @@ void setup()
   ESP_LOGI( TAG, "aquacontrol32 %s", sketchVersion );
   ESP_LOGI( TAG, "ESP32 SDK: %s", ESP.getSdkVersion() );
 
-  sensor.startSensors();
-
   preferences.begin( "aquacontrol32", false );
+
+  //check if a token in NVS is set...
+  if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
+    ESP_LOGI( TAG, "Formatting FFat..." );
+    char label[5] = "ffat";
+    FFat.format( true, label );
+    preferences.putString( "firstrun", "false" ); //set token
+  }
+
+  if ( FFat.begin() ) {
+    ESP_LOGI( TAG, "FFat mounted." );
+  } else {
+    ESP_LOGI( TAG, "Could not mount FFat." );
+  }
 
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
 
   tft.begin( TFT_SPI_CLOCK );
-
-  ESP_LOGI( TAG, "Starting FFat. (format on fail)" );
-
-  if ( !FFat.begin( true ) )
-  {
-    ESP_LOGE( TAG, "FATAL ERROR! Could not mount FFat. Did you select the right partition scheme? (something with ffat)" );
-  }
-  else
-  {
-    ESP_LOGI( TAG, "FFat started. Total space: %lu kB. Free space:  %lu kB.", FFat.totalBytes() / 1024, FFat.freeBytes() / 1024 );
-  }
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
   {

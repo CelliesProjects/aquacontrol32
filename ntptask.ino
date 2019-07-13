@@ -5,31 +5,33 @@ void ntpTask( void * pvParameters )
   static char NTPpoolAdress[20];
 
   if ( COUNTRY_CODE_ISO_3166 )
-  {
     snprintf( NTPpoolAdress, sizeof( NTPpoolAdress ), "%s.%s", COUNTRY_CODE_ISO_3166, NTPpool );
-  }
   else
-  {
     snprintf( NTPpoolAdress, sizeof( NTPpoolAdress ), "0.%s", NTPpool );
-  }
-
-  ESP_LOGI( TAG, "NTP syncing with %s.", NTPpoolAdress );
 
   configTzTime( preferences.getString( "timezone", defaultTimezone ).c_str(), NTPpoolAdress );
 
-  struct tm timeinfo = {};
+  struct tm timeinfo = {0};
 
-  while ( !timeinfo.tm_year )
-  {
-    vTaskDelay( 50 / portTICK_PERIOD_MS );
-    getLocalTime( &timeinfo );
-  }
+  while ( !getLocalTime( &timeinfo ) )
+    vTaskDelay( 10 / portTICK_PERIOD_MS );
 
   gettimeofday( &systemStart, NULL );
 
-  ESP_LOGI( TAG, "NTP sync @ %s", asctime( localtime( &systemStart.tv_sec ) ) );
+  /* save reset reason */
+  if ( preferences.getString("bootlog").equalsIgnoreCase("on") ) {
+    char content[100];
+    char timestr[20];
+    strftime( timestr , sizeof( timestr ), "%x %X", &timeinfo );
+    snprintf( content, sizeof( content ), "%s %s %s ", timestr, resetString( 0 ), resetString( 1 ) );
+    logLineToFile( FFat, "/reset_reasons.txt", content );
+  }
+
+  ESP_LOGI( TAG, "NTP sync from '%s'", NTPpoolAdress );
 
   /* start time dependent tasks */
+
+  sensor.startSensors();
 
   BaseType_t xReturned;
 
@@ -42,16 +44,7 @@ void ntpTask( void * pvParameters )
                 &xDimmerTaskHandle,             /* Task handle. */
                 1);                             /* Core where the task should run */
 
-  ESP_LOGI( TAG, "DimmerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
-
-  if ( sensor.logging() )
-  {
-    xReturned = startLogger();
-    ESP_LOGI( TAG, "LoggerTask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
-  }
-
-  if ( MOON_SIMULATOR )
-  {
+  if ( MOON_SIMULATOR ) {
     xReturned = xTaskCreatePinnedToCore(
                   moonSimtask,                    /* Function to implement the task */
                   "moonSimtask",                  /* Name of the task */
@@ -60,8 +53,6 @@ void ntpTask( void * pvParameters )
                   moonSimtaskPriority,            /* Priority of the task */
                   NULL,                           /* Task handle. */
                   1);                             /* Core where the task should run */
-
-    ESP_LOGI( TAG, "moonSimtask %s.", ( xReturned == pdPASS ) ? "started" : "failed" );
   }
 
   vTaskDelete( NULL );

@@ -1,12 +1,29 @@
 ### Aquacontrol32
 
-Aquacontrol32 is software used to program and control 5 led strips to create more natural sunrises and sunsets in your aquarium.
+Aquacontrol32 can control 5 led strips to create more natural sunrises and sunsets in your aquarium.
 
 Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32).
-<br><br>With some modifications and provided there are enough pins broken out, Aquacontrol32 should run on basically any ESP32 based board.
-<br><br>The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 330R gate resistors to 5 NPN mosfets. I use IRLZ44N mosfets as these are cheap and have the right ratings for my setup.
-<br><br>You can connect a 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s).
-<br>The ILI9341 displays optionally come with a XPT2046 touch controller which is supported.
+
+With some modifications and provided there are enough pins broken out, Aquacontrol32 should run on basically any ESP32 based board. The built-in web interface already gives access to most functions. The goal is v2.0 as a single binary with all functions accessible via the web interface.
+
+The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 100R gate resistors to 5 NPN mosfets.
+
+You can connect a 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s). The ILI9341 displays usually come with a XPT2046 touch controller which is supported (and assumed).
+
+Another feature is support for 3 Dallas DS18B20 temperature sensors, with temperature logging to FATFS and a 30 day temperature history.
+
+- [Video](#aquacontrol32-dimming-down-youtube-video)
+- [Features](#features)
+- [Libraries](#Used-Libraries)
+- [Software used](#You-will-need)
+- [Compile options](#Compile-options)
+- [Compile notes](#Compile-notes)
+- [Connecting the hardware](#Connecting-the-hardware)
+- [Lunar cycle night light](#Lunar-cycle-night-light)
+- [Smart config](#Smart-config)
+- [Log files](#Log-files)
+- [Known issues](#Known-issues)
+
 
 #### Aquacontrol32 dimming down YouTube video
 
@@ -30,14 +47,13 @@ Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit
 - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
 - Get a notification in the web interface if a new release is available.
 
-
 #### You will need:
 
 - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
 - The [Arduino IDE](https://arduino.cc/) 1.8.9.
 - The [ESP32 Arduino Core 1.0.2](https://github.com/espressif/arduino-esp32/releases/tag/1.0.2).
 
-#### Libraries:
+#### Used Libraries:
 
 Most libraries can be installed with the Arduino library Manager `Sketch > Include Library > Manage Libraries`.
 
@@ -87,8 +103,8 @@ Install these libraries in the esp32 libraries folder.
 - Some ILI9341 boards have their touch coordinates inverted.
 <br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to `true`) in `deviceSetup.h`.
 - Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
-<br>To be on the safe side, I use a BC547 transistor (and a 330R resistor) between the ESP32 pin and the LED connector on the tft board.
-<br>If you connect the LED directly to a ESP32 pin, connect it through a 330R resistor in series to prevent burning up your ESP32.
+<br>To be on the safe side, I use a BC547 transistor (and a 100R resistor) between the ESP32 pin and the LED connector on the tft board.
+<br>If you connect the LED directly to a ESP32 pin, connect it through a 100R resistor in series to prevent burning up your ESP32.
 
 #### Lunar cycle night light:
 
@@ -130,3 +146,48 @@ Although I like to code, my afk time is equally important.
 If you like the project, you could buy me a beer for some moral support.
 
 [![paypal](https://www.paypalobjects.com/en_US/NL/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MSP53ANQ3VV6J)
+
+#### sensorState licence:
+
+````
+MIT License
+
+Copyright (c) 2019 Cellie
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+````
+
+#### Task license:
+
+
+````
+   Copyright 2017 Neil Kolban
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+````

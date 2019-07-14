@@ -228,12 +228,12 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "sensorlogging" ) ) {
       if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
-      return request->send( 200, HEADER_HTML, sensor.logging() ? "ON" : "OFF" );
+      return request->send( 200, HEADER_HTML, sensor.isLogging() ? "ON" : "OFF" );
     }
 
     else if ( request->hasArg( "sensorerrorlogging" ) ) {
       if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
-      return request->send( 200, HEADER_HTML, sensor.errorLogging() ? "ON" : "OFF" );
+      return request->send( 200, HEADER_HTML, sensor.isErrorLogging() ? "ON" : "OFF" );
     }
 
     else if ( request->hasArg( "sensorname" ) ) {

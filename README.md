@@ -40,14 +40,16 @@ Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit
 #### Libraries:
 
 Most libraries can be installed with the Arduino library Manager `Sketch > Include Library > Manage Libraries`.
-<br>A few have to be downloaded from GitHub:
+
+A few have to be downloaded from GitHub:
 
 - [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3
-- [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) master
-- [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) master
-- [MoonPhase.h](https://github.com/CelliesProjects/MoonPhase) master
+- [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) 1.0.3
+- [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) 1.2.2
+- [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 0.0.1
+- [sensorState](https://github.com/CelliesProjects/sensorState) 0.99.0
 
-Install these libraries in the Arduino libraries folder.
+Install these libraries in the esp32 libraries folder.
 
 #### Compile options.
 
@@ -110,7 +112,8 @@ The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapte
 By default log files are not generated.
 <br>That is because log files saved on FFat could reduce the lifetime of the flash memory.
 <br>Sensor logging can be enabled in the web interface.
-<br>`Task.h` and `Task.cpp` used in the sensor code are written by Neil Kolban, can be found [here](https://github.com/nkolban/esp32-snippets) and are released under the [Apache 2.0 license](https://github.com/nkolban/esp32-snippets/blob/master/LICENSE).
+
+`Task.h` and `Task.cpp` used in the sensor code are written by Neil Kolban, can be found [here](https://github.com/nkolban/esp32-snippets) and are released under the [Apache 2.0 license](https://github.com/nkolban/esp32-snippets/blob/master/LICENSE).
 
 #### Known issues:
 

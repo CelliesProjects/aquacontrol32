@@ -24,7 +24,7 @@
 #if GIT_TAG
 #include "gitTagVersion.h"
 #else
-const char * sketchVersion = "ARDUINO IDE";
+const char * sketchVersion = "unsupported";
 #endif
 
 /**************************************************************************

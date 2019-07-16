@@ -31,7 +31,7 @@ void ntpTask( void * pvParameters )
 
   /* start time dependent tasks */
 
-  sensor.startSensors();
+  sensor.startSensors( ONEWIRE_PIN );
 
   BaseType_t xReturned;
 

@@ -14,7 +14,8 @@
 #include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* Reports as 1.2.2 https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
-#include <sensorState.h>           /* https://github.com/CelliesProjects/sensorState */
+#include <FFatSensor.h>            /* https://github.com/CelliesProjects/FFatSensor */
+#include <Task.h>                  /* https://github.com/CelliesProjects/Task */
 #include "ledState.h"
 
 #include "deviceSetup.h"
@@ -100,7 +101,7 @@ const char * sketchVersion = "ARDUINO IDE";
  *************************************************************************/
 ledState                leds;
 
-sensorState             sensor;
+FFatSensor              sensor;
 
 MoonPhase               MoonPhase;
 

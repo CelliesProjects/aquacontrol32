@@ -228,7 +228,7 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "sensorlogging" ) ) {
       if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
-      return request->send( 200, HEADER_HTML, sensor.isLogging() ? "ON" : "OFF" );
+      return request->send( 200, HEADER_HTML, sensor.isTempLogging() ? "ON" : "OFF" );
     }
 
     else if ( request->hasArg( "sensorerrorlogging" ) ) {
@@ -488,11 +488,11 @@ void webServerTask ( void * pvParameters ) {
       if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
 
       if ( request->arg( "sensorlogging").equalsIgnoreCase( "on" ) ) {
-        sensor.startTemperatureLogging( 240 );
+        sensor.startTempLogging();
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorlogging" ).equalsIgnoreCase( "off" ) ) {
-        sensor.stopTemperatureLogging();
+        sensor.stopTempLogging();
         return request->send( 200, HEADER_HTML, "OFF" );
       }
       else return request->send( 400, HEADER_HTML, "Invalid option." );

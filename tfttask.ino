@@ -152,7 +152,7 @@ void IRAM_ATTR tftTask( void * pvParameters )
   }
 }
 
-static inline __attribute__((always_inline)) void showMenu()
+void showMenu()
 {
   static lightState_t displayedLightStatus;
 
@@ -231,7 +231,7 @@ void newSensors()
   tft.endWrite();
 
   sensorName_t sensorName;
-  for ( uint8_t num = 0; num < sensor.count(); num++ )
+  for ( uint8_t num = 0; num < logger.sensorCount(); num++ )
   {
     tempArea[num].x = 220;
     tempArea[num].y = 70 + num * 40;
@@ -240,18 +240,18 @@ void newSensors()
     tempArea[num].color = TFT_BACK_COLOR;
     tempArea[num].labelcolor = ILI9341_WHITE;
     tempArea[num].fontsize = size2;
-    button.updateSensorLabel( tempArea[num], (char *)sensor.getName( num, sensorName ) );
+    button.updateSensorLabel( tempArea[num], (char *)logger.getSensorName( num, sensorName ) );
   }
 }
 
 void updateSensorLabels(  )
 {
   sensorName_t sensorName;
-  for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
-    button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.getName( thisSensor, sensorName ) );
+  for ( uint8_t thisSensor = 0; thisSensor < logger.sensorCount(); thisSensor++ )
+    button.updateSensorLabel( tempArea[thisSensor], (char *)logger.getSensorName( thisSensor, sensorName ) );
 }
 
-static inline __attribute__((always_inline)) void showStatus()
+void showStatus()
 {
   const uint16_t BARS_BOTTOM      = 190;
   const uint16_t BARS_HEIGHT      = BARS_BOTTOM - 10;
@@ -358,18 +358,18 @@ static inline __attribute__((always_inline)) void showStatus()
   static sensorName_t displayedName[MAX_NUMBER_OF_SENSORS];
   static float        displayedTemp[MAX_NUMBER_OF_SENSORS];
 
-  if ( tftClearScreen || sensor.count() != lastCount )
+  if ( tftClearScreen || logger.sensorCount() != lastCount )
   {
     memset( displayedName, 0, sizeof( displayedName ) );
     newSensors();
-    lastCount = sensor.count();
+    lastCount = logger.sensorCount();
   }
 
-  for ( uint8_t num = 0; num < sensor.count(); num++ )
+  for ( uint8_t num = 0; num < logger.sensorCount(); num++ )
   {
     //if the name changed update the display
     sensorName_t name;
-    sensor.getName( num, name );
+    logger.getSensorName( num, name );
     if ( tftClearScreen || strcmp( displayedName[num], name ) )
     {
       button.updateSensorLabel( tempArea[num], name );
@@ -377,11 +377,11 @@ static inline __attribute__((always_inline)) void showStatus()
     }
 
     // if the temperature changed update the display
-    if ( tftClearScreen || displayedTemp[num] != sensor.temp( num ) )
+    if ( tftClearScreen || displayedTemp[num] != logger.sensorTemp( num ) )
     {
-      snprintf( tempArea[num].text, sizeof( tempArea[num].text ), " %.1f%c ", sensor.temp( num ), char(247) );
+      snprintf( tempArea[num].text, sizeof( tempArea[num].text ), " %.1f%c ", logger.sensorTemp( num ), char(247) );
       button.updateText( tempArea[num] );
-      displayedTemp[num] = sensor.temp( num );
+      displayedTemp[num] = logger.sensorTemp( num );
     }
   }
 
@@ -437,7 +437,7 @@ static inline __attribute__((always_inline)) void showStatus()
   }
 }
 
-static inline __attribute__((always_inline)) void drawMenuButtons()
+void drawMenuButtons()
 {
   tftButton::button_t tempButton;
 
@@ -456,12 +456,12 @@ static inline __attribute__((always_inline)) void drawMenuButtons()
   button.draw( EXIT_BUTTON );
 }
 
-static inline __attribute__((always_inline)) uint16_t mapUint16( const uint16_t &x, const uint16_t &in_min, const uint16_t &in_max, const uint16_t &out_min, const uint16_t &out_max)
+static uint16_t mapUint16( const uint16_t &x, const uint16_t &in_min, const uint16_t &in_max, const uint16_t &out_min, const uint16_t &out_max)
 {
   return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
 }
 
-static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const uint16_t &touchX, const uint16_t &touchY )
+static struct tftPoint_t mapToTft( const uint16_t &touchX, const uint16_t &touchY )
 {
   const uint16_t XPT_RES = 4096;
 
@@ -487,11 +487,9 @@ static inline __attribute__((always_inline)) struct tftPoint_t mapToTft( const u
   }
 }
 
-static inline __attribute__((always_inline)) void showIPAddress( )
-{
+void showIPAddress() {
 
-  const tftButton::button_t networkArea
-  {
+  const tftButton::button_t networkArea {
     140, 205, 170, 30, 0, ILI9341_YELLOW, ILI9341_YELLOW, size2, "", ""
   };
 
@@ -514,14 +512,13 @@ static inline __attribute__((always_inline)) void showIPAddress( )
 void drawSensors()
 {
   sensorName_t sensorName;
-  for ( uint8_t thisSensor = 0; thisSensor < sensor.count(); thisSensor++ )
-    button.updateSensorLabel( tempArea[thisSensor], (char *)sensor.getName( thisSensor, sensorName ) );
+  for ( uint8_t thisSensor = 0; thisSensor < logger.sensorCount(); thisSensor++ )
+    button.updateSensorLabel( tempArea[thisSensor], (char *)logger.getSensorName( thisSensor, sensorName ) );
 }
 
 //tftButton:: functions
 
-inline __attribute__((always_inline)) void tftButton::drawSlider( const button_t &area )
-{
+void tftButton::drawSlider( const button_t &area ) {
   tft.startWrite();
   tft.writeFillRect( area.x, area.y, area.w, area.h, TFT_BACK_COLOR );
   tft.endWrite();
@@ -529,8 +526,7 @@ inline __attribute__((always_inline)) void tftButton::drawSlider( const button_t
   int16_t x, y;
   uint16_t w, h;
 
-  if ( area.label )
-  {
+  if ( area.label ) {
     tft.setTextSize(size0);
     tft.getTextBounds( (char *)area.label, 0, 0, &x, &y, &w, &h );
     tft.setCursor( ( area.x + area.w / 2 ) - w / 2,
@@ -539,8 +535,7 @@ inline __attribute__((always_inline)) void tftButton::drawSlider( const button_t
     tft.print( area.label );
   }
 
-  if ( area.text )
-  {
+  if ( area.text ) {
     tft.setTextSize(size0);
     tft.getTextBounds( (char *)area.text, 0, 0, &x, &y, &w, &h );
     tft.setCursor( ( area.x + area.w / 2 ) - w / 2,
@@ -550,10 +545,8 @@ inline __attribute__((always_inline)) void tftButton::drawSlider( const button_t
   }
 }
 
-inline __attribute__((always_inline)) void tftButton::updateSlider( const button_t &area, const float &value, const float &rangeLow, const float &rangeHigh )
-{
+void tftButton::updateSlider( const button_t &area, const float &value, const float &rangeLow, const float &rangeHigh ) {
   static int16_t oldpos = 0;
-
   //delete (overwrite) old knob
   tftButton::button_t knob = { area.x, 0, BL_SLIDER_WIDTH, 10, TFT_BACK_COLOR, TFT_BACK_COLOR };
   knob.y = oldpos - 5;
@@ -569,12 +562,9 @@ inline __attribute__((always_inline)) void tftButton::updateSlider( const button
   knob.y = ypos - 5;
   button.draw( knob );
   oldpos = ypos;
-
   snprintf( knob.text, sizeof( knob.text ), " %i%% ", int(value) );
-
   int16_t x, y;
   uint16_t w, h;
-
   tft.setTextSize(size2);
   tft.getTextBounds( (char *)knob.text, 0, 0, &x, &y, &w, &h );
   tft.setCursor( ( area.x + area.w / 2 ) - ( w / 2 ),
@@ -583,11 +573,9 @@ inline __attribute__((always_inline)) void tftButton::updateSlider( const button
   tft.print( knob.text );
 }
 
-inline __attribute__((always_inline)) void tftButton::updateText( const button_t &button )
-{
+void tftButton::updateText( const button_t &button ) {
   int16_t x, y;
   uint16_t w, h;
-
   tft.setTextSize( button.fontsize );
   tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );
   tft.setCursor( ( button.x + button.w / 2 ) - ( w / 2 ),
@@ -596,8 +584,7 @@ inline __attribute__((always_inline)) void tftButton::updateText( const button_t
   tft.print( button.text );
 }
 
-inline __attribute__((always_inline)) void tftButton::draw( const tftButton::button_t &button )
-{
+void tftButton::draw( const tftButton::button_t &button ) {
   tft.startWrite();
   tft.writeFillRect( button.x, button.y, button.w, button.h, button.color );
   tft.writeFastHLine( button.x, button.y, button.w, button.bordercolor );
@@ -605,17 +592,11 @@ inline __attribute__((always_inline)) void tftButton::draw( const tftButton::but
   tft.writeFastVLine( button.x, button.y, button.h, button.bordercolor );
   tft.writeFastVLine( button.x + button.w, button.y, button.h, button.bordercolor );
   tft.endWrite();
-
   if ( button.text )
-  {
     updateText( button );
-  }
-
-  if ( button.label )
-  {
+  if ( button.label ) {
     int16_t x, y;
     uint16_t w, h;
-
     tft.getTextBounds( (char *)button.text, 0, 0, &x, &y, &w, &h );
     tft.setCursor( ( button.x + button.w / 2 ) - w / 2,
                    ( button.y - 10 ) );
@@ -623,8 +604,7 @@ inline __attribute__((always_inline)) void tftButton::draw( const tftButton::but
   }
 }
 
-inline __attribute__((always_inline)) void tftButton::updateSensorLabel( const tftButton::button_t &tempArea, char * newLabel )
-{
+void tftButton::updateSensorLabel( const tftButton::button_t &tempArea, char * newLabel ) {
   int16_t x, y;
   uint16_t w, h;
 

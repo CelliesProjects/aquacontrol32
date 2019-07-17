@@ -21,17 +21,15 @@ void ntpTask( void * pvParameters )
   /* save reset reason */
   if ( preferences.getString("bootlog").equalsIgnoreCase("on") ) {
     char content[100];
-    char timestr[20];
-    strftime( timestr , sizeof( timestr ), "%x %X", &timeinfo );
-    snprintf( content, sizeof( content ), "%s %s %s ", timestr, resetString( 0 ), resetString( 1 ) );
-    logLineToFile( FFat, "/reset_reasons.txt", content );
+    snprintf( content, sizeof( content ), "%s,%s ", resetString( 0 ), resetString( 1 ) );
+    logger.appendToFile( "/reset_reasons.txt", HUMAN_TIME, content );
   }
 
   ESP_LOGI( TAG, "NTP sync from '%s'", NTPpoolAdress );
 
   /* start time dependent tasks */
 
-  sensor.startSensors( ONEWIRE_PIN );
+  logger.startSensors( ONEWIRE_PIN );
 
   BaseType_t xReturned;
 

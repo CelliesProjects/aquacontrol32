@@ -204,45 +204,45 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else if ( request->hasArg( "sensor" ) ) {
-      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
       uint8_t num = request->arg( "number" ).toInt();
-      if ( num >= sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
+      if ( num >= logger.sensorCount() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
       sensorName_t name;
       sensorId_t id;
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "%s\n%.3f\n%s\n", sensor.getName( num, name ), sensor.temp( num ), sensor.getId( num, id ) );
+      response->printf( "%s\n%.3f\n%s\n", logger.getSensorName( num, name ), logger.sensorTemp( num ), logger.getSensorId( num, id ) );
       return request->send( response );
     }
 
     else if ( request->hasArg( "sensors" ) ) {
-      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       sensorName_t name;
       sensorId_t id;
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      for ( uint8_t num = 0; num < sensor.count(); num++ )
-        response->printf( "%s,%.3f,%s\n", sensor.getName( num, name ), sensor.temp( num ), sensor.getId( num, id ) );
+      for ( uint8_t num = 0; num < logger.sensorCount(); num++ )
+        response->printf( "%s,%.3f,%s\n", logger.getSensorName( num, name ), logger.sensorTemp( num ), logger.getSensorId( num, id ) );
 
       return request->send( response );
     }
 
     else if ( request->hasArg( "sensorlogging" ) ) {
-      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
-      return request->send( 200, HEADER_HTML, sensor.isTempLogging() ? "ON" : "OFF" );
+      if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      return request->send( 200, HEADER_HTML, logger.isTempLogging() ? "ON" : "OFF" );
     }
 
     else if ( request->hasArg( "sensorerrorlogging" ) ) {
-      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
-      return request->send( 200, HEADER_HTML, sensor.isErrorLogging() ? "ON" : "OFF" );
+      if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      return request->send( 200, HEADER_HTML, logger.isErrorLogging() ? "ON" : "OFF" );
     }
 
     else if ( request->hasArg( "sensorname" ) ) {
-      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
       uint8_t num = request->arg( "number" ).toInt();
-      if ( num >= sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
+      if ( num >= logger.sensorCount() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
       sensorName_t name;
-      return request->send( 200, HEADER_HTML, sensor.getName( num, name ) );
+      return request->send( 200, HEADER_HTML, logger.getSensorName( num, name ) );
     }
 
     else if ( request->hasArg( "status" ) ) {
@@ -262,8 +262,8 @@ void webServerTask ( void * pvParameters ) {
       response->printf( "%s\n%s\n", timeStr, leds.stateString() );
 
       sensorName_t name;
-      for ( uint8_t num = 0; num < sensor.count(); num++ )
-        response->printf( "%s,%.3f\n", sensor.getName( num, name ), sensor.temp( num ) );
+      for ( uint8_t num = 0; num < logger.sensorCount(); num++ )
+        response->printf( "%s,%.3f\n", logger.getSensorName( num, name ), logger.sensorTemp( num ) );
 
       return request->send( response );
     }
@@ -485,28 +485,28 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else if ( request->hasArg( "sensorlogging" ) ) {
-      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
 
       if ( request->arg( "sensorlogging").equalsIgnoreCase( "on" ) ) {
-        sensor.startTempLogging();
+        logger.startTempLogging();
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorlogging" ).equalsIgnoreCase( "off" ) ) {
-        sensor.stopTempLogging();
+        logger.stopTempLogging();
         return request->send( 200, HEADER_HTML, "OFF" );
       }
       else return request->send( 400, HEADER_HTML, "Invalid option." );
     }
 
     else if ( request->hasArg( "sensorerrorlogging" ) ) {
-      if ( !sensor.count() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
 
       if ( request->arg( "sensorerrorlogging").equalsIgnoreCase( "on" ) ) {
-        sensor.startErrorLogging();
+        logger.startErrorLogging();
         return request->send( 200, HEADER_HTML, "ON" );
       }
       else if ( request->arg( "sensorerrorlogging" ).equalsIgnoreCase( "off" ) ) {
-        sensor.stopErrorLogging();
+        logger.stopErrorLogging();
         return request->send( 200, HEADER_HTML, "OFF" );
       }
       else return request->send( 400, HEADER_HTML, "Invalid option." );
@@ -518,10 +518,10 @@ void webServerTask ( void * pvParameters ) {
 
       if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
       uint8_t num = request->arg( "number" ).toInt();
-      if ( num > sensor.count() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
+      if ( num > logger.sensorCount() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
       sensorId_t id;
-      sensor.getId( num, id );
-      if ( !sensor.setName( id, request->arg( "sensorname" ).c_str() ) )
+      logger.getSensorId( num, id );
+      if ( !logger.setSensorName( id, request->arg( "sensorname" ).c_str() ) )
         ESP_LOGE( TAG, " Error saving name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), id );
       else
         ESP_LOGD( TAG, " Saved name '%s' for DS18B20 sensor id: '%s' in NVS.", request->arg( "sensorname" ).c_str(), id );
@@ -531,7 +531,7 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "sensorscan" ) )
     {
-      sensor.rescan();
+      logger.rescanSensors();
       return request->send( 200, HEADER_HTML );
     }
 
@@ -667,41 +667,25 @@ void webServerTask ( void * pvParameters ) {
 static inline __attribute__((always_inline)) uint8_t checkChannelNumber( const AsyncWebServerRequest *request )
 {
   if ( !request->hasArg( "channel" ) )
-  {
     return INVALID_CHANNEL;
-  }
-  else
-  {
+  else {
     uint8_t channelNumber = request->arg( "channel" ).toInt();
     if ( channelNumber < 1 || channelNumber > NUMBER_OF_CHANNELS )
-    {
       return INVALID_CHANNEL;
-    }
     return channelNumber - 1;
   }
 }
 
 /* format bytes as KB, MB or GB string */
-static inline __attribute__((always_inline)) String humanReadableSize( const size_t bytes )
-{
-  if ( bytes < 1024)
-  {
-    return String( bytes ) + "&nbsp;&nbsp;B";
-  } else if ( bytes < ( 1024 * 1024 ) )
-  {
-    return String( bytes / 1024.0 ) + " KB";
-  } else if (bytes < ( 1024 * 1024 * 1024 ) )
-  {
-    return String( bytes / 1024.0 / 1024.0 ) + " MB";
-  } else {
-    return String( bytes / 1024.0 / 1024.0 / 1024.0 ) + " GB";
-  }
+String humanReadableSize( const size_t bytes ) {
+  if ( bytes < 1024) return String( bytes ) + "&nbsp;&nbsp;B";
+  else if ( bytes < ( 1024 * 1024 ) ) return String( bytes / 1024.0 ) + " KB";
+  else if (bytes < ( 1024 * 1024 * 1024 ) ) return String( bytes / 1024.0 / 1024.0 ) + " MB";
+  else return String( bytes / 1024.0 / 1024.0 / 1024.0 ) + " GB";
 }
 
-bool setupMDNS( const char *hostname )
-{
-  for ( uint8_t currentChar = 0; currentChar < strlen( hostname ); currentChar++ )
-  {
+bool setupMDNS( const char *hostname ) {
+  for ( uint8_t currentChar = 0; currentChar < strlen( hostname ); currentChar++ ) {
     if ( hostname[currentChar] != 0x20  && !isalnum( hostname[currentChar] ) )
       return false;
   }
@@ -711,8 +695,7 @@ bool setupMDNS( const char *hostname )
   ESP_LOGI( TAG, "Looking for: %s.local...", hostname );
   esp_err_t res = mdns_query_a( hostname, 2000, &addr );
 
-  if ( res != ESP_ERR_NOT_FOUND )
-  {
+  if ( res != ESP_ERR_NOT_FOUND ) {
     ESP_LOGI( TAG, "Hostname %s not set because %s is already present!", hostname, hostname );
     return false;
   }
@@ -732,7 +715,6 @@ bool setupMDNS( const char *hostname )
   return true;
 }
 
-static inline __attribute__((always_inline)) bool htmlUnmodified( AsyncWebServerRequest * request, const char * date )
-{
-  return request->hasHeader( "If-Modified-Since" ) && strcmp( request->header( "If-Modified-Since" ).c_str(), date ) == 0;
+static inline __attribute__((always_inline)) bool htmlUnmodified( AsyncWebServerRequest * request, const char * date ) {
+  return request->hasHeader( "If-Modified-Since" ) && request->header( "If-Modified-Since" ).equals( date );
 }

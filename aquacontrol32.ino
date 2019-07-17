@@ -101,7 +101,7 @@ const char * sketchVersion = "unsupported";
  *************************************************************************/
 ledState                leds;
 
-FFatSensor              sensor;
+FFatSensor              logger;
 
 MoonPhase               MoonPhase;
 
@@ -186,18 +186,6 @@ float mapFloat( const float &x, const float &in_min, const float &in_max, const 
   return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
 }
 
-bool logLineToFile( fs::FS &fs, const char * path, const char * message ) {
-  File file = fs.open( path, FILE_APPEND );
-  if ( !file ) return false;
-
-  if ( !file.println( message ) ) {
-    file.close();
-    return false;
-  }
-  file.close();
-  return true;
-}
-
 const char * resetString( const uint8_t core ) {
   const char * resetStr[] =
   {
@@ -263,10 +251,10 @@ void setup()
 
   //check if a token in NVS is set...
   if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
-    ESP_LOGI( TAG, "Formatting FFat..." );
+    ESP_LOGI( TAG, "Formatting FFat..." ); // if not, format FFat
     char label[5] = "ffat";
     FFat.format( true, label );
-    preferences.putString( "firstrun", "false" ); //set token
+    preferences.putString( "firstrun", "false" ); // and set token
   }
 
   if ( FFat.begin() ) {

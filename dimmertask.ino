@@ -35,7 +35,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
                            preferences.getUInt( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
   leds.setState( LIGHTS_AUTO );
 
-  ESP_LOGI( TAG, "Lights running after %.1f seconds.", millis() / 1000.0 );
+  ESP_LOGI( TAG, "Lights running after %i ms.", millis() );
 
   xLastWakeTime = xTaskGetTickCount();
 

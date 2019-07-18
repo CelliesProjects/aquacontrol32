@@ -38,11 +38,10 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 <br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
 - Automatic NTP timekeeping.
 - Timezone support.
-- OneWire Maxim ( Dallas ) DS18B20 sensor support.
-- I2C 128x64 SSD1306 OLED support.
-- SPI 320x240 ILI9341 TFT support.
-- XPT2046 touchscreen support.
-- FFat storage with temperature logging.
+- DS18B20 sensor OneWire support.
+- FFat storage with a 30 day temperature history.
+- SSD1306 128x64 I2C OLED support.
+- ILI9341 320x240 SPI TFT with XPT2046 touchscreen support.
 - All device settings are saved in NVS.
 - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
 - Get a notification in the web interface if a new release is available.
@@ -63,7 +62,8 @@ A few have to be downloaded from GitHub:
 - [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) 1.0.3
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) 1.2.2
 - [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 0.0.1
-- [sensorState](https://github.com/CelliesProjects/sensorState) 0.99.0
+- [Task](https://github.com/CelliesProjects/Task) 1.0.0
+- [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 0.99.0
 
 Install these libraries in the esp32 libraries folder.
 
@@ -129,8 +129,6 @@ By default log files are not generated.
 <br>That is because log files saved on FFat could reduce the lifetime of the flash memory.
 <br>Sensor logging can be enabled in the web interface.
 
-`Task.h` and `Task.cpp` used in the sensor code are written by Neil Kolban, can be found [here](https://github.com/nkolban/esp32-snippets) and are released under the [Apache 2.0 license](https://github.com/nkolban/esp32-snippets/blob/master/LICENSE).
-
 #### Known issues:
 
 1. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
@@ -146,8 +144,6 @@ Although I like to code, my afk time is equally important.
 If you like the project, you could buy me a beer for some moral support.
 
 [![paypal](https://www.paypalobjects.com/en_US/NL/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MSP53ANQ3VV6J)
-
-#### sensorState licence:
 
 ````
 MIT License
@@ -173,21 +169,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ````
 
-#### Task license:
-
-
-````
-   Copyright 2017 Neil Kolban
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-````

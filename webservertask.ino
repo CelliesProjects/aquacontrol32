@@ -715,6 +715,6 @@ bool setupMDNS( const char *hostname ) {
   return true;
 }
 
-static inline __attribute__((always_inline)) bool htmlUnmodified( AsyncWebServerRequest * request, const char * date ) {
+static inline __attribute__((always_inline)) bool htmlUnmodified( const AsyncWebServerRequest * request, const char * date ) {
   return request->hasHeader( "If-Modified-Since" ) && request->header( "If-Modified-Since" ).equals( date );
 }

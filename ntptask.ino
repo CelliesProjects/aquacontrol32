@@ -13,7 +13,7 @@ void ntpTask( void * pvParameters )
 
   struct tm timeinfo = {0};
 
-  while ( !getLocalTime( &timeinfo ) )
+  while ( !getLocalTime( &timeinfo, 0 ) )
     vTaskDelay( 10 / portTICK_PERIOD_MS );
 
   gettimeofday( &systemStart, NULL );

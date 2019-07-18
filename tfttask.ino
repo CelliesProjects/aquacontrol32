@@ -389,7 +389,7 @@ void showStatus()
 
   struct tm timeinfo;
 
-  getLocalTime( &timeinfo );
+  getLocalTime( &timeinfo, 0 );
 
   const tftButton::button_t clockArea
   {

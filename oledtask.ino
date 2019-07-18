@@ -37,7 +37,7 @@ void IRAM_ATTR oledTask( void * pvParameters )
     {
       //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
       struct tm timeinfo;
-      getLocalTime( &timeinfo );
+      getLocalTime( &timeinfo, 0 );
 
       OLED.drawString( 64, 0, asctime( &timeinfo ) );
 

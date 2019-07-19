@@ -377,7 +377,7 @@ void showStatus()
     }
 
     // if the temperature changed update the display
-    if ( tftClearScreen || displayedTemp[num] != logger.sensorTemp( num ) )
+    if ( tftClearScreen || ( displayedTemp[num] != logger.sensorTemp( num ) ) )
     {
       snprintf( tempArea[num].text, sizeof( tempArea[num].text ), " %.1f%c ", logger.sensorTemp( num ), char(247) );
       button.updateText( tempArea[num] );

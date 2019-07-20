@@ -7,6 +7,8 @@
 
 #define INVALID_CHANNEL 100
 
+static const char * HEADER_MODIFIED_SINCE    = "If-Modified-Since";
+
 void webServerTask ( void * pvParameters ) {
   static const char * WWW_USERNAME             = "admin";
   static const char * WWW_DEFAULT_PASSWD       = "esp32";
@@ -249,8 +251,7 @@ void webServerTask ( void * pvParameters ) {
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ ) {
         char content[8];
-        threeDigitPercentage( content, sizeof( content ), channel[channelNumber].currentPercentage, SHOW_PERCENTSIGN );
-        response->printf( "%s\n", content );
+        response->printf( "%s\n", threeDigitPercentage( content, sizeof( content ), channel[channelNumber].currentPercentage, SHOW_PERCENTSIGN ) );
       }
       static char timeStr[6];
       static time_t then, now;
@@ -281,9 +282,7 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else if ( request->hasArg( "timezone" ) ) {
-      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "%s", getenv( "TZ" ) );
-      return request->send( response );
+      return request->send( 200, HEADER_HTML, getenv( "TZ" ) );
     }
 
     else if ( request->hasArg( "version" ) ) {
@@ -716,5 +715,5 @@ bool setupMDNS( const char *hostname ) {
 }
 
 static inline __attribute__((always_inline)) bool htmlUnmodified( const AsyncWebServerRequest * request, const char * date ) {
-  return request->hasHeader( "If-Modified-Since" ) && request->header( "If-Modified-Since" ).equals( date );
+  return request->hasHeader( HEADER_MODIFIED_SINCE ) && request->header( HEADER_MODIFIED_SINCE ).equals( date );
 }

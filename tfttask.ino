@@ -388,32 +388,28 @@ void showStatus()
   tftClearScreen = false;
 
   struct tm timeinfo;
+  if ( getLocalTime( &timeinfo, 0 ) ) {
+    const tftButton::button_t clockArea {
+      10, 205, 110, 30, TFT_BACK_COLOR, ILI9341_YELLOW, TFT_TEXT_COLOR, size2
+    };
 
-  getLocalTime( &timeinfo );
+    static uint16_t oldtimeinfo;
+    if ( timeinfo.tm_sec != oldtimeinfo ) {
+      char buff[15];
+      strftime( buff, sizeof( buff ), "%T", &timeinfo );
 
-  const tftButton::button_t clockArea
-  {
-    10, 205, 110, 30, TFT_BACK_COLOR, ILI9341_YELLOW, TFT_TEXT_COLOR, size2
-  };
+      int16_t x, y;
+      uint16_t w, h;
 
-  static uint16_t oldtimeinfo;
+      tft.setTextSize( clockArea.fontsize );
+      tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
+      tft.setCursor( ( clockArea.x + clockArea.w / 2 ) - ( w / 2 ),
+                     ( clockArea.y + clockArea.h / 2 ) - ( h / 2 ) );
+      tft.setTextColor( TFT_TEXT_COLOR, TFT_BACK_COLOR );
+      tft.print( buff );
 
-  if ( timeinfo.tm_sec != oldtimeinfo );
-  {
-    char buff[15];
-    strftime( buff, sizeof( buff ), "%T", &timeinfo );
-
-    int16_t x, y;
-    uint16_t w, h;
-
-    tft.setTextSize( clockArea.fontsize );
-    tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
-    tft.setCursor( ( clockArea.x + clockArea.w / 2 ) - ( w / 2 ),
-                   ( clockArea.y + clockArea.h / 2 ) - ( h / 2 ) );
-    tft.setTextColor( TFT_TEXT_COLOR, TFT_BACK_COLOR );
-    tft.print( buff );
-
-    oldtimeinfo = timeinfo.tm_sec;
+      oldtimeinfo = timeinfo.tm_sec;
+    }
   }
 
   if ( displayedWiFiStatus != WiFi.status() )

@@ -37,9 +37,8 @@ void IRAM_ATTR oledTask( void * pvParameters )
     {
       //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
       struct tm timeinfo;
-      getLocalTime( &timeinfo, 0 );
-
-      OLED.drawString( 64, 0, asctime( &timeinfo ) );
+      if ( getLocalTime( &timeinfo, 0 ) )
+        OLED.drawString( 64, 0, asctime( &timeinfo ) );
 
       snprintf( content, sizeof( content ), "%.2f kB RAM", esp_get_free_heap_size() / 1024.0 );
       OLED.drawString( 64, 10, content );
@@ -69,9 +68,10 @@ void IRAM_ATTR oledTask( void * pvParameters )
         uint8_t y2 = BARS_BOTTOM - y1;
         OLED.fillRect( x1, y1, x2, y2 );
 
-        threeDigitPercentage( content, sizeof( content ), channel[thisChannel].currentPercentage, NO_PERCENTSIGN );
+        //threeDigitPercentage( content, sizeof( content ), channel[thisChannel].currentPercentage, NO_PERCENTSIGN );
 
-        OLED.drawString( x1 + ( BARS_WIDTH / 2 ) - 1, y1 - 11, content );
+        OLED.drawString( x1 + ( BARS_WIDTH / 2 ) - 1, y1 - 11,
+                         threeDigitPercentage( content, sizeof( content ), channel[thisChannel].currentPercentage, NO_PERCENTSIGN ) );
       }
 
       if ( logger.sensorCount() )

@@ -210,7 +210,7 @@ const char * resetString( const uint8_t core ) {
   return resetStr[rtc_get_reset_reason( core )];
 }
 
-void threeDigitPercentage( char *buffer, const uint8_t &bufferSize, const float &percentage, const bool &addPercentSign )
+const char * threeDigitPercentage( char * buffer, const uint8_t &bufferSize, const float &percentage, const bool &addPercentSign )
 {
   if ( percentage < 0.005 )
     snprintf( buffer, bufferSize, addPercentSign ? "  0%%  " : "  0  " );
@@ -220,6 +220,7 @@ void threeDigitPercentage( char *buffer, const uint8_t &bufferSize, const float 
     snprintf( buffer,  bufferSize , addPercentSign ? " %1.2f%% " : " %1.2f ", percentage );
   else
     snprintf( buffer,  bufferSize , addPercentSign ? " %2.1f%% " : " %2.1f ", percentage );
+  return buffer;
 }
 
 void setup()

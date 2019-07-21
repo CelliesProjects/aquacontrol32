@@ -14,15 +14,15 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 
 - [Video](#aquacontrol32-dimming-down-youtube-video)
 - [Features](#features)
-- [Libraries](#Used-Libraries)
-- [Software used](#You-will-need)
-- [Compile options](#Compile-options)
-- [Compile notes](#Compile-notes)
-- [Connecting the hardware](#Connecting-the-hardware)
-- [Lunar cycle night light](#Lunar-cycle-night-light)
-- [Smart config](#Smart-config)
-- [Log files](#Log-files)
-- [Known issues](#Known-issues)
+- [Libraries](#used-libraries)
+- [Software used](#you-will-need)
+- [Compile options](#compile-options)
+- [Compile notes](#compile-notes)
+- [Connecting the hardware](#connecting-the-hardware)
+- [Lunar cycle night light](#lunar-cycle-night-light)
+- [Smart config](#smartconfig)
+- [Log files](#log-files)
+- [Known issues](#known-issues)
 
 
 #### Aquacontrol32 dimming down YouTube video

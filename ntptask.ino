@@ -21,7 +21,7 @@ void ntpTask( void * pvParameters )
   /* save reset reason */
   if ( preferences.getString("bootlog").equalsIgnoreCase("on") ) {
     char content[100];
-    snprintf( content, sizeof( content ), "%s,%s ", resetString( 0 ), resetString( 1 ) );
+    snprintf( content, sizeof( content ), "%s,%s", resetString( 0 ), resetString( 1 ) );
     logger.appendToFile( "/reset_reasons.txt", HUMAN_TIME, content );
   }
 
@@ -29,7 +29,7 @@ void ntpTask( void * pvParameters )
 
   /* start time dependent tasks */
 
-  logger.startSensors( ONEWIRE_PIN );
+  logger.startSensors( NUMBER_OF_SENSORS, ONEWIRE_PIN );
 
   BaseType_t xReturned;
 

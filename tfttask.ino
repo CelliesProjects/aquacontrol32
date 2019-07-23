@@ -88,7 +88,7 @@ const tftButton::button_t MENU_BUTTON {
   210, 10, TFT_BUTTON_WIDTH, TFT_BUTTON_HEIGHT, ILI9341_BLUE, ILI9341_YELLOW, ILI9341_YELLOW, SMALL, "MENU"
 };
 
-tftButton::button_t tempArea[MAX_NUMBER_OF_SENSORS];
+tftButton::button_t tempArea[NUMBER_OF_SENSORS];
 
 uint16_t backlightMaxvalue;
 
@@ -299,8 +299,8 @@ void showStatus() {
   }
 
   static uint8_t      lastCount{0};
-  static sensorName_t displayedName[MAX_NUMBER_OF_SENSORS];
-  static float        displayedTemp[MAX_NUMBER_OF_SENSORS];
+  static sensorName_t displayedName[NUMBER_OF_SENSORS];
+  static float        displayedTemp[NUMBER_OF_SENSORS];
 
   if ( tftClearScreen || logger.sensorCount() != lastCount ) {
     memset( displayedName, 0, sizeof( displayedName ) );

@@ -13,7 +13,7 @@
 #include <XPT2046_Touchscreen.h>   /* Install 1.3 via 'Manage Libraries' in Arduino IDE */
 #include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* Reports as 1.2.2 https://github.com/me-no-dev/ESPAsyncWebServer */
-#include <MoonPhase.h>             /* https://github.com/CelliesProjects/MoonPhase */
+#include <moonPhase.h>             /* https://github.com/CelliesProjects/moonPhase */
 #include <FFatSensor.h>            /* https://github.com/CelliesProjects/FFatSensor */
 #include <Task.h>                  /* https://github.com/CelliesProjects/Task */
 #include "ledState.h"
@@ -103,7 +103,7 @@ ledState                leds;
 
 FFatSensor              logger;
 
-MoonPhase               MoonPhase;
+moonPhase               moonPhase;
 
 XPT2046_Touchscreen     touch( TOUCH_CS_PIN, TOUCH_IRQ_PIN );
 
@@ -151,7 +151,7 @@ const uint8_t moonSimtaskPriority      = 0;
 **************************************************************************/
 channelData_t           channel[NUMBER_OF_CHANNELS];
 
-MoonPhase::moonData     moonData;
+moonData_t              moonData;
 
 TaskHandle_t            xDimmerTaskHandle            = NULL;
 TaskHandle_t            xTftTaskHandle               = NULL;

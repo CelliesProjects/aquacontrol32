@@ -4,14 +4,7 @@ void IRAM_ATTR moonSimtask ( void * pvParameters )
 
   while (1)
   {
-    time_t now;
-    time( &now );
-    struct tm timeinfo;
-    gmtime_r( &now, &timeinfo ); /* moon phase is calculated using UTC! */
-
-    double hour = timeinfo.tm_hour + mapFloat( ( timeinfo.tm_min * 60 ) + timeinfo.tm_sec, 0, 3600, 0, 1 );
-
-    moonData = MoonPhase.getInfo( 1900 + timeinfo.tm_year, timeinfo.tm_mon + 1, timeinfo.tm_mday, hour );
+    moonData = moonPhase.getInfo();
 
     ESP_LOGI( TAG, "Moon phase updated: %i degrees %.6f%% lit", moonData.angle, moonData.percentLit * 100 );
 

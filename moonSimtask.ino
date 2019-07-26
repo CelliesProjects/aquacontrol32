@@ -4,7 +4,7 @@ void IRAM_ATTR moonSimtask ( void * pvParameters )
 
   while (1)
   {
-    moonData = moonPhase.getInfo();
+    moonData = moonPhase.getPhase();
 
     ESP_LOGI( TAG, "Moon phase updated: %i degrees %.6f%% lit", moonData.angle, moonData.percentLit * 100 );
 

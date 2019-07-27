@@ -55,8 +55,8 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
       struct timeval microSecondTime;
       gettimeofday( &microSecondTime, NULL );
 
-      struct tm *localTime;
-      localTime = localtime( &microSecondTime.tv_sec );
+      struct tm localTime;
+      localtime_r( &microSecondTime.tv_sec, &localTime );
 
       suseconds_t milliSecondsToday = ( localTime->tm_hour       * 3600000U ) +
                                       ( localTime->tm_min        * 60000U ) +

@@ -7,7 +7,7 @@
 
 #define INVALID_CHANNEL 100
 
-static const char * HEADER_MODIFIED_SINCE    = "If-Modified-Since";
+static const char * HEADER_MODIFIED_SINCE      = "If-Modified-Since";
 
 void webServerTask ( void * pvParameters ) {
   static const char * WWW_USERNAME             = "admin";
@@ -120,7 +120,7 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "boottime" ) ) {
       char response[25];
-      strftime ( response, sizeof( response ), "%c", localtime ( &systemStart.tv_sec ) );
+      strftime ( response, sizeof( response ), "%c", localtime_r( &systemStart.tv_sec ) );
       return request->send( 200, HEADER_HTML, response );
     }
 
@@ -257,7 +257,8 @@ void webServerTask ( void * pvParameters ) {
       static time_t then, now;
       now = time(0);
       if ( then != now ) {
-        strftime( timeStr, sizeof( timeStr ),  "%H:%M", localtime( &now ) );
+        struct tm timeinfo;
+        strftime( timeStr, sizeof( timeStr ),  "%H:%M", localtime_r( &now, &timeinfo ) );
         then = now;
       }
       response->printf( "%s\n%s\n", timeStr, leds.stateString() );
@@ -580,9 +581,7 @@ void webServerTask ( void * pvParameters ) {
       {
         return request->send( 400, HEADER_HTML, "Error setting timezone." );
       }
-      AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "%s", getenv( "TZ" ) );
-      return request->send( response );
+      return request->send( 200, HEADER_HTML, getenv( "TZ" ) );
     }
 
     else

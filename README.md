@@ -2,16 +2,19 @@
 
 Aquacontrol32 can control 5 led strips to create more natural sunrises and sunsets in your aquarium.
 
-Aquacontrol32 is developed and tested on hardware based on a [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32).
+Other than the led dimming hardware, no additional hardware is needed.
 
-With some modifications and provided there are enough pins broken out, Aquacontrol32 should run on basically any ESP32 based board. The built-in web interface already gives access to most functions. The goal is v2.0 as a single binary with all functions accessible via the web interface.
+Aquacontrol32 is developed for and tested on [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32) MCUs.
 
 The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 100R gate resistors to 5 NPN mosfets.
+
+With some modifications and provided there are enough pins broken out, Aquacontrol32 should run on basically any ESP32 based board. The built-in web interface already gives access to most functions. The goal is v2.0 as a single binary with all functions accessible via the web interface.
 
 You can connect a 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s). The ILI9341 displays usually come with a XPT2046 touch controller which is supported (and assumed).
 
 Another feature is support for 3 Dallas DS18B20 temperature sensors, with temperature logging to FATFS and a 30 day temperature history.
 
+### Index
 - [Video](#aquacontrol32-dimming-down-youtube-video)
 - [Features](#features)
 - [Libraries](#used-libraries)
@@ -23,7 +26,6 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 - [Smart config](#smartconfig)
 - [Log files](#log-files)
 - [Known issues](#known-issues)
-
 
 #### Aquacontrol32 dimming down YouTube video
 
@@ -38,10 +40,9 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 <br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
 - Automatic NTP timekeeping.
 - Timezone support.
-- DS18B20 sensor OneWire support.
-- FFat storage with a 30 day temperature history.
-- SSD1306 128x64 I2C OLED support.
-- ILI9341 320x240 SPI TFT with XPT2046 touchscreen support.
+- OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
+- I2C SSD1306 128x64 OLED support.
+- SPI ILI9341 320x240 TFT with XPT2046 touchscreen support.
 - All device settings are saved in NVS.
 - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
 - Get a notification in the web interface if a new release is available.
@@ -61,7 +62,7 @@ A few have to be downloaded from GitHub:
 - [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3
 - [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) 1.0.3
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) 1.2.2
-- [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 0.0.1
+- [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 1.0.0
 - [Task](https://github.com/CelliesProjects/Task) 1.0.0
 - [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 0.99.0
 
@@ -121,7 +122,7 @@ The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapte
 - If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
-- If after 5 minutes SmartConfig has not connected your device will reboot. This way Aquacontrol32 will reconnect after a powerout when the modem is not yet online when Aquacontrol32 has booted the first time.
+- If after 5 minutes SmartConfig has not connected your device will reboot. This is a failsafe for home power outs and slow booting modems/routers.
 
 #### Log files:
 
@@ -140,7 +141,7 @@ By default log files are not generated.
 #### This program is beerware.
 
 I develop Aquacontrol32 in my spare time for fun.
-Although I like to code, my afk time is equally important. 
+Although I like to code, my afk time is equally important.
 If you like the project, you could buy me a beer for some moral support.
 
 [![paypal](https://www.paypalobjects.com/en_US/NL/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MSP53ANQ3VV6J)
@@ -148,7 +149,7 @@ If you like the project, you could buy me a beer for some moral support.
 ````
 MIT License
 
-Copyright (c) 2019 Cellie
+Copyright (c) 2017 Cellie
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -30,9 +30,10 @@ void oledTask( void * pvParameters ) {
 
     if ( OLED_SHOW_SYSTEMDATA ) {
       //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
+      time_t now = time(NULL);
       struct tm timeinfo;
-      if ( getLocalTime( &timeinfo, 0 ) )
-        OLED.drawString( 64, 0, asctime( &timeinfo ) );
+      localtime_r( &now, &timeinfo );
+      OLED.drawString( 64, 0, asctime_r( &timeinfo, content ) );
 
       snprintf( content, sizeof( content ), "%.2f kB RAM", esp_get_free_heap_size() / 1024.0 );
       OLED.drawString( 64, 10, content );

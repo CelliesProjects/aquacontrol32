@@ -120,7 +120,8 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "boottime" ) ) {
       char response[25];
-      strftime ( response, sizeof( response ), "%c", localtime_r( &systemStart.tv_sec ) );
+      struct tm timeinfo;
+      strftime ( response, sizeof( response ), "%c", localtime_r( &systemStart.tv_sec, &timeinfo ) );
       return request->send( 200, HEADER_HTML, response );
     }
 

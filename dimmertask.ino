@@ -58,9 +58,9 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
       struct tm localTime;
       localtime_r( &microSecondTime.tv_sec, &localTime );
 
-      suseconds_t milliSecondsToday = ( localTime->tm_hour       * 3600000U ) +
-                                      ( localTime->tm_min        * 60000U ) +
-                                      ( localTime->tm_sec        * 1000U ) +
+      suseconds_t milliSecondsToday = ( localTime.tm_hour       * 3600000U ) +
+                                      ( localTime.tm_min        * 60000U ) +
+                                      ( localTime.tm_sec        * 1000U ) +
                                       ( microSecondTime.tv_usec  / 1000U );
 
       if ( milliSecondsToday ) { /* to solve flashing at 00:00:000 due to the fact that the first timer has no predecessor */

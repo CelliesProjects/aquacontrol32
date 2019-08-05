@@ -1,5 +1,4 @@
-void IRAM_ATTR wifiTask( void * pvParameters )
-{
+void wifiTask( void * pvParameters ) {
   /* trying last accesspoint */
   WiFi.mode( WIFI_STA );
   WiFi.begin();
@@ -7,18 +6,15 @@ void IRAM_ATTR wifiTask( void * pvParameters )
 
   ESP_LOGI( TAG, "Connecting WiFi" );
 
-  if ( xTftTaskHandle )
-  {
+  if ( xTftTaskHandle ) {
     tft.setTextColor( TFT_TEXT_COLOR , TFT_BACK_COLOR );
     tft.println( "Connecting WiFi");
   }
 
-  waitForWifi();
+  WiFi.waitForConnectResult();
 
-  if ( WiFi.status() != WL_CONNECTED )
-  {
-    if ( xTftTaskHandle )
-    {
+  if ( WiFi.status() != WL_CONNECTED ) {
+    if ( xTftTaskHandle ) {
       tft.println( "\nNo WiFi connection.\nWaiting for SmartConfig." );
       tft.invertDisplay( true );
     }
@@ -32,12 +28,9 @@ void IRAM_ATTR wifiTask( void * pvParameters )
 
     ESP_LOGI( TAG, "Waiting %i seconds for SmartConfig.", rebootDelayMs / 1000 );
 
-
-    while ( !WiFi.smartConfigDone() && ( (unsigned long)millis() - smartConfigStartMs ) < rebootDelayMs )
-    {
+    while ( !WiFi.smartConfigDone() && ( (unsigned long)millis() - smartConfigStartMs ) < rebootDelayMs ) {
       char remainingSCTime[12];
-      if ( xOledTaskHandle )
-      {
+      if ( xOledTaskHandle ) {
         OLED.clear();
         OLED.setFont( ArialMT_Plain_10 );
         OLED.drawString( 64, 10, "Waiting for SmartConfig." );
@@ -47,52 +40,38 @@ void IRAM_ATTR wifiTask( void * pvParameters )
         OLED.display();
       }
 
-      if ( xTftTaskHandle )
-      {
+      if ( xTftTaskHandle ) {
         tft.setCursor( 70, 100 );
         tft.print( remainingSCTime );
       }
       else
-      {
-        digitalWrite( TFT_BACKLIGHT_PIN, !gpio_get_level( gpio_num_t( TFT_BACKLIGHT_PIN ) ) );
-      }
+        digitalWrite( BUILTIN_LED, !gpio_get_level( gpio_num_t( BUILTIN_LED ) ) );
       vTaskDelay( 500 / portTICK_PERIOD_MS );
     }
 
     if ( !WiFi.smartConfigDone() )
-    {
       ESP.restart();
-    }
 
     if ( !xTftTaskHandle )
-    {
-      digitalWrite( TFT_BACKLIGHT_PIN, LOW );
-    }
+      digitalWrite( BUILTIN_LED, LOW );
   }
 
   waitForWifi();
 
   /* We have succesfully connected */
-  ESP_LOGI( TAG, "WiFi connected to %s", WiFi.SSID().c_str() );
-  tcpip_adapter_ip_info_t ip_info;
-  ESP_ERROR_CHECK( tcpip_adapter_get_ip_info( TCPIP_ADAPTER_IF_STA, &ip_info ) );
-  ESP_LOGI( TAG, "Local IP: %s", ip4addr_ntoa( &ip_info.ip ) );
   uint8_t mac[6];
   esp_efuse_mac_get_default(mac);
-  ESP_LOGI( TAG, "MAC: %02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  if ( xTftTaskHandle )
-  {
+  ESP_LOGI( TAG, "WiFi '%s' %s %02x:%02x:%02x:%02x:%02x:%02x",
+            WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), mac[0], mac[1], mac[2], mac[3], mac[4], mac[5] );
+  if ( xTftTaskHandle ) {
     tft.invertDisplay( false );
-    tft.printf( "WiFi connected.\nLocal IP: %s\n", ip4addr_ntoa( &ip_info.ip ) );
+    tft.printf( "WiFi connected.\nLocal IP: %s\n", WiFi.localIP().toString() );
   }
   if ( xOledTaskHandle )
-  {
     OLED.normalDisplay();
-  }
   strncpy( hostName, preferences.getString( "hostname", "" ).c_str(), sizeof( hostName ) );
 
-  if ( hostName[0] ==  0 )
-  {
+  if ( hostName[0] ==  0 ) {
     snprintf( hostName, sizeof( hostName ), "%s%c%c%c%c%c%c", DEFAULT_HOSTNAME_PREFIX,
               WiFi.macAddress()[9], WiFi.macAddress()[10],
               WiFi.macAddress()[12], WiFi.macAddress()[13],
@@ -100,14 +79,8 @@ void IRAM_ATTR wifiTask( void * pvParameters )
             );
   }
 
-  if ( !MDNS.begin( "" ) )
-  {
-    ESP_LOGE( TAG, "Error setting up mDNS." );
-  }
-  else if ( !setupMDNS( hostName ) )
-  {
+  if ( !MDNS.begin( "" ) && !setupMDNS( hostName ) )
     ESP_LOGE( TAG, "Error setting up %s as hostname. ", hostName );
-  }
 
   /* start network dependent tasks */
   xTaskCreatePinnedToCore(
@@ -128,10 +101,8 @@ void IRAM_ATTR wifiTask( void * pvParameters )
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
 
-  while (1)
-  {
-    if ( !WiFi.isConnected() )
-    {
+  while (1) {
+    if ( !WiFi.isConnected() ) {
       ESP_LOGI( TAG, "No Wifi. Reconnecting.." );
       WiFi.reconnect();
       vTaskDelay( 9000 / portTICK_PERIOD_MS );
@@ -141,23 +112,14 @@ void IRAM_ATTR wifiTask( void * pvParameters )
 }
 
 /* https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFiType.h */
-void waitForWifi()
-{
+void waitForWifi() {
   unsigned long timeOut = millis() + 10000;
   while ( !WiFi.isConnected() && millis() < timeOut )
-  {
-    if ( xTftTaskHandle )
-    {
-      tft.print( "." );
-    }
-    vTaskDelay( 500 / portTICK_PERIOD_MS );
-  }
+    vTaskDelay( 20 / portTICK_PERIOD_MS );
 }
-/*
-  void WiFiEvent( WiFiEvent_t event )
-  {
-  switch ( event )
-  {
+
+void WiFiEvent( WiFiEvent_t event ) {
+  switch ( event ) {
     case SYSTEM_EVENT_AP_START:
       ESP_LOGI( TAG, "AP Started");
       //WiFi.softAPsetHostname(AP_SSID);
@@ -190,5 +152,4 @@ void waitForWifi()
     default:
       break;
   }
-  }
-*/
+}

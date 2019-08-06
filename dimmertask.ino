@@ -26,7 +26,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
     snprintf( channel[ num ].color, sizeof( channel[ num ].color ), preferences.getString( NVSKeyName, "#fffe7a" ).c_str() );
 
     snprintf( NVSKeyName, sizeof( NVSKeyName ), "channelminimum%i", num );
-    channel[ num ].minimumLevel  = preferences.getFloat( NVSKeyName, 0  );
+    channel[ num ].fullMoonLevel  = preferences.getFloat( NVSKeyName, 0  );
 
     ledcAttachPin( channel[num].pin, num);
   }
@@ -85,13 +85,9 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
             newPercentage = channel[num].timer[thisTimer].percentage;
           }
 
-          /* check if channel has a minimum set */
-          if ( !MOON_SIMULATOR && newPercentage < channel[num].minimumLevel )
-            newPercentage = channel[num].minimumLevel;
-
           /* calculate moon light */
-          if ( MOON_SIMULATOR && newPercentage < ( channel[num].minimumLevel * moonData.percentLit ) )
-            newPercentage = channel[num].minimumLevel * moonData.percentLit;
+          if ( newPercentage < ( channel[num].fullMoonLevel * moonData.percentLit ) )
+            newPercentage = channel[num].fullMoonLevel * moonData.percentLit;
 
           /* done, set the channel */
           channel[num].currentPercentage = newPercentage;

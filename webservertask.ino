@@ -167,18 +167,17 @@ void webServerTask ( void * pvParameters ) {
       return request->send( 200, HEADER_HTML, hostName );
     }
 
-    else if ( request->hasArg( "minimumlevels" ) ) {
+    else if ( request->hasArg( "moonlevels" ) ) {
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       for ( uint8_t channelNumber = 0; channelNumber < NUMBER_OF_CHANNELS; channelNumber++ ) {
-        response->printf( "%.2f\n", channel[channelNumber].minimumLevel );
+        response->printf( "%.2f\n", channel[channelNumber].fullMoonLevel );
       }
       return request->send( response );
     }
 
     else if ( request->hasArg( "moonphase" ) ) {
-      if ( !MOON_SIMULATOR ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "%i\n%.4f\n", moonData.angle, moonData.percentLit );
+      response->printf( "%i\n%f\n", moonData.angle, moonData.percentLit );
       return request->send( response );
     }
 
@@ -329,11 +328,11 @@ void webServerTask ( void * pvParameters ) {
       if ( minLevel < 0 || minLevel > 0.991 ) {
         return request->send( 400, HEADER_HTML, "Invalid level" );
       }
-      channel[ channelNumber ].minimumLevel = minLevel;
+      channel[ channelNumber ].fullMoonLevel = minLevel;
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelminimum%i", channelNumber );
-      preferences.putFloat( nvsKeyname, channel[channelNumber].minimumLevel );
+      preferences.putFloat( nvsKeyname, channel[channelNumber].fullMoonLevel );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].minimumLevel );
+      response->printf( "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].fullMoonLevel );
       return request->send( response );
     }
 

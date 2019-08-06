@@ -10,9 +10,9 @@ html, body{
   background-color:grey;
   text-align:center;
   width:1024px;
-  font-variant: small-caps;
+  font-variant:small-caps;
   font-size:20px;
-  font-family: monospace;
+  font-family:monospace;
 }
 body{
   opacity:0.4;
@@ -27,13 +27,13 @@ p{
   width:625px;
   margin:10px auto;
 }
-a {
-  color: black;
-  text-decoration: none;
-  margin: 0 10px;
+a{
+  color:black;
+  text-decoration:none;
+  margin:0 10px;
 }
-#hostName {
-  text-transform: uppercase;
+#hostName{
+  text-transform:uppercase;
   margin: 10px;
 }
 #lunarPhase{
@@ -42,16 +42,15 @@ a {
 }
 #copyright{
   font-size:15px;
-  display:none;
 }
 img {
-  background-color: black;
+  background-color:black;
   padding:10px;
   width:256px;
   height:256px;
 }
 .systemLink{
-  padding: 3px 10px;
+  padding:3px 10px;
 }
 .systemLink:hover {
   background:grey;
@@ -69,49 +68,49 @@ img {
   margin:10px auto;
   background-color:beige;
 }
-.item:hover {
+.item:hover{
   background-color:yellow;
 }
-.itemName, .itemValue {
+.itemName,.itemValue{
   vertical-align:middle;
 }
 .itemName{
-  display: inline-block;
-  margin: 8px;
-  padding: 2px 2px;
+  display:inline-block;
+  margin:8px;
+  padding:2px 2px;
 }
 .itemValue{
-  display: inline-block;
-  width: 80px;
-  text-align: center;
+  display:inline-block;
+  width:80px;
+  text-align:center;
 }
 input{
   margin:5px ;
   vertical-align:middle;
-  box-shadow: 0px 0px 2px 0px rgba(0,0,0,1);
-  border-radius: 5px;
-  font-family: monospace;
+  box-shadow:0px 0px 2px 0px rgba(0,0,0,1);
+  border-radius:5px;
+  font-family:monospace;
 }
 input[type="text"]{
   width:150px;
   margin:5px;
-  vertical-align: middle;
-  text-align: center;
-  font-size: 20px;
+  vertical-align:middle;
+  text-align:center;
+  font-size:20px;
 }
 input[type="range"]{
   width:150px;
   height:10px;
   margin:5px;
-  border: none;
-  box-shadow: unset;
+  border:none;
+  box-shadow:unset;
 }
-input[type="color"] {
+input[type="color"]{
   width:60px;
-  margin: 0 15px 0 30px;
+  margin:0 15px 0 30px;
 }
 </style>
-<script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
 </head>
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
@@ -121,162 +120,135 @@ input[type="color"] {
 </div>
 <div class="shadowedBox"><p id="statusBox">&nbsp;</p></div>
 <div class="shadowedBox">
-  <div id="lunarPhase"></div>
-  <div class="item channelbar"><p class="itemName">1</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName lighttype"></p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">2</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName lighttype"></p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">3</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName lighttype"></p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">4</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName lighttype"></p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">5</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName lighttype"></p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+  <div id="lunarPhase"><p id="moonpercent" class="infobar">Loading moonphase...</p><img width="256px" height="256px" id="moonimg" src="https://aquacontrol.wasietsmet.nl/near_side_256x256x8/000.png"></div>
+  <div class="item channelbar"><p class="itemName">1</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+  <div class="item channelbar"><p class="itemName">2</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+  <div class="item channelbar"><p class="itemName">3</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+  <div class="item channelbar"><p class="itemName">4</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+  <div class="item channelbar"><p class="itemName">5</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
 </div>
-<div class="shadowedBox" id="copyright">
-</div>
+<div class="shadowedBox" id="copyright"><p>Lunar renders author: Jay Tanner</p><p><a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode" target="_blank">Image license: Creative Commons 3.0</a>-<a href="http://www.neoprogrammics.com/lunar_phase_images/" target="_blank">Original image set</a></p></div>
 <script>
-var loadAll = true; // with loadAll set to true, all get calls will be daisy-chained
-$(document).ready( function() {
-  $.get( "/api/getdevice?hostname=" )
-  .done( function( data ) {
-    $( '#hostName' ).html( data );
-  })
-  .always( function( data ) {
-    getMinimumLevels();
-  })
+var loadAll=true; // with loadAll set to true, all get calls will be daisy-chained
+$(document).ready(function(){
+  $.get("/api/getdevice?hostname=")
+  .done(function(data){$('#hostName').html(data);})
+  .always(function(){getMinimumLevels();})
 });
 /* functions */
 function getMinimumLevels(){
-  $.get( "/api/getdevice?minimumlevels=" )
-  .done( function( data ) {
-    var values = data.split("\n");
-    values.forEach(function(element, index){
-      $('.minLevel').eq(index).val( parseFloat( element ) );
-      $('.minimumPercent').eq(index).html( element.trim() + "%" );
+  $.get("/api/getdevice?moonlevels=")
+  .done(function(data){
+    var values=data.split("\n");
+    values.forEach(function(element,index){
+      $('.minLevel').eq(index).val(parseFloat(element));
+      $('.minimumPercent').eq(index).html(element.trim()+"%");
     });
   })
-  .fail( function( data ) {
-    console.log( data );
-  })
-  .always( function() {
-    if ( loadAll ) {
-      getChannelNames();
-    }
+  .fail(function(data){console.log(data);})
+  .always(function(){if(loadAll){getChannelNames();}
   });
 }
 function getChannelNames(){
-  $.get( "/api/getdevice?channelnames=" )
-  .done( function( data ) {
-    var values = data.split("\n");
-    values.forEach(function(element, index){
-      $('.channelName').eq(index).val( element );
+  $.get("/api/getdevice?channelnames=")
+  .done(function(data){
+    var values=data.split("\n");
+    values.forEach(function(element,index){
+      $('.channelName').eq(index).val(element);
     });
   })
-  .fail( function( data ) {
-    console.log( data );
-  })
-  .always( function() {
-    if ( loadAll ) {
-      getLunarPhase();
-    }
+  .fail(function(data){console.log(data);})
+  .always(function(){if(loadAll){getLunarPhase();}
   });
 }
 function getLunarPhase(){
-  $.get( "/api/getdevice?moonphase=" )
-  .done( function( data ) {
-    $('.lighttype').html('FULL MOON:');
-    var phase = data.split("\n");
-    if( phase[0] < 100 ) phase[0] = "0" + phase[0];
-    if( phase[0] < 10 ) phase[0] = "0" + phase[0];
-    if ( phase[1] > 0.9995 ) phase[1] = 1;
-    if ( phase[1] < 0.0005 ) phase[1] = 0;
-    var truncated = ( parseFloat( phase[1] ) * 100.0 ).toString();
-    if ( truncated.indexOf( ".") != -1 ) truncated = truncated.substr( 0, truncated.indexOf( ".") + 2);
-    $( '#lunarPhase' ).html( '<p class="infobar">Moon is ' + truncated  + '% illuminated</p><img src="https://aquacontrol.wasietsmet.nl/near_side_256x256x8/' + phase[0] + '.png">' );
-    $( '#copyright').html( '<p class="copyright">Lunar images author: Jay Tanner</p><p><a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode" target="_blank">Image license: Creative Commons 3.0</a>-<a href="http://www.neoprogrammics.com/lunar_phase_images/" target="_blank">Original image set</a></p>').show();
-    setTimeout( getLunarPhase, 180 * 1000 );
+  $.get("/api/getdevice?moonphase=")
+  .done(function(data){
+    var phase=data.split("\n");
+    $('#moonpercent').html(phase[1]);
+    if(phase[0]<100)phase[0]="0"+phase[0];
+    if(phase[0]<10)phase[0]="0"+phase[0];
+    if(phase[1]>0.9995)phase[1]=1;
+    if(phase[1]<0.0005)phase[1]=0;
+    var truncated=(parseFloat(phase[1])*100.0).toString();
+    if(truncated.indexOf(".")!=-1)truncated=truncated.substr(0,truncated.indexOf("."+2));
+    $('#moonimg').attr("src","https://aquacontrol.wasietsmet.nl/near_side_256x256x8/"+phase[0]+".png");
+    setTimeout(getLunarPhase,180*1000);
   })
-  .fail( function( data ) {
-    $('.lighttype').html('MINIMUM:');
-    console.log( data );
-  })
-  .always( function() {
-    if ( loadAll ) {
-      getChannelColors();
-    }
+  .fail(function(data){console.log(data);})
+  .always(function(){if(loadAll){getChannelColors();}
   });
 }
 function getChannelColors(){
-  $.get( "/api/getdevice?channelcolors=" )
-  .done( function( data ) {
-    var values = data.split("\n");
-    values.forEach(function(element, index){
-      $('.colorPicker').eq(index).val( element.trim() );
+  $.get("/api/getdevice?channelcolors=")
+  .done(function(data){
+    var values=data.split("\n");
+    values.forEach(function(element,index){
+      $('.colorPicker').eq(index).val(element.trim());
     });
   })
-  .fail( function( data ) {
-    console.log( data );
-  })
-  .always( function() {
-    if ( loadAll ) {
+  .fail(function(data){console.log(data);})
+  .always(function(){
+    if(loadAll){
       $('body').css({'opacity':'1'});
-      loadAll = false;
+      loadAll=false;
     }
   });
 }
 //event handlers
-$('input').on( 'input', function() {
+$('input').on('input',function(){
   $('#statusBox').html('&nbsp;');
 });
-$( '.minLevel' ).on( 'input', function( ) {
-  var thisChannel = $(this).parent(".channelbar").index() - 1;
-  $('.minimumPercent').eq( thisChannel ).html( $(this).val() +'%' );
+$('.minLevel').on('input',function(){
+  var thisChannel=$(this).parent(".channelbar").index()-1;
+  $('.minimumPercent').eq(thisChannel).html($(this).val()+'%');
  });
-$( '.minLevel' ).on( 'change', function() {
-  $.post( "/api/setchannel",
+$('.minLevel').on('change',function(){
+  $.post("/api/setchannel",
   {
-    channel : $(this).parent(".channelbar").index(),
-    minimum : $(this).val()
+    channel:$(this).parent(".channelbar").index(),
+    minimum:$(this).val()
   })
-  .done(function( data ) {
-    $('#statusBox').html( data );
-  })
-  .fail(function( data ) {
+  .done(function(data){$('#statusBox').html(data);})
+  .fail(function(data){
     $('#statusBox').html( data.statusText );
     getMinimumLevels();
   });
 });
-$( '.channelName' ).on( 'input', function( ) {
-  $(this).css({ 'background' : '#fffe75' } );
+
+$('.channelName').on('input',function(){
+  $(this).css({'background':'#fffe75'});
 });
-$( '.channelName' ).on( 'change', function( ) {
-  var thisInput = $(this);
-  $.post( "/api/setchannel",
+
+$('.channelName').on('change',function(){
+  var thisInput=$(this);
+  $.post("/api/setchannel",
   {
-    channel : $(this).parent(".channelbar").index(),
-    name    : $(this).val()
+    channel:$(this).parent(".channelbar").index(),
+    name:$(this).val()
   })
-  .done(function( data ) {
-    $('#statusBox').html( data );
-    thisInput.css({ 'background' : '#46ff44' } );
+  .done(function(data){
+    $('#statusBox').html(data);
+    thisInput.css({'background':'#46ff44'});
     getChannelNames();
   })
-  .fail(function( data ) {
-    $('#statusBox').html( data.responseText );
-    thisInput.css({ 'background' : '#ff5e5e' } );
+  .fail(function(data){
+    $('#statusBox').html(data.responseText);
+    thisInput.css({'background':'#ff5e5e' });
   });
 });
-$( '.colorPicker' ).on( 'change', function() {
-  var thisChannel = $(this).parent(".channelbar").index();
-  var thisColor = $(this).val().substr(1);
-  $.post( "/api/setchannel",
+$('.colorPicker').on('change',function(){
+  var thisChannel=$(this).parent(".channelbar").index();
+  var thisColor=$(this).val().substr(1);
+  $.post("/api/setchannel",
   {
-    channel : thisChannel,
-    color   : thisColor
+    channel:thisChannel,
+    color:thisColor
   })
-  .done(function( data ) {
-    $('#statusBox').html( "Channel " + ( thisChannel ) + " color set to <span style=\"color:#" + thisColor + ";\">#" + thisColor + "</span>" );
+  .done(function(data){
+    $('#statusBox').html("Channel "+(thisChannel)+" color set to <span style=\"color:#"+thisColor+";\">#"+thisColor+"</span>");
   })
-  .fail(function( data ) {
-    $('#statusBox').html( data.statusText );
-    getChannelColors();
-  });
+  .fail(function(data){$('#statusBox').html(data.statusText);getChannelColors();});
 });
 </script>
 </body>

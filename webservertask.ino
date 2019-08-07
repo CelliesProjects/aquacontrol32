@@ -348,7 +348,7 @@ void webServerTask ( void * pvParameters ) {
         strncpy( channel[ channelNumber ].name, request->arg( "name" ).c_str(), sizeof( channel[ channelNumber ].name ) );
       }
       else {
-        snprintf( channel[ channelNumber ].name, sizeof( channel[ channelNumber ].name ), "Channel%i", channelNumber + 1 );
+        snprintf( channel[ channelNumber ].name, sizeof( channel[ channelNumber ].name ), "Channel%i", channelNumber );
       }
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelname%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].name );

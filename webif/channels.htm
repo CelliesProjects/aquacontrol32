@@ -3,16 +3,17 @@
 <head>
 <title>Channel setup</title>
 <meta charset="utf-8">
-<link rel="icon" href="data:;base64,iVBORw0KGgo=">  <!--prevent favicon requests-->
+<link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">  <!-- https://fonts.google.com/specimen/Roboto?selection.family=Roboto -->
 <style>
 html,body{
   margin:0 auto;
   background-color:grey;
   text-align:center;
   width:1024px;
-  font-variant:small-caps;
+  //font-variant:small-caps;
   font-size:20px;
-  font-family:monospace;
+  font-family:'Roboto',sans-serif;
 }
 body{
   opacity:0.4;
@@ -122,23 +123,24 @@ input[type="color"]{
 <div class="shadowedBox">
 <div id="lunarPhase"><p id="moonpercent" class="infobar">Loading moonphase...</p><img width="256px" height="256px" id="moonimg" src="https://aquacontrol.wasietsmet.nl/near_side_256x256x8/000.png"></div>
 <div id="copyright"><p>Lunar renders author: Jay Tanner</p><p><a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode" target="_blank">Image license: Creative Commons 3.0</a>-<a href="http://www.neoprogrammics.com/lunar_phase_images/" target="_blank">Original image set</a></p></div>
+  <div class="item channelbar"><p class="itemName">0</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
   <div class="item channelbar"><p class="itemName">1</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
   <div class="item channelbar"><p class="itemName">2</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
   <div class="item channelbar"><p class="itemName">3</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
   <div class="item channelbar"><p class="itemName">4</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">5</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
 </div>
 <script>
 var loadAll=true; // with loadAll set to true, all get calls will be daisy-chained
 $(document).ready(function(){
   $.get("/api/getdevice?hostname=")
   .done(function(data){$('#hostName').html(data);})
-  .always(function(){getMinimumLevels();})
+  .always(function(){getMoonLevels();})
 });
-function getMinimumLevels(){
+function getMoonLevels(){
   $.get("/api/getdevice?moonlevels=")
   .done(function(data){
     var values=data.split("\n");
+    console.log( values );
     values.forEach(function(element,index){
       $('.minLevel').eq(index).val(parseFloat(element));
       $('.minimumPercent').eq(index).html(element.trim()+"%");
@@ -181,19 +183,18 @@ $('input').on('input',function(){
   $('#statusBox').html('&nbsp;');
 });
 $('.minLevel').on('input',function(){
-  var channel=$(this).parent(".channelbar").index()-1;
-  $('.minimumPercent').eq(channel).html($(this).val()+'%');
- });
+  $('.minimumPercent').eq($(this).index('.minLevel')).html($(this).val()+'%');
+});
 $('.minLevel').on('change',function(){
   $.post("/api/setchannel",
   {
-    channel:$(this).parent(".channelbar").index(),
+    channel:$(this).index('.minLevel'),
     minimum:$(this).val()
   })
   .done(function(data){$('#statusBox').html(data);})
   .fail(function(data){
     $('#statusBox').html( data.statusText );
-    getMinimumLevels();
+    getMoonLevels();
   });
 });
 $('.channelName').on('input',function(){
@@ -203,7 +204,7 @@ $('.channelName').on('change',function(){
   var thisInput=$(this);
   $.post("/api/setchannel",
   {
-    channel:$(this).parent(".channelbar").index(),
+    channel:$(this).index('.channelName'),
     name:$(this).val()
   })
   .done(function(data){
@@ -217,7 +218,7 @@ $('.channelName').on('change',function(){
   });
 });
 $('.colorPicker').on('change',function(){
-  var channel=$(this).parent(".channelbar").index();
+  var channel=$(this).index('.colorPicker');
   var color=$(this).val().substr(1);
   $.post("/api/setchannel",{channel:channel,color:color})
   .done(function(data){$('#statusBox').html("Channel "+(channel)+" color set to <span style=\"color:#"+color+";\">#"+color+"</span>");})

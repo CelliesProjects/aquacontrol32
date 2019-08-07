@@ -1,6 +1,6 @@
 void IRAM_ATTR moonSimtask ( void * pvParameters )
 {
-  const TickType_t moonSimdelayTime  = ( 1000 * 60 * 3 ) / portTICK_PERIOD_MS;
+  const TickType_t moonSimdelayTime  = ( 1000 * 30 ) / portTICK_PERIOD_MS;
 
   while (1)
   {

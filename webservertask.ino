@@ -319,7 +319,7 @@ void webServerTask ( void * pvParameters ) {
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelcolor%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].color );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "channel %i color set to %s", channelNumber + 1, channel[ channelNumber ].color );
+      response->printf( "channel %i color set to %s", channelNumber, channel[ channelNumber ].color );
       return request->send( response );
     }
 
@@ -332,7 +332,7 @@ void webServerTask ( void * pvParameters ) {
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelminimum%i", channelNumber );
       preferences.putFloat( nvsKeyname, channel[channelNumber].fullMoonLevel );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "channel %i minimum set to %.2f%%", channelNumber + 1, channel[ channelNumber ].fullMoonLevel );
+      response->printf( "channel %i minimum set to %.2f%%", channelNumber, channel[ channelNumber ].fullMoonLevel );
       return request->send( response );
     }
 
@@ -353,7 +353,7 @@ void webServerTask ( void * pvParameters ) {
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelname%i", channelNumber );
       preferences.putString( nvsKeyname, channel[channelNumber].name );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "channel %i name set to '%s'", channelNumber + 1, channel[ channelNumber ].name );
+      response->printf( "channel %i name set to '%s'", channelNumber, channel[ channelNumber ].name );
       return request->send( response );
     }
 
@@ -662,15 +662,14 @@ void webServerTask ( void * pvParameters ) {
   vTaskDelete( NULL );
 }
 
-static inline __attribute__((always_inline)) uint8_t checkChannelNumber( const AsyncWebServerRequest *request )
-{
+static inline __attribute__((always_inline)) uint8_t checkChannelNumber( const AsyncWebServerRequest *request ) {
   if ( !request->hasArg( "channel" ) )
     return INVALID_CHANNEL;
   else {
     uint8_t channelNumber = request->arg( "channel" ).toInt();
-    if ( channelNumber < 1 || channelNumber > NUMBER_OF_CHANNELS )
-      return INVALID_CHANNEL;
-    return channelNumber - 1;
+    if ( channelNumber < NUMBER_OF_CHANNELS )
+      return channelNumber;
+    return INVALID_CHANNEL;
   }
 }
 

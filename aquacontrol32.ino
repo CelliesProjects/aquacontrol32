@@ -182,7 +182,7 @@ void oledTask( void * pvParameters );
 void wifiTask( void * pvParameters );
 
 /* global functions */
-float mapFloat( const float &x, const float &in_min, const float &in_max, const float &out_min, const float &out_max) {
+inline float mapFloat( const float &x, const float &in_min, const float &in_max, const float &out_min, const float &out_max) {
   return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
 }
 

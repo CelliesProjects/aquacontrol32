@@ -110,11 +110,8 @@ Install these libraries in the esp32 libraries folder.
 #### Lunar cycle night light:
 
 - Moon light settings can be adjusted in the `channels` area of the web-interface.
-- Can be disabled in `deviceSetup.h`. (set it to `false`)
-
-The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
-
-The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapted from code kindly licensed by Hugh from [voidware.com](http://www.voidware.com/). Thanks Hugh!
+- The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
+- The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapted from code kindly licensed by Hugh from [voidware.com](http://www.voidware.com/). Thanks Hugh!
 
 #### SmartConfig:
 
@@ -132,7 +129,7 @@ By default log files are not generated.
 
 #### Known issues:
 
-1. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
+- The OneWire library that comes with the Arduino IDE does not work with esp32 MCUs. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
 
 #### The test hardware:
 

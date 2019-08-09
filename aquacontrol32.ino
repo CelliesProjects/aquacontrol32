@@ -131,7 +131,7 @@ struct channelData_t
   float           currentPercentage;   /* what percentage is this channel set to */
   uint8_t         pin;                 /* which ESP32 pin is this channel on */
   uint8_t         numberOfTimers;      /* actual number of timers for this channel */
-  float           minimumLevel;        /* never dim this channel below this percentage */
+  float           fullMoonLevel;       /* a percentage between 0.0-1.0 set in the web interface */
 };
 
 /* const */

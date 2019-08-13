@@ -186,26 +186,28 @@ inline float mapFloat( const float &x, const float &in_min, const float &in_max,
   return ( x - in_min ) * ( out_max - out_min ) / ( in_max - in_min ) + out_min;
 }
 
+// https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
+// chapter 3.1.2
 const char * resetString( const uint8_t core ) {
   const char * resetStr[] =
   {
     "",
-    "POWERON_RESET",
+    "POWERON_RESET",           // 0x01
     "",
-    "SW_RESET",
-    "OWDT_RESET",
-    "DEEPSLEEP_RESET",
-    "SDIO_RESET",
-    "TG0WDT_SYS_RESET",
-    "TG1WDT_SYS_RESET",
-    "RTCWDT_SYS_RESET",
-    "INTRUSION_RESET",
+    "SW_RESET",                // 0x03
+    "OWDT_RESET",              // 0x04
+    "DEEPSLEEP_RESET",         // 0x05
+    "SDIO_RESET",              // 0x06
+    "TG0WDT_SYS_RESET",        // 0x07
+    "TG1WDT_SYS_RESET",        // 0x08
+    "RTCWDT_SYS_RESET",        // 0x09
+    "RWDT_RESET",              // 0x10
     "TGWDT_CPU_RESET",
-    "SW_CPU_RESET",
-    "RTCWDT_CPU_RESET",
-    "EXT_CPU_RESET",
-    "RTCWDT_BROWN_OUT_RESET",
-    "RTCWDT_RTC_RESET"
+    "SW_CPU_RESET",            // 0x0C
+    "RTCWDT_CPU_RESET",        // 0x0D
+    "PRO_CPU_RESET",           // 0x0E
+    "RTCWDT_BROWN_OUT_RESET"   // 0x0F
+    //"RTCWDT_RTC_RESET"
   };
   return resetStr[rtc_get_reset_reason( core )];
 }

@@ -6,20 +6,20 @@
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">  <!--prevent favicon requests-->
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 <style>
-  @-webkit-keyframes blinker {
-  from {opacity: 1.0;}
-  to {opacity: 0.0;}
+  @-webkit-keyframes blinker{
+  from{opacity:1.0;}
+  to{opacity:0.0;}
 }
 .blink{
   color:red;
-	text-decoration: blink;
-	-webkit-animation-name: blinker;
-	-webkit-animation-duration: 0.6s;
-	-webkit-animation-iteration-count:infinite;
-	-webkit-animation-timing-function:ease-in-out;
-	-webkit-animation-direction: alternate;
+  text-decoration:blink;
+  -webkit-animation-name:blinker;
+  -webkit-animation-duration:0.6s;
+  -webkit-animation-iteration-count:infinite;
+  -webkit-animation-timing-function:ease-in-out;
+  -webkit-animation-direction:alternate;
 }
-html, body{
+html,body{
   margin:0 auto;
   background-color:grey;
   text-align:center;
@@ -27,31 +27,28 @@ html, body{
   font-size:20px;
   font-family:'Roboto',sans-serif;
 }
-a {
-  color: black;
-  text-decoration: none;
-  margin: 0 10px;
+a{
+  color:black;
+  text-decoration:none;
+  margin:0 10px;
 }
-h3{
-  margin:10px;
+#hostName{
+  margin:0;
 }
 .systemLink{
-  padding: 3px 10px;
+  padding:3px 10px;
 }
-.systemLink:hover {
+.systemLink:hover{
   background:grey;
 }
 p{
   margin:0;
 }
-.shadowedBox  {
-  box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
-  border-radius: 15px;
+.shadowedBox{
+  box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
+  border-radius:15px;
   margin:10px 0;
   padding:2px;
-}
-#hostName {
-  text-transform: uppercase;
 }
 #editorCanvas{
   background-color:darkgreen;
@@ -83,13 +80,13 @@ p{
 button:hover{
   cursor:pointer;
 }
-.rangeButton, .baseButton{
+.rangeButton,.baseButton{
   width:50%;
 }
 .controlBox{
-  margin: 10px;
-  background-color: antiquewhite;
-  font-size: initial;
+  margin:10px;
+  background-color:antiquewhite;
+  font-size:initial;
   overflow:hidden;
   display:none;
 }
@@ -101,7 +98,7 @@ button:hover{
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
-<div class="hostName shadowedBox"><h3 id="hostName">Loading...</h3></div>
+<div class="hostName shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Log files</p></div>
 <div class="shadowedBox" id="loaderBox">CHECKING...</div>
 <canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
   <div id="sideBox" class="shadowedBox">
@@ -116,224 +113,199 @@ button:hover{
     <div id="fileList" class="shadowedBox controlBox"></div>
   </div>
 <script>
-//const hostName = 'http://192.168.0.197'; //debug/develop
-const hostName = '';
-var grapArea = document.getElementById( 'editorCanvas' );
-var rangeBottom = 10;
-var rangeTop    = 30;
-var sensorColor = ["","rgba( 255,0, 0, 0.9)","rgba( 0,255,0, 0.9)","rgba( 0,0,255, 0.9)"];
-var sensorName  = [];
+//const hostName='http://192.168.0.105';//debug/develop
+const hostName='';
+var grapArea=document.getElementById('editorCanvas');
+var rangeBottom=10;
+var rangeTop   =30;
+var sensorColor=["","rgba(255,0,0,0.9)","rgba(0,255,0,0.9)","rgba(0,0,255,0.9)"];
+var sensorName =[];
 var measurements;
-$( document ).ready( function() {
-  if ( hostName ) $('body').append( '<p class="blink">!!!!!debug enabled!!!!!</p>');
-  $.get( hostName + "/api/getdevice?hostname=")
-    .done(function( data ){
-      $( "#hostName" ).html( data + " LOGS");
-      document.title = data.toUpperCase();
-      $.get( hostName + '/api/getdevice?files=', function( data )
+$(document).ready(function(){
+  if(hostName) $('body').append('<p class="blink">!!!!!debug enabled!!!!!</p>');
+  $.get(hostName+"/api/getdevice?hostname=")
+    .done(function(data){
+      $("#hostName").html(data);
+      document.title=data.toUpperCase();
+      $.get(hostName+'/api/getdevice?files=',function(data)
       {
-        var fileArray = data.split('\n');
+        var fileArray=data.split('\n');
         fileArray.sort();
-        for ( f = 0; f < fileArray.length; f++ )
+        var f;
+        for (f=0;f<fileArray.length;f++)
         {
-          if ( fileArray[f].substring( 11, 15 ) == '.log' )
+          if(fileArray[f].substring(11,15)=='.log')
           {
-            $('#fileList').append( '<div class="logFile">'+ fileArray[f].substring( 1, 11 ) + "</div>" );
+            $('#fileList').append('<div class="logFile">'+ fileArray[f].substring(1,11)+"</div>");
           }
         }
-        if ( !$('.logFile').length )
+        if(!$('.logFile').length)
         {
-          $('#loaderBox').html( "NO LOGS FOUND" );
+          $('#loaderBox').html("NO LOGS FOUND");
         }
         else
         {
           $('#loaderBox').hide();
-          $('#editorCanvas, #sideBox, .controlBox').show();
+          $('#editorCanvas,#sideBox,.controlBox').show();
           $('.logFile').last().click();
         }
       });
     })
 });
-function map( x,  in_min,  in_max,  out_min,  out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+function map(x,in_min,in_max,out_min,out_max){
+  return (x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;
 }
-function showAllChannelColors()
-{
-  var currentSensor = 1;
-  while ( sensorName[ currentSensor ] )
+function showAllChannelColors(){
+  var currentSensor=1;
+  while (sensorName[currentSensor])
   {
-    showChannelColor( currentSensor );
+    showChannelColor(currentSensor);
     currentSensor++;
   }
 }
-function showChannelColor( sensor )
-{
-  var ctx = grapArea.getContext( "2d" );
+function showChannelColor(sensor){
+  var ctx=grapArea.getContext("2d");
   ctx.textBaseline="middle";
   ctx.textAlign="left";
-  ctx.strokeStyle = sensorColor[ sensor ];
-  ctx.strokeText( sensorName[ sensor ], 75,  grapArea.height - 40 - ( sensor ) * 20  );
+  ctx.strokeStyle=sensorColor[sensor];
+  ctx.strokeText(sensorName[sensor],75,grapArea.height-40-(sensor)*20);
   ctx.beginPath();
-  ctx.strokeStyle = sensorColor[ sensor ];
-  ctx.moveTo( 30, grapArea.height - 40 - sensor  * 20  );
-  ctx.lineTo( 70, grapArea.height - 40 - sensor  * 20  );
+  ctx.strokeStyle=sensorColor[sensor];
+  ctx.moveTo(30,grapArea.height-40-sensor*20);
+  ctx.lineTo(70,grapArea.height-40-sensor*20);
   ctx.stroke();
 }
-function drawLogFile( url )
-{
-  $.get( url, function( data )
+function drawLogFile(url){
+  $.get(url,function(data)
   {
-    grapArea.width = grapArea.width;
-    var ctx = grapArea.getContext( "2d" );
-    measurements = data.split('\n');
-    var bootCount = 0;
-    var numberOfMeasurements = 0;
-    measurements.forEach( function( item, index )
-    {
-      if ( item.indexOf( 'Aquacontrol32 start' ) > 0  )
-      {
-       bootCount++;
-      }
-      else if ( item )
-      {
-        numberOfMeasurements++;
-      }
-    });
-    if ( numberOfMeasurements )
+    grapArea.width=grapArea.width;
+    var ctx=grapArea.getContext("2d");
+    measurements=data.split('\n');
+    if(measurements.length)
     {
       $('.controlBox').show();
       showRange();
       showBase();
       drawAllGraphs();
     }
-    if ( !numberOfMeasurements )
+    if(!measurements.length)
     {
-      $('.baseButton, .rangeButton').attr('disabled', 'disabled');
-
+      $('.baseButton,.rangeButton').attr('disabled','disabled');
       ctx.textBaseline="middle";
       ctx.textAlign="center";
-      ctx.font = '20px serif';
-      ctx.strokeStyle = 'rgba( 255, 255, 255, 1 )';
-      ctx.strokeText( "No sensor data found", grapArea.width / 2,  grapArea.height / 2 );
+      ctx.font='20px serif';
+      ctx.strokeStyle='rgba(255,255,255,1)';
+      ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
     }
     else
     {
-      $.get( hostName + '/api/getdevice?status=', function( data )
+      $.get(hostName+'/api/getdevice?status=',function(data)
       {
-        var statusData = data.split( '\n' );
-        var offset = 7;
-        while ( statusData[ offset ] )
+        var statusData=data.split('\n');
+        var offset=7;
+        while (statusData[offset])
         {
-          var sensorData = statusData[ offset ].split(',');
-          sensorName[ offset - 6 ] = sensorData[0];
-          showChannelColor( offset - 6 );
+          var sensorData=statusData[offset].split(',');
+          sensorName[offset-6]=sensorData[0];
+          showChannelColor(offset-6);
           offset++;
         }
-        $('.baseButton, .rangeButton').removeAttr('disabled');
+        $('.baseButton,.rangeButton').removeAttr('disabled');
       });
-    }
-    if ( bootCount )
-    {
-      url += " - System reboots: " + bootCount;
     }
     ctx.textBaseline="bottom";
     ctx.textAlign="left";
-    ctx.font = '15px serif';
-    ctx.strokeStyle = 'rgba( 255, 255, 255, 0.9 )';
-    ctx.strokeText( url, 10,  grapArea.height - 10 );
+    ctx.font='15px serif';
+    ctx.strokeStyle='rgba(255,255,255,0.9)';
+    ctx.strokeText(url,10,grapArea.height-10);
   });
 }
-function drawSingleChannel( sensor, data, canvas, color, mintemp, maxtemp, drawGrid )
-{
-  const opacity = 0.3;
-  const lineDash = [ 2, 2 ];
-  var ctx = canvas.getContext( "2d" );
+function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
+  const opacity=0.3;
+  const lineDash=[2,2];
+  var ctx=canvas.getContext("2d");
   ctx.beginPath();
-  if ( drawGrid )
+  if(drawGrid)
   {
-    ctx.strokeStyle = 'rgba( 255, 165, 0, ' + opacity + ')';
-    ctx.font = '15px serif';
-    for ( hour = 0; hour < 25; hour++ )
+    ctx.strokeStyle='rgba(255,165,0,'+opacity+')';
+    ctx.font='15px serif';
+    for(hour=0;hour<25;hour++)
     {
-      var x = map( hour, 0, 24, 0, canvas.width );
-      ctx.moveTo( x, 0 );
-      ctx.lineTo( x, canvas.height );
+      var x=map(hour,0,24,0,canvas.width);
+      ctx.moveTo(x,0);
+      ctx.lineTo(x,canvas.height);
       ctx.setLineDash([]);
       ctx.textBaseline="middle";
       ctx.textAlign="center";
-      ctx.strokeText( hour + "h", x, 10 );
-      ctx.strokeText( hour + "h", x, canvas.height / 2 );
-      ctx.strokeText( hour + "h", x, canvas.height - 10 );
-      ctx.setLineDash( lineDash );
+      ctx.strokeText(hour+"h",x,10);
+      ctx.strokeText(hour+"h",x,canvas.height/2);
+      ctx.strokeText(hour+"h",x,canvas.height-10);
+      ctx.setLineDash(lineDash);
     }
     ctx.stroke();
     ctx.beginPath();
-    ctx.strokeStyle = 'rgba( 255,255,255, '+ opacity+ ')';
-    for ( templine = rangeBottom; templine <= rangeTop; templine++ )
+    ctx.strokeStyle='rgba(255,255,255,'+ opacity+ ')';
+    for(templine=rangeBottom;templine <= rangeTop;templine++)
     {
-      var y = map( templine, rangeBottom, rangeTop, canvas.height, 0 );
-      ctx.moveTo( 0, y );
-      ctx.lineTo( canvas.width, y );
-      var tempstr = parseInt( map( y, 0, canvas.height, maxtemp, mintemp ) );
-      tempstr += "°";
+      var y=map(templine,rangeBottom,rangeTop,canvas.height,0);
+      ctx.moveTo(0,y);
+      ctx.lineTo(canvas.width,y);
+      var tempstr=parseInt(map(y,0,canvas.height,maxtemp,mintemp));
+      tempstr+="°";
       ctx.setLineDash([]);
       ctx.textBaseline="middle";
       ctx.textAlign="center";
-      ctx.strokeText( tempstr, 20, y );
-      ctx.strokeText( tempstr, canvas.width / 2, y );
-      ctx.strokeText( tempstr, canvas.width - 20, y );
-      ctx.setLineDash( lineDash) ;
+      ctx.strokeText(tempstr,20,y);
+      ctx.strokeText(tempstr,canvas.width/2,y);
+      ctx.strokeText(tempstr,canvas.width-20,y);
+      ctx.setLineDash(lineDash) ;
     }
     ctx.stroke();
     ctx.beginPath();
   }
   ctx.setLineDash([]);
-  ctx.strokeStyle = color;
-  /* draw the actual graph */
-  var closeLine = true;
-  for ( p = 0; p < data.length; p++ )
+  ctx.strokeStyle=color;
+  /* draw the actual graph*/
+  var closeLine=true;
+  for(p=0;p<data.length;p++)
   {
-    var temp = data[ p ].split(',');
-    var date = new Date( temp[0] * 1000 );
+    var temp=data[p].split(',');
+    var date=new Date(temp[0]*1000);
 
-    if ( isNaN( date.getTime() ) )
+    if(isNaN(date.getTime()))
     {
-      closeLine = true;
+      closeLine=true;
     }
     else
     {
-      var secondsToday = date.getHours() * 3600;
-      secondsToday += date.getMinutes() * 60;
-      secondsToday += date.getSeconds();
-      var y = map( temp[ sensor ], mintemp, maxtemp, canvas.height, 0 );
-      var x = map( secondsToday, 0, 86400, 0, canvas.width );
-      if ( closeLine )
+      var secondsToday=date.getHours()*3600;
+      secondsToday+=date.getMinutes()*60;
+      secondsToday+=date.getSeconds();
+      var y=map(temp[sensor],mintemp,maxtemp,canvas.height,0);
+      var x=map(secondsToday,0,86400,0,canvas.width);
+      if(closeLine)
       {
-        ctx.moveTo( x, y );
-        closeLine = false;
+        ctx.moveTo(x,y);
+        closeLine=false;
       }
-      ctx.lineTo( x, y );
+      ctx.lineTo(x,y);
     }
   }
   ctx.stroke();
 }
-$('#sideBox').on( 'click', '.logFile', function()
-{
-  if ( $(this).css( "background-color" ) == "rgb(0, 100, 0)" ) return;
-  $( '.logFile' ).css( { "background-color" : "" } );
-  $(this).css( { "background-color" : "rgb(0, 100, 0)" } );
-  var newurl = hostName + '/';
-  newurl += $( this ).html() + '.log';
-  drawLogFile( newurl );
+$('#sideBox').on('click','.logFile',function(){
+  if($(this).css("background-color")=="rgb(0,100,0)") return;
+  $('.logFile').css({"background-color":""});
+  $(this).css({"background-color":"rgb(0,100,0)"});
+  var newurl=hostName+'/';
+  newurl+=$(this).html()+'.log';
+  drawLogFile(newurl);
 });
-function showRange()
-{
-  $('#rangeStatus').html(  rangeBottom + "° - " + rangeTop  + "°" );
+function showRange(){
+  $('#rangeStatus').html(rangeBottom+"°-"+rangeTop +"°");
 }
-$('.rangeButton').on( 'click', function()
-{
-  if ( $(this).index() == 0 )
+$('.rangeButton').on('click',function(){
+  if($(this).index()==0)
   {
     rangeBottom++;
     rangeTop--;
@@ -345,18 +317,14 @@ $('.rangeButton').on( 'click', function()
   showRange();
   drawAllGraphs();
 });
-function showBase()
-{
-  $('#baseStatus').html( ( rangeTop - ( rangeTop - rangeBottom ) / 2 ) + "°" );
+function showBase(){
+  $('#baseStatus').html((rangeTop-(rangeTop-rangeBottom)/2)+"°");
 }
-$('.baseButton').on( 'click', function()
-{
-  if ( $(this).index() == 0 )
-  {
+$('.baseButton').on('click',function(){
+  if($(this).index()==0){
     rangeBottom--;
     rangeTop--;
-  } else
-  {
+  }else{
     rangeBottom++;
     rangeTop++;
   }
@@ -364,13 +332,12 @@ $('.baseButton').on( 'click', function()
   showRange();
   drawAllGraphs();
 });
-function drawAllGraphs()
-{
-  var ctx = grapArea.getContext( "2d" );
-  ctx.clearRect(0, 0, grapArea.width, grapArea.height);
-  drawSingleChannel( 1, measurements, grapArea, sensorColor[1], rangeBottom, rangeTop, true );
-  drawSingleChannel( 2, measurements, grapArea, sensorColor[2], rangeBottom, rangeTop, false );
-  drawSingleChannel( 3, measurements, grapArea, sensorColor[3], rangeBottom, rangeTop, false );
+function drawAllGraphs(){
+  var ctx=grapArea.getContext("2d");
+  ctx.clearRect(0,0,grapArea.width,grapArea.height);
+  drawSingleChannel(1,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop,true);
+  drawSingleChannel(2,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop,false);
+  drawSingleChannel(3,measurements,grapArea,sensorColor[3],rangeBottom,rangeTop,false);
   showAllChannelColors();
 }
 </script>

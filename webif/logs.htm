@@ -3,7 +3,7 @@
 <head>
 <title>Showlog</title>
 <meta charset="utf-8">
-<link rel="icon" href="data:;base64,iVBORw0KGgo=">  <!--prevent favicon requests-->
+<link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 <style>
   @-webkit-keyframes blinker{
@@ -73,6 +73,9 @@ p{
   margin:10px;
   height:275px;
 }
+.logFile{
+  font-size:20px;
+}
 .logFile:hover{
   background-color:yellow;
   cursor:pointer;
@@ -99,7 +102,7 @@ button:hover{
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div class="hostName shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Log files</p></div>
-<div class="shadowedBox" id="loaderBox">CHECKING...</div>
+<div class="shadowedBox" id="loaderBox"></div>
 <canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
   <div id="sideBox" class="shadowedBox">
     <div class="controlBox shadowedBox">
@@ -124,41 +127,38 @@ var measurements;
 $(document).ready(function(){
   if(hostName) $('body').append('<p class="blink">!!!!!debug enabled!!!!!</p>');
   $.get(hostName+"/api/getdevice?hostname=")
-    .done(function(data){
-      $("#hostName").html(data);
-      document.title=data.toUpperCase();
-      $.get(hostName+'/api/getdevice?files=',function(data)
-      {
-        var fileArray=data.split('\n');
-        fileArray.sort();
-        var f;
-        for (f=0;f<fileArray.length;f++)
-        {
-          if(fileArray[f].substring(11,15)=='.log')
-          {
-            $('#fileList').append('<div class="logFile">'+ fileArray[f].substring(1,11)+"</div>");
-          }
-        }
-        if(!$('.logFile').length)
-        {
-          $('#loaderBox').html("NO LOGS FOUND");
-        }
-        else
-        {
-          $('#loaderBox').hide();
-          $('#editorCanvas,#sideBox,.controlBox').show();
-          $('.logFile').last().click();
-        }
-      });
-    })
+  .done(function(data){
+    $("#hostName").html(data);
+    document.title=data.toUpperCase();
+    loadLogFiles();
+  })
+  .fail(function(){$("#hostName").html(data.statusText);})
 });
+function loadLogFiles(){
+  $.get(hostName+'/api/getdevice?files=')
+  .done(function(data){
+    var fileArray=data.split('\n');fileArray.sort();
+    for(var f=0;f<fileArray.length;f++){
+      if(fileArray[f].substring(11,15)=='.log'){$('#fileList').append('<div class="logFile">'+fileArray[f].substring(1,11)+"</div>");}
+    }
+    if(!$('.logFile').length){
+      $('#loaderBox').html("NO LOGS FOUND");
+    }else{
+      $('#loaderBox').hide();
+      $('#editorCanvas,#sideBox,.controlBox').show();
+      $('.logFile').last().click();
+    }
+  })
+  .fail(function(){
+    $('#loaderBox').html("NO LOGS FOUND");
+  });
+}
 function map(x,in_min,in_max,out_min,out_max){
   return (x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;
 }
 function showAllChannelColors(){
   var currentSensor=1;
-  while (sensorName[currentSensor])
-  {
+  while (sensorName[currentSensor]){
     showChannelColor(currentSensor);
     currentSensor++;
   }
@@ -176,35 +176,28 @@ function showChannelColor(sensor){
   ctx.stroke();
 }
 function drawLogFile(url){
-  $.get(url,function(data)
-  {
+  $.get(url,function(data){
     grapArea.width=grapArea.width;
     var ctx=grapArea.getContext("2d");
     measurements=data.split('\n');
-    if(measurements.length)
-    {
+    if(measurements.length){
       $('.controlBox').show();
       showRange();
       showBase();
       drawAllGraphs();
     }
-    if(!measurements.length)
-    {
+    if(!measurements.length){
       $('.baseButton,.rangeButton').attr('disabled','disabled');
       ctx.textBaseline="middle";
       ctx.textAlign="center";
       ctx.font='20px serif';
       ctx.strokeStyle='rgba(255,255,255,1)';
       ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
-    }
-    else
-    {
-      $.get(hostName+'/api/getdevice?status=',function(data)
-      {
+    }else{
+      $.get(hostName+'/api/getdevice?status=',function(data){
         var statusData=data.split('\n');
         var offset=7;
-        while (statusData[offset])
-        {
+        while (statusData[offset]){
           var sensorData=statusData[offset].split(',');
           sensorName[offset-6]=sensorData[0];
           showChannelColor(offset-6);
@@ -225,12 +218,10 @@ function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
   const lineDash=[2,2];
   var ctx=canvas.getContext("2d");
   ctx.beginPath();
-  if(drawGrid)
-  {
+  if(drawGrid){
     ctx.strokeStyle='rgba(255,165,0,'+opacity+')';
     ctx.font='15px serif';
-    for(hour=0;hour<25;hour++)
-    {
+    for(hour=0;hour<25;hour++){
       var x=map(hour,0,24,0,canvas.width);
       ctx.moveTo(x,0);
       ctx.lineTo(x,canvas.height);
@@ -245,8 +236,7 @@ function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
     ctx.stroke();
     ctx.beginPath();
     ctx.strokeStyle='rgba(255,255,255,'+ opacity+ ')';
-    for(templine=rangeBottom;templine <= rangeTop;templine++)
-    {
+    for(templine=rangeBottom;templine <= rangeTop;templine++){
       var y=map(templine,rangeBottom,rangeTop,canvas.height,0);
       ctx.moveTo(0,y);
       ctx.lineTo(canvas.width,y);
@@ -267,24 +257,19 @@ function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
   ctx.strokeStyle=color;
   /* draw the actual graph*/
   var closeLine=true;
-  for(p=0;p<data.length;p++)
-  {
+  for(p=0;p<data.length;p++){
     var temp=data[p].split(',');
     var date=new Date(temp[0]*1000);
 
-    if(isNaN(date.getTime()))
-    {
+    if(isNaN(date.getTime())){
       closeLine=true;
-    }
-    else
-    {
+    }else{
       var secondsToday=date.getHours()*3600;
       secondsToday+=date.getMinutes()*60;
       secondsToday+=date.getSeconds();
       var y=map(temp[sensor],mintemp,maxtemp,canvas.height,0);
       var x=map(secondsToday,0,86400,0,canvas.width);
-      if(closeLine)
-      {
+      if(closeLine){
         ctx.moveTo(x,y);
         closeLine=false;
       }
@@ -305,12 +290,10 @@ function showRange(){
   $('#rangeStatus').html(rangeBottom+"°-"+rangeTop +"°");
 }
 $('.rangeButton').on('click',function(){
-  if($(this).index()==0)
-  {
+  if($(this).index()==0){
     rangeBottom++;
     rangeTop--;
-  } else
-  {
+  }else{
     rangeBottom--;
     rangeTop++;
   }

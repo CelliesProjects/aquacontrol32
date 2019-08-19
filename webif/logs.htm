@@ -6,23 +6,9 @@
 <link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 <style>
-  @-webkit-keyframes blinker{
-  from{opacity:1.0;}
-  to{opacity:0.0;}
-}
-.blink{
-  color:red;
-  text-decoration:blink;
-  -webkit-animation-name:blinker;
-  -webkit-animation-duration:0.6s;
-  -webkit-animation-iteration-count:infinite;
-  -webkit-animation-timing-function:ease-in-out;
-  -webkit-animation-direction:alternate;
-}
 html,body{
   margin:0 auto;
   background-color:grey;
-  text-align:center;
   width:1024px;
   font-size:20px;
   font-family:'Roboto',sans-serif;
@@ -45,15 +31,17 @@ p{
   margin:0;
 }
 .shadowedBox{
+  text-align:center;
   box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
   border-radius:15px;
   margin:10px 0;
   overflow:hidden;
 }
+#graphsetup{
+  display:none;
+}
 #editorCanvas{
   background-color:darkgreen;
-  border:solid 1px black;
-  display:inline-block;
   margin:0;
 }
 #sideBox{
@@ -64,6 +52,7 @@ p{
   float:right;
   overflow:hidden;
   margin:0;
+  display:none;
 }
 #fileList{
   overflow-y:auto;
@@ -84,7 +73,6 @@ button:hover{
 }
 .controlBox{
   font-size:initial;
-  display:none;
 }
 #loaderBox{
   line-height:400px;
@@ -92,6 +80,7 @@ button:hover{
 }
 #zapBox{
   display:flex;
+  display:none;
   overflow:hidden;
   white-space:nowrap;
 }
@@ -108,26 +97,26 @@ button:hover{
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
-<div class="hostName shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Log files</p></div>
-<div class="shadowedBox" id="loaderBox"></div>
-<canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas></div>
-<div id="sideBox" class="shadowedBox" style="background-color:beige;">
-  <div class="controlBox ">
-  <p id="baseStatus">&nbsp;</p>
-  <p><button class="baseButton">&uarr;</button><button class="baseButton">&darr;</button></p>
-  </div>
-  <div class="controlBox ">
+<div class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Log files</p></div>
+<div class="shadowedBox" id="graphsetup">
+<div class="controlBox ">
+<p id="baseStatus">&nbsp;</p>
+<p><button class="baseButton">&uarr;</button><button class="baseButton">&darr;</button></p>
+</div>
+<div class="controlBox" id="graphcontrol">
   <p id="rangeStatus">&nbsp;</p>
   <p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button></p>
-  </div>
-  <div id="fileList" class="controlBox"></div>
 </div>
-<div class="shadowedBox zapBox">
-  <button id="prevbutton"><<</button><p id="datestr">DateString</p><button id="nextbutton">>></button>
+</div>
+<div class="shadowedBox" id="loaderBox"></div>
+<canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
+<div id="sideBox" class="shadowedBox" style="background-color:beige;">
+<div id="fileList"></div>
+</div>
+<div id="zapBox" class="shadowedBox">
+  <button id="prevbutton"><<</button><p id="datestr"></p><button id="nextbutton">>></button>
 </div>
 <script>
-//const hostName='http://192.168.0.105';//debug/develop
-const hostName='';
 var grapArea=document.getElementById('editorCanvas');
 var rangeBottom=10;
 var rangeTop   =30;
@@ -136,8 +125,7 @@ var sensorName =[];
 var measurements;
 var currentFile=undefined;
 $(document).ready(function(){
-  if(hostName) $('body').append('<p class="blink">!!!!!debug enabled!!!!!</p>');
-  $.get(hostName+"/api/getdevice?hostname=")
+  $.get("/api/getdevice?hostname=")
   .done(function(data){
     $("#hostName").html(data);
     document.title=data.toUpperCase();
@@ -145,18 +133,20 @@ $(document).ready(function(){
   })
   .fail(function(){$("#hostName").html(data.statusText);})
 });
+
+
 function loadLogFiles(){
-  $.get(hostName+'/api/getdevice?files=')
+  $.get('/api/getdevice?files=')
   .done(function(data){
     var fileArray=data.split('\n');fileArray.sort();
     for(var f=0;f<fileArray.length;f++){
       if(fileArray[f].substring(11,15)=='.log'){$('#fileList').append('<div class="logFile">'+fileArray[f].substring(1,11)+"</div>");}
     }
-    if(!$('.logFile').length){
-      $('#loaderBox').html("NO LOGS FOUND");
+    if(0==$('.logFile').length){
+      $('#loaderBox').show().html("NO LOGS FOUND");
     }else{
       $('#loaderBox').hide();
-      $('#editorCanvas,#sideBox,.controlBox').show();
+      $('#editorCanvas,#sideBox,#zapBox').show();
       $('.logFile').last().click();
     }
   })
@@ -164,6 +154,10 @@ function loadLogFiles(){
     $('#loaderBox').html("NO LOGS FOUND");
   });
 }
+
+
+
+
 function map(x,in_min,in_max,out_min,out_max){
   return (x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;
 }
@@ -202,7 +196,7 @@ function drawLogFile(url){
     measurements=data.split('\n');
     if(measurements.length){
       $('#datestr').html(new Date(measurements[0].substr(0,measurements[0].indexOf(',',0))*1000));
-      $('.controlBox').show();
+     // $('.controlBox').show();
       showRange();
       showBase();
       drawAllGraphs();
@@ -215,7 +209,7 @@ function drawLogFile(url){
       ctx.strokeStyle='rgba(255,255,255,1)';
       ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
     }else{
-      $.get(hostName+'/api/getdevice?status=',function(data){
+      $.get('/api/getdevice?status=',function(data){
         var statusData=data.split('\n');
         var offset=7;
         while (statusData[offset]){
@@ -307,54 +301,6 @@ function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
 
 
 
-
-
-
-
-
-
-
-
-
-$('#sideBox').on('click','.logFile',function(){
-  if($(this).css("background-color")=="rgb(0,100,0)")return;
-  $('.logFile').css({"background-color":""});
-  $(this).css({"background-color":"rgb(0,100,0)"});
-  var newurl=hostName+'/';
-  newurl+=$(this).html()+'.log';
-  drawLogFile(newurl);
-  currentFile=$(this).index();
-  this.scrollIntoView();
-});
-
-
-
-
-
-
-
-
-
-
-
-
-$('#prevbutton').on('click',function(){
-  if(currentFile==0)return;
-  currentFile--;
-  $('.logFile').eq(currentFile).click();
-});
-$('#nextbutton').on('click',function(){
-  if(currentFile==$('.logFile').length-1)return;
-  currentFile++;
-  $('.logFile').eq(currentFile).click();
-});
-
-
-
-
-
-
-
 function showRange(){
   $('#rangeStatus').html(rangeBottom+"°-"+rangeTop +"°");
 }
@@ -393,6 +339,55 @@ function drawAllGraphs(){
   drawSingleChannel(3,measurements,grapArea,sensorColor[3],rangeBottom,rangeTop,false);
   showAllChannelColors();
 }
+
+
+
+
+
+
+
+
+
+
+
+$('#sideBox').on('click','.logFile',function(){
+  if($(this).css("background-color")=="rgb(0,100,0)")return;
+  $('.logFile').css({"background-color":""});
+  $(this).css({"background-color":"rgb(0,100,0)"});
+  var newurl='/';
+  newurl+=$(this).html()+'.log';
+  drawLogFile(newurl);
+  currentFile=$(this).index();
+  this.scrollIntoView();
+});
+
+
+
+
+
+
+
+
+
+
+
+
+$('#prevbutton').on('click',function(){
+  if(currentFile==0)return;
+  currentFile--;
+  $('.logFile').eq(currentFile).click();
+});
+$('#nextbutton').on('click',function(){
+  if(currentFile==$('.logFile').length-1)return;
+  currentFile++;
+  $('.logFile').eq(currentFile).click();
+});
+
+
+
+
+
+
 </script>
 </body>
 </html>

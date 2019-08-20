@@ -58,7 +58,7 @@ img{
   box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
   border-radius:15px;
   margin:10px 0;
-  padding:2px;
+  overflow:hidden;
 }
 .item{
   margin:10px auto;
@@ -131,7 +131,6 @@ function getMoonLevels(){
   $.get("/api/getdevice?moonlevels=")
   .done(function(data){
     var values=data.split("\n");
-    console.log( values );
     values.forEach(function(element,index){
       $('.minLevel').eq(index).val(parseFloat(element));
       $('.itemValue').eq(index).html(element.trim()+"%");

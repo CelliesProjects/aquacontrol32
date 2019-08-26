@@ -35,20 +35,19 @@ p{
   box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
   border-radius:15px;
   margin:10px 0;
-  overflow:hidden;
 }
-#graphsetup{
-  display:none;
+.controlBox{
+  position:relative;
 }
 #editorCanvas{
-  background-color:darkgreen;
+  background-color:black;
   margin:0;
+  display:none;
 }
 #sideBox{
   width:210px;
   height:400px;
   border:solid 1px black;
-  background-color:green;
   float:right;
   overflow:hidden;
   margin:0;
@@ -56,38 +55,31 @@ p{
 }
 #fileList{
   overflow-y:auto;
-  height:-webkit-fill-available;
+  display:none;
 }
 .logFile{
   font-size:20px;
 }
-.logFile:hover{
-  background-color:yellow;
-  cursor:pointer;
-}
-button:hover{
+.logFile:hover,button:hover{
   cursor:pointer;
 }
 .rangeButton,.baseButton{
   width:50%;
-}
-.controlBox{
-  font-size:initial;
+  padding:10px;
 }
 #loaderBox{
   line-height:400px;
-  background-color:darkgreen;
+  background-color:black;
+  color:yellow;
 }
 #zapBox{
-  display:flex;
-  display:none;
   overflow:hidden;
   white-space:nowrap;
+  display:none;
 }
 #prevbutton,#nextbutton{
   width:10%;
   padding:20px;
-  border:none;
 }
 #datestr{
   width:80%;
@@ -98,29 +90,26 @@ button:hover{
 <body>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Log files</p></div>
-<div class="shadowedBox" id="graphsetup">
-<div class="controlBox ">
-<p id="baseStatus">&nbsp;</p>
-<p><button class="baseButton">&uarr;</button><button class="baseButton">&darr;</button></p>
-</div>
-<div class="controlBox" id="graphcontrol">
-  <p id="rangeStatus">&nbsp;</p>
-  <p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button></p>
-</div>
-</div>
-<div class="shadowedBox" id="loaderBox"></div>
+<div class="shadowedBox" id="loaderBox">Checking for log files...</div>
 <canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
 <div id="sideBox" class="shadowedBox" style="background-color:beige;">
+  <div class="controlBox">
+    <p id="rangeStatus">&nbsp;</p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button>
+  </div>
+  <div class="controlBox ">
+    <p id="baseStatus">&nbsp;</p><button class="baseButton">&darr;</button><button class="baseButton">&uarr;</button>
+  </div>
 <div id="fileList"></div>
 </div>
 <div id="zapBox" class="shadowedBox">
-  <button id="prevbutton"><<</button><p id="datestr"></p><button id="nextbutton">>></button>
+  <button id="prevbutton" class="zapbutton"><<</button><p id="datestr"></p><button id="nextbutton" class="zapbutton">>></button>
 </div>
 <script>
+function map(x,in_min,in_max,out_min,out_max){return(x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;}
 var grapArea=document.getElementById('editorCanvas');
 var rangeBottom=10;
 var rangeTop   =30;
-var sensorColor=["","rgba(255,0,0,0.9)","rgba(0,255,0,0.9)","rgba(0,0,255,0.9)"];
+var sensorColor=["","rgba(255,0,0,1)","rgba(0,255,0,0.9)","rgba(0,0,255,1)"];
 var sensorName =[];
 var measurements;
 var currentFile=undefined;
@@ -128,7 +117,7 @@ $(document).ready(function(){
   $.get("/api/getdevice?hostname=")
   .done(function(data){
     $("#hostName").html(data);
-    document.title=data.toUpperCase();
+    document.title=data+' log files';
     loadLogFiles();
   })
   .fail(function(){$("#hostName").html(data.statusText);})
@@ -136,54 +125,46 @@ $(document).ready(function(){
 
 
 function loadLogFiles(){
+  var nolog="No log files found";
   $.get('/api/getdevice?files=')
   .done(function(data){
     var fileArray=data.split('\n');fileArray.sort();
-    for(var f=0;f<fileArray.length;f++){
-      if(fileArray[f].substring(11,15)=='.log'){$('#fileList').append('<div class="logFile">'+fileArray[f].substring(1,11)+"</div>");}
-    }
+    for(var f=0;f<fileArray.length;f++){if(fileArray[f].substring(11,15)=='.log'){$('#fileList').append('<p class="logFile">'+fileArray[f].substring(1,11)+"</p>");}}
     if(0==$('.logFile').length){
-      $('#loaderBox').show().html("NO LOGS FOUND");
+      $('#loaderBox').show().html(nolog);
     }else{
       $('#loaderBox').hide();
-      $('#editorCanvas,#sideBox,#zapBox').show();
+      $('#sideBox').css("display","block");
+      $('#editorCanvas,#zapBox,#fileList').show();
       $('.logFile').last().click();
     }
   })
   .fail(function(){
-    $('#loaderBox').html("NO LOGS FOUND");
+    $('#loaderBox').html(nolog);
   });
 }
 
-
-
-
-function map(x,in_min,in_max,out_min,out_max){
-  return (x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;
-}
-function showAllChannelColors(){
-  var currentSensor=1;
-  while (sensorName[currentSensor]){
-    showChannelColor(currentSensor);
-    currentSensor++;
-  }
-}
 function showChannelColor(sensor){
   var ctx=grapArea.getContext("2d");
   ctx.textBaseline="middle";
   ctx.textAlign="left";
-  ctx.strokeStyle=sensorColor[sensor];
-  ctx.strokeText(sensorName[sensor],75,grapArea.height-40-(sensor)*20);
+  ctx.fillStyle=sensorColor[sensor];
+  ctx.fillText(sensorName[sensor],75,grapArea.height-50-(sensor)*20);
   ctx.beginPath();
-  ctx.strokeStyle=sensorColor[sensor];
-  ctx.moveTo(30,grapArea.height-40-sensor*20);
-  ctx.lineTo(70,grapArea.height-40-sensor*20);
+  ctx.strokeStyle=ctx.fillStyle;
+  ctx.moveTo(30,grapArea.height-50-sensor*20);
+  ctx.lineTo(70,grapArea.height-50-sensor*20);
   ctx.stroke();
 }
 
 
 
-
+function drawAllGraphs(){
+  var ctx=grapArea.getContext("2d");ctx.clearRect(0,0,grapArea.width,grapArea.height);
+  drawSingleChannel(1,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop,true);
+  drawSingleChannel(2,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop,false);
+  drawSingleChannel(3,measurements,grapArea,sensorColor[3],rangeBottom,rangeTop,false);
+}
 
 
 
@@ -191,12 +172,10 @@ function showChannelColor(sensor){
 
 function drawLogFile(url){
   $.get(url,function(data){
-    grapArea.width=grapArea.width;
     var ctx=grapArea.getContext("2d");
     measurements=data.split('\n');
     if(measurements.length){
-      $('#datestr').html(new Date(measurements[0].substr(0,measurements[0].indexOf(',',0))*1000));
-     // $('.controlBox').show();
+      $('#datestr').html(new Date(measurements[0].substr(0,measurements[0].indexOf(',',0))*1000).toString()/*.substring(0,15)*/);
       showRange();
       showBase();
       drawAllGraphs();
@@ -205,14 +184,14 @@ function drawLogFile(url){
       $('.baseButton,.rangeButton').attr('disabled','disabled');
       ctx.textBaseline="middle";
       ctx.textAlign="center";
-      ctx.font='20px serif';
+      ctx.font='20px Roboto';
       ctx.strokeStyle='rgba(255,255,255,1)';
       ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
     }else{
       $.get('/api/getdevice?status=',function(data){
         var statusData=data.split('\n');
         var offset=7;
-        while (statusData[offset]){
+        while(statusData[offset]){
           var sensorData=statusData[offset].split(',');
           sensorName[offset-6]=sensorData[0];
           showChannelColor(offset-6);
@@ -223,19 +202,19 @@ function drawLogFile(url){
     }
     ctx.textBaseline="bottom";
     ctx.textAlign="left";
-    ctx.font='15px serif';
-    ctx.strokeStyle='rgba(255,255,255,0.9)';
-    ctx.strokeText(url,10,grapArea.height-10);
+    ctx.font='15px Roboto';
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.fillText(location.hostname+":/"+url,30,grapArea.height-40);
   });
 }
 function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
-  const opacity=0.3;
+  const opacity=0.35;
   const lineDash=[2,2];
   var ctx=canvas.getContext("2d");
   ctx.beginPath();
   if(drawGrid){
-    ctx.strokeStyle='rgba(255,165,0,'+opacity+')';
-    ctx.font='15px serif';
+    ctx.strokeStyle='rgba(255,165,0,'+opacity+')';ctx.fillStyle=ctx.strokeStyle;
+    ctx.font='15px Roboto';
     for(hour=0;hour<25;hour++){
       var x=map(hour,0,24,0,canvas.width);
       ctx.moveTo(x,0);
@@ -243,15 +222,15 @@ function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
       ctx.setLineDash([]);
       ctx.textBaseline="middle";
       ctx.textAlign="center";
-      ctx.strokeText(hour+"h",x,10);
-      ctx.strokeText(hour+"h",x,canvas.height/2);
-      ctx.strokeText(hour+"h",x,canvas.height-10);
+      ctx.fillText(hour+"h",x,10);
+      ctx.fillText(hour+"h",x,canvas.height/2);
+      ctx.fillText(hour+"h",x,canvas.height-10);
       ctx.setLineDash(lineDash);
     }
     ctx.stroke();
     ctx.beginPath();
-    ctx.strokeStyle='rgba(255,255,255,'+ opacity+ ')';
-    for(templine=rangeBottom;templine <= rangeTop;templine++){
+    ctx.strokeStyle='rgba(255,255,255,'+ opacity+')';ctx.fillStyle=ctx.strokeStyle;
+    for(templine=rangeBottom;templine<=rangeTop;templine++){
       var y=map(templine,rangeBottom,rangeTop,canvas.height,0);
       ctx.moveTo(0,y);
       ctx.lineTo(canvas.width,y);
@@ -260,9 +239,9 @@ function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
       ctx.setLineDash([]);
       ctx.textBaseline="middle";
       ctx.textAlign="center";
-      ctx.strokeText(tempstr,20,y);
-      ctx.strokeText(tempstr,canvas.width/2,y);
-      ctx.strokeText(tempstr,canvas.width-20,y);
+      ctx.fillText(tempstr,20,y);
+      ctx.fillText(tempstr,canvas.width/2,y);
+      ctx.fillText(tempstr,canvas.width-20,y);
       ctx.setLineDash(lineDash) ;
     }
     ctx.stroke();
@@ -305,7 +284,7 @@ function showRange(){
   $('#rangeStatus').html(rangeBottom+"°-"+rangeTop +"°");
 }
 $('.rangeButton').on('click',function(){
-  if($(this).index()==0){
+  if($(this).index('.rangeButton')==0){
     rangeBottom++;
     rangeTop--;
   }else{
@@ -318,8 +297,12 @@ $('.rangeButton').on('click',function(){
 function showBase(){
   $('#baseStatus').html((rangeTop-(rangeTop-rangeBottom)/2)+"°");
 }
+
+
+
+
 $('.baseButton').on('click',function(){
-  if($(this).index()==0){
+  if($(this).index('.baseButton')==0){
     rangeBottom--;
     rangeTop--;
   }else{
@@ -331,62 +314,30 @@ $('.baseButton').on('click',function(){
   drawAllGraphs();
 });
 
-function drawAllGraphs(){
-  var ctx=grapArea.getContext("2d");
-  ctx.clearRect(0,0,grapArea.width,grapArea.height);
-  drawSingleChannel(1,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop,true);
-  drawSingleChannel(2,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop,false);
-  drawSingleChannel(3,measurements,grapArea,sensorColor[3],rangeBottom,rangeTop,false);
-  showAllChannelColors();
-}
-
-
-
-
-
-
-
-
-
-
 
 $('#sideBox').on('click','.logFile',function(){
-  if($(this).css("background-color")=="rgb(0,100,0)")return;
+  $('#datestr').html('Fetching...');
+  if($(this).css("background-color")=="yellow")return;
   $('.logFile').css({"background-color":""});
-  $(this).css({"background-color":"rgb(0,100,0)"});
+  $(this).css({"background-color":"yellow"});
+  var ctx=grapArea.getContext("2d");ctx.clearRect(0,0,grapArea.width,grapArea.height);
   var newurl='/';
   newurl+=$(this).html()+'.log';
   drawLogFile(newurl);
   currentFile=$(this).index();
-  this.scrollIntoView();
+  this.scrollIntoView();//if not in view
+  $(grapArea).css("opacity","");
 });
-
-
-
-
-
-
-
-
-
-
-
 
 $('#prevbutton').on('click',function(){
   if(currentFile==0)return;
-  currentFile--;
-  $('.logFile').eq(currentFile).click();
+  $('.logFile').eq(currentFile-1).click();
 });
+
 $('#nextbutton').on('click',function(){
   if(currentFile==$('.logFile').length-1)return;
-  currentFile++;
-  $('.logFile').eq(currentFile).click();
+  $('.logFile').eq(currentFile+1).click();
 });
-
-
-
-
-
 
 </script>
 </body>

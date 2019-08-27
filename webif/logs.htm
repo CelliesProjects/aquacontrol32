@@ -122,8 +122,6 @@ $(document).ready(function(){
   })
   .fail(function(){$("#hostName").html(data.statusText);})
 });
-
-
 function loadLogFiles(){
   var nolog="No log files found";
   $.get('/api/getdevice?files=')
@@ -131,7 +129,7 @@ function loadLogFiles(){
     var fileArray=data.split('\n');fileArray.sort();
     for(var f=0;f<fileArray.length;f++){if(fileArray[f].substring(11,15)=='.log'){$('#fileList').append('<p class="logFile">'+fileArray[f].substring(1,11)+"</p>");}}
     if(0==$('.logFile').length){
-      $('#loaderBox').show().html(nolog);
+      $('#loaderBox')/*.show()*/.html(nolog);
     }else{
       $('#loaderBox').hide();
       $('#sideBox').css("display","block");
@@ -143,7 +141,6 @@ function loadLogFiles(){
     $('#loaderBox').html(nolog);
   });
 }
-
 function showChannelColor(sensor){
   var ctx=grapArea.getContext("2d");
   ctx.textBaseline="middle";
@@ -156,20 +153,12 @@ function showChannelColor(sensor){
   ctx.lineTo(70,grapArea.height-50-sensor*20);
   ctx.stroke();
 }
-
-
-
 function drawAllGraphs(){
   var ctx=grapArea.getContext("2d");ctx.clearRect(0,0,grapArea.width,grapArea.height);
   drawSingleChannel(1,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop,true);
   drawSingleChannel(2,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop,false);
   drawSingleChannel(3,measurements,grapArea,sensorColor[3],rangeBottom,rangeTop,false);
 }
-
-
-
-
-
 function drawLogFile(url){
   $.get(url,function(data){
     var ctx=grapArea.getContext("2d");
@@ -181,7 +170,7 @@ function drawLogFile(url){
       drawAllGraphs();
     }
     if(!measurements.length){
-      $('.baseButton,.rangeButton').attr('disabled','disabled');
+      //$('.baseButton,.rangeButton').attr('disabled','disabled');
       ctx.textBaseline="middle";
       ctx.textAlign="center";
       ctx.font='20px Roboto';
@@ -197,7 +186,7 @@ function drawLogFile(url){
           showChannelColor(offset-6);
           offset++;
         }
-        $('.baseButton,.rangeButton').removeAttr('disabled');
+        //$('.baseButton,.rangeButton').removeAttr('disabled');
       });
     }
     ctx.textBaseline="bottom";
@@ -272,14 +261,6 @@ function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
   }
   ctx.stroke();
 }
-
-
-
-
-
-
-
-
 function showRange(){
   $('#rangeStatus').html(rangeBottom+"°-"+rangeTop +"°");
 }
@@ -297,10 +278,6 @@ $('.rangeButton').on('click',function(){
 function showBase(){
   $('#baseStatus').html((rangeTop-(rangeTop-rangeBottom)/2)+"°");
 }
-
-
-
-
 $('.baseButton').on('click',function(){
   if($(this).index('.baseButton')==0){
     rangeBottom--;
@@ -313,8 +290,6 @@ $('.baseButton').on('click',function(){
   showRange();
   drawAllGraphs();
 });
-
-
 $('#sideBox').on('click','.logFile',function(){
   $('#datestr').html('Fetching...');
   if($(this).css("background-color")=="yellow")return;
@@ -328,17 +303,14 @@ $('#sideBox').on('click','.logFile',function(){
   this.scrollIntoView();//if not in view
   $(grapArea).css("opacity","");
 });
-
 $('#prevbutton').on('click',function(){
   if(currentFile==0)return;
   $('.logFile').eq(currentFile-1).click();
 });
-
 $('#nextbutton').on('click',function(){
   if(currentFile==$('.logFile').length-1)return;
   $('.logFile').eq(currentFile+1).click();
 });
-
 </script>
 </body>
 </html>

@@ -193,7 +193,7 @@ function drawLogFile(url){
     ctx.textAlign="left";
     ctx.font='15px Roboto';
     ctx.fillStyle='rgba(255,255,255,0.9)';
-    ctx.fillText(location.hostname+":/"+url,30,grapArea.height-40);
+    ctx.fillText(location.hostname+url,30,grapArea.height-40);
   });
 }
 function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){

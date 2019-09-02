@@ -47,7 +47,6 @@ p{
 #sideBox{
   width:210px;
   height:400px;
-  border:solid 1px black;
   float:right;
   overflow:hidden;
   margin:0;
@@ -79,7 +78,7 @@ p{
 }
 #prevbutton,#nextbutton{
   width:10%;
-  padding:20px;
+  padding:15px;
 }
 #datestr{
   width:80%;
@@ -93,12 +92,8 @@ p{
 <div class="shadowedBox" id="loaderBox">Checking for log files...</div>
 <canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
 <div id="sideBox" class="shadowedBox" style="background-color:beige;">
-  <div class="controlBox">
-    <p id="rangeStatus">&nbsp;</p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button>
-  </div>
-  <div class="controlBox ">
-    <p id="baseStatus">&nbsp;</p><button class="baseButton">&darr;</button><button class="baseButton">&uarr;</button>
-  </div>
+<div class="controlBox "><p id="baseStatus">&nbsp;</p><button class="baseButton">&darr;</button><button class="baseButton">&uarr;</button></div>
+<div class="controlBox"><p id="rangeStatus">&nbsp;</p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button></div>
 <div id="fileList"></div>
 </div>
 <div id="zapBox" class="shadowedBox">
@@ -109,7 +104,7 @@ function map(x,in_min,in_max,out_min,out_max){return(x-in_min)*(out_max-out_min)
 var grapArea=document.getElementById('editorCanvas');
 var rangeBottom=10;
 var rangeTop   =30;
-var sensorColor=["","rgba(255,0,0,1)","rgba(0,255,0,0.9)","rgba(0,0,255,1)"];
+var sensorColor=["rgba(255,20,20,1)","rgba(20,255,20,1)","rgba(20,20,255,1)"];
 var sensorName =[];
 var measurements;
 var currentFile=undefined;
@@ -118,9 +113,18 @@ $(document).ready(function(){
   .done(function(data){
     $("#hostName").html(data);
     document.title=data+' log files';
+    $.get('/api/getdevice?status=')
+    .done(function(data){
+      var statusData=data.split('\n');
+      var offset=7;
+      while(statusData[offset]){
+        var sensorData=statusData[offset].split(',');
+        sensorName[offset-7]=sensorData[0];
+        offset++;
+      }
     loadLogFiles();
-  })
-  .fail(function(){$("#hostName").html(data.statusText);})
+    });
+  });
 });
 function loadLogFiles(){
   var nolog="No log files found";
@@ -134,6 +138,7 @@ function loadLogFiles(){
       $('#loaderBox').hide();
       $('#sideBox').css("display","block");
       $('#editorCanvas,#zapBox,#fileList').show();
+      $('#fileList').css("height",400-parseInt($('.controlBox').css("height"))*2+"px");
       $('.logFile').last().click();
     }
   })
@@ -143,11 +148,12 @@ function loadLogFiles(){
 }
 function showChannelColor(sensor){
   var ctx=grapArea.getContext("2d");
+  ctx.beginPath();
   ctx.textBaseline="middle";
   ctx.textAlign="left";
   ctx.fillStyle=sensorColor[sensor];
+  ctx.strokeStyle="black";
   ctx.fillText(sensorName[sensor],75,grapArea.height-50-(sensor)*20);
-  ctx.beginPath();
   ctx.strokeStyle=ctx.fillStyle;
   ctx.moveTo(30,grapArea.height-50-sensor*20);
   ctx.lineTo(70,grapArea.height-50-sensor*20);
@@ -155,89 +161,64 @@ function showChannelColor(sensor){
 }
 function drawAllGraphs(){
   var ctx=grapArea.getContext("2d");ctx.clearRect(0,0,grapArea.width,grapArea.height);
-  drawSingleChannel(1,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop,true);
-  drawSingleChannel(2,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop,false);
-  drawSingleChannel(3,measurements,grapArea,sensorColor[3],rangeBottom,rangeTop,false);
+  const opacity=0.37;
+  const lineDash=[2,2];
+  ctx.beginPath();
+  ctx.strokeStyle='rgba(255,165,0,'+opacity+')';ctx.fillStyle=ctx.strokeStyle;
+  ctx.font='15px Roboto';
+  for(hour=0;hour<25;hour++){
+    var x=map(hour,0,24,0,grapArea.width);
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,grapArea.height);
+    ctx.setLineDash([]);
+    ctx.textBaseline="middle";
+    ctx.textAlign="center";
+    ctx.fillText(hour+"h",x,10);
+    ctx.fillText(hour+"h",x,grapArea.height/2);
+    ctx.fillText(hour+"h",x,grapArea.height-10);
+    ctx.setLineDash(lineDash);
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.strokeStyle='rgba(255,255,255,'+ opacity+')';ctx.fillStyle=ctx.strokeStyle;
+  for(templine=rangeBottom;templine<=rangeTop;templine++){
+    var y=map(templine,rangeBottom,rangeTop,grapArea.height,0);
+    ctx.moveTo(0,y);
+    ctx.lineTo(grapArea.width,y);
+    var tempstr=parseInt(map(y,0,grapArea.height,rangeTop,rangeBottom));
+    tempstr+="°";
+    ctx.setLineDash([]);ctx.textBaseline="middle";ctx.textAlign="center";
+    ctx.fillText(tempstr,20,y);
+    ctx.fillText(tempstr,grapArea.width/2,y);
+    ctx.fillText(tempstr,grapArea.width-20,y);
+    ctx.setLineDash(lineDash) ;
+  }
+  ctx.stroke();
+  drawSingleChannel(1,measurements,grapArea,sensorColor[0],rangeBottom,rangeTop);
+  drawSingleChannel(2,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop);
+  drawSingleChannel(3,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop);
 }
 function drawLogFile(url){
   $.get(url,function(data){
     var ctx=grapArea.getContext("2d");
     measurements=data.split('\n');
     if(measurements.length){
-      $('#datestr').html(new Date(measurements[0].substr(0,measurements[0].indexOf(',',0))*1000).toString()/*.substring(0,15)*/);
       showRange();
       showBase();
       drawAllGraphs();
-    }
-    if(!measurements.length){
-      //$('.baseButton,.rangeButton').attr('disabled','disabled');
-      ctx.textBaseline="middle";
-      ctx.textAlign="center";
-      ctx.font='20px Roboto';
-      ctx.strokeStyle='rgba(255,255,255,1)';
-      ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
+      s=0;while(sensorName[s]){showChannelColor(s);s++;}
     }else{
-      $.get('/api/getdevice?status=',function(data){
-        var statusData=data.split('\n');
-        var offset=7;
-        while(statusData[offset]){
-          var sensorData=statusData[offset].split(',');
-          sensorName[offset-6]=sensorData[0];
-          showChannelColor(offset-6);
-          offset++;
-        }
-        //$('.baseButton,.rangeButton').removeAttr('disabled');
-      });
+      ctx.textBaseline="middle";ctx.textAlign="center";ctx.font='20px Roboto';ctx.strokeStyle='rgba(255,255,255,1)';
+      ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
     }
-    ctx.textBaseline="bottom";
-    ctx.textAlign="left";
-    ctx.font='15px Roboto';
-    ctx.fillStyle='rgba(255,255,255,0.9)';
-    ctx.fillText(location.hostname+url,30,grapArea.height-40);
+    $('#datestr').html('<a href="'+url.substring(1)+'" target="_blank">'+new Date(measurements[0].substr(0,measurements[0].indexOf(',',0))*1000).toLocaleString(window.navigator.userLanguage||window.navigator.language,{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</a>');
   });
 }
-function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp,drawGrid){
-  const opacity=0.35;
-  const lineDash=[2,2];
+function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp){
   var ctx=canvas.getContext("2d");
   ctx.beginPath();
-  if(drawGrid){
-    ctx.strokeStyle='rgba(255,165,0,'+opacity+')';ctx.fillStyle=ctx.strokeStyle;
-    ctx.font='15px Roboto';
-    for(hour=0;hour<25;hour++){
-      var x=map(hour,0,24,0,canvas.width);
-      ctx.moveTo(x,0);
-      ctx.lineTo(x,canvas.height);
-      ctx.setLineDash([]);
-      ctx.textBaseline="middle";
-      ctx.textAlign="center";
-      ctx.fillText(hour+"h",x,10);
-      ctx.fillText(hour+"h",x,canvas.height/2);
-      ctx.fillText(hour+"h",x,canvas.height-10);
-      ctx.setLineDash(lineDash);
-    }
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.strokeStyle='rgba(255,255,255,'+ opacity+')';ctx.fillStyle=ctx.strokeStyle;
-    for(templine=rangeBottom;templine<=rangeTop;templine++){
-      var y=map(templine,rangeBottom,rangeTop,canvas.height,0);
-      ctx.moveTo(0,y);
-      ctx.lineTo(canvas.width,y);
-      var tempstr=parseInt(map(y,0,canvas.height,maxtemp,mintemp));
-      tempstr+="°";
-      ctx.setLineDash([]);
-      ctx.textBaseline="middle";
-      ctx.textAlign="center";
-      ctx.fillText(tempstr,20,y);
-      ctx.fillText(tempstr,canvas.width/2,y);
-      ctx.fillText(tempstr,canvas.width-20,y);
-      ctx.setLineDash(lineDash) ;
-    }
-    ctx.stroke();
-    ctx.beginPath();
-  }
   ctx.setLineDash([]);
-  ctx.strokeStyle=color;
+  ctx.strokeStyle=sensorColor[sensor-1];ctx.fillStyle=color;
   /* draw the actual graph*/
   var closeLine=true;
   for(p=0;p<data.length;p++){
@@ -291,17 +272,15 @@ $('.baseButton').on('click',function(){
   drawAllGraphs();
 });
 $('#sideBox').on('click','.logFile',function(){
-  $('#datestr').html('Fetching...');
-  if($(this).css("background-color")=="yellow")return;
+  if(currentFile==$(this).index())return;
+  $('#datestr').html('Loading...');
   $('.logFile').css({"background-color":""});
   $(this).css({"background-color":"yellow"});
-  var ctx=grapArea.getContext("2d");ctx.clearRect(0,0,grapArea.width,grapArea.height);
   var newurl='/';
   newurl+=$(this).html()+'.log';
   drawLogFile(newurl);
   currentFile=$(this).index();
   this.scrollIntoView();//if not in view
-  $(grapArea).css("opacity","");
 });
 $('#prevbutton').on('click',function(){
   if(currentFile==0)return;

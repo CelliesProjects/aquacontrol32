@@ -82,8 +82,7 @@ p{
 }
 .tempStr{
   display:inline-block;
-  margin:0;
-  width:180px;
+  margin:0 100px;
 }
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
@@ -91,9 +90,7 @@ p{
 <body>
 <script>
 function updateBargraph(){
-  $.get('/api/getdevice?status=',function(data){
-    //console.log( "retrieved status" );
-  })
+  $.get('/api/getdevice?status=')
   .done(function(data){
     var channelValue=data.split('\n');
     for(i=0;i<5;i++){
@@ -102,25 +99,22 @@ function updateBargraph(){
     }
     $('#sysTime').html(channelValue[5]);
     $('#lightStatus').html(channelValue[6]);
-    var sensorNumber=0;
-    var str="";
+    var sensorNumber=0;var str="";
     while(channelValue[sensorNumber+7].length>0){
       var temp=channelValue[sensorNumber+7].split(",");
       str+=String('<p class="tempStr">'+temp[0]+"<br>"+temp[1].substring(0,temp[1].indexOf(".")+2)+"°</p>");
       sensorNumber++;
     }
-    if(sensorNumber)
-    {
+    if(sensorNumber){
       $("#tempStats").html(str);
       $("#tempBox").show();
     }
-    else
-      $("#tempBox").hide();
+    else $("#tempBox").hide();
   });
 }
 </script>
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
-<div id="titleBox" class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p id="sysTime" class="tempStr">&nbsp;</p><p class="tempStr" id="lightStatus">&nbsp;</p></div>
+<div id="titleBox" class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p id="sysTime">&nbsp;</p><p id="lightStatus">&nbsp;</p></div>
 <div id="barsBox" class="shadowedBox">
   <div class="bar" style="left:0%;height:0%;"></div>
   <div class="bar" style="left:20%;height:0%;"></div>

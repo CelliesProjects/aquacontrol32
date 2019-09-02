@@ -84,9 +84,17 @@ p{
   width:80%;
   display:inline-block;
 }
+.noselect{
+-webkit-touch-callout:none;/* iOS Safari */
+-webkit-user-select:none;/* Safari */
+-khtml-user-select:none;/* Konqueror HTML */
+-moz-user-select:none;/* Firefox */
+-ms-user-select:none;/* Internet Explorer/Edge */
+user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera */
+}
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
-<body>
+<body class="noselect">
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
 <div class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Log files</p></div>
 <div class="shadowedBox" id="loaderBox">Checking for log files...</div>

@@ -84,10 +84,18 @@ p{
   display:inline-block;
   margin:0 100px;
 }
+.noselect{
+-webkit-touch-callout:none;/* iOS Safari */
+-webkit-user-select:none;/* Safari */
+-khtml-user-select:none;/* Konqueror HTML */
+-moz-user-select:none;/* Firefox */
+-ms-user-select:none;/* Internet Explorer/Edge */
+user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera */
+}
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
 </head>
-<body>
+<body class="noselect">
 <script>
 function updateBargraph(){
   $.get('/api/getdevice?status=')

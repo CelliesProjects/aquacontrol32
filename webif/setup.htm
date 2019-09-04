@@ -5,7 +5,7 @@
 <link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 <style>
-html, body{
+html,body{
   margin:0 auto;
   background-color:grey;
   text-align:center;
@@ -25,26 +25,26 @@ h3{
 p{
   margin:0;
 }
-a {
-  color: black;
-  text-decoration: none;
-  margin: 0 10px;
+a{
+  color:black;
+  text-decoration:none;
+  margin:0 10px;
 }
-.webLink {
-  color: #da1717;
+.webLink{
+  color:beige;
 }
 .systemLink{
-  padding: 3px 10px;
+  padding:3px 10px;
 }
-.systemLink:hover {
+.systemLink:hover{
   background:grey;
 }
 .fileName a{
   display:block;
 }
-.shadowedBox  {
-  box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
-  border-radius: 15px;
+.shadowedBox {
+  box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
+  border-radius:15px;
   margin:10px 0;
 }
 #hostName{
@@ -59,9 +59,9 @@ a {
   margin:10px 0;
   height:30px;
 }
-.itemName, .itemValue {
+.itemName,.itemValue{
   float:left;
-  line-height: 30px;
+  line-height:30px;
 }
 .itemName{
   width:41%
@@ -77,17 +77,17 @@ a {
 input{
   margin:5px auto;
   vertical-align:middle;
-  box-shadow: 0px 0px 2px 0px rgba(0,0,0,1);
-  border-radius: 5px;
+  box-shadow:0px 0px 2px 0px rgba(0,0,0,1);
+  border-radius:5px;
   font-size:15px;
 }
-input[type="text"], input[type="password"]{
-    background: beige;
-    height: 25px;
-    margin: 0;
-    vertical-align: middle;
-    text-align: center;
-    padding: 0;
+input[type="text"],input[type="password"]{
+    background:beige;
+    height:25px;
+    margin:0;
+    vertical-align:middle;
+    text-align:center;
+    padding:0;
 }
 input[type="button"]{
   height:30px;
@@ -95,12 +95,15 @@ input[type="button"]{
   padding:5px 20px;
   margin:0 10px;
 }
+input[type="button"],input[type="range"]:hover{
+  cursor:pointer;
+}
 input[type="range"]{
   width:18%;
   height:10px;
   box-shadow:unset;
 }
-.oledBar, .tftBar{
+.oledBar,.tftBar{
   display:none;
 }
 #diskSpaceBar{
@@ -109,10 +112,10 @@ input[type="range"]{
 input#timeZoneTextBox{
   width:450px;
 }
-.sensorname, .sensorbutton{
+.sensorname,.sensorbutton{
   display:none;
 }
-input.sensorNameInput, input#hostNameInput, input#passwordInput{
+input.sensorNameInput,input#hostNameInput,input#passwordInput{
   width:250px;
 }
 .collapsable{
@@ -120,12 +123,12 @@ input.sensorNameInput, input#hostNameInput, input#passwordInput{
   overflow:hidden;
 }
 .noselect{
--webkit-touch-callout:none;/* iOS Safari */
--webkit-user-select:none;/* Safari */
--khtml-user-select:none;/* Konqueror HTML */
--moz-user-select:none;/* Firefox */
--ms-user-select:none;/* Internet Explorer/Edge */
-user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera */
+-webkit-touch-callout:none;
+-webkit-user-select:none;
+-khtml-user-select:none;
+-moz-user-select:none;
+-ms-user-select:none;
+user-select:none;
 }
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
@@ -139,10 +142,10 @@ user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera
 <div class="shadowedBox collapsable">
 <h3>SYSTEM</h3>
 <div class="settingsBox">
-<p class="item"><span class="itemName">TIME ZONE<a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">(EXAMPLES)</a></span><input type="text" id="timeZoneTextBox"></span></p>
-<p class="item"><span class="itemName">HOST NAME</span><span><input type="text" id="hostNameInput" value=""></span></p>
-<p class="item"><span class="itemName">CHANGE ADMIN PASSWORD</span><span><input type="password" id="passwordInput" value=""></span></p>
-<p class="item"><span class="itemName">LOG RESET REASON</span><input type="button" id="bootlog"></p>
+<p class="item"><span class="itemName">Timezone<a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">-examples-</a></span><input type="text" id="timeZoneTextBox"></span></p>
+<p class="item"><span class="itemName">Hostname</span><span><input type="text" id="hostNameInput" value=""></span></p>
+<p class="item"><span class="itemName">Change admin password</span><span><input type="password" id="passwordInput" value=""></span></p>
+<p class="item"><span class="itemName">Log reset reason</span><input type="button" id="bootlog"></p>
 </div></div>
 <div class="shadowedBox collapsable">
 <h3>LIGHTS</h3>
@@ -154,9 +157,9 @@ user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera
 <div class="shadowedBox collapsable">
 <h3>SENSORS</h3>
 <div class="settingsBox">
-<p class="item"><span class="itemName">SCAN FOR SENSORS</span><input type="button" id="sensorScan" value="SCAN"></p>
-<p class="item sensorbutton"><span class="itemName">TEMPERATURE LOGGING</span><input type="button" id="sensorLogging"></p>
-<p class="item sensorbutton"><span class="itemName">SENSOR ERROR LOGGING</span><input type="button" id="sensorErrorLogging"></p>
+<p class="item"><span class="itemName">Scan for sensors</span><input type="button" id="sensorScan" value="SCAN"></p>
+<p class="item sensorbutton"><span class="itemName">Temperature logging</span><input type="button" id="sensorLogging"></p>
+<p class="item sensorbutton"><span class="itemName">Sensor error logging</span><input type="button" id="sensorErrorLogging"></p>
 <p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
 <p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
 <p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
@@ -165,19 +168,19 @@ user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera
 <div class="shadowedBox collapsable">
 <h3>DISPLAYS</h3>
 <div class="settingsBox">
-<p class="item tftBar"><span class="itemName">ILI9341 ORIENTATION</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
-<p class="item tftBar"><span class="itemName">ILI9341 MAX BRIGHTNESS</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
-<p class="item oledBar"><span class="itemName">SSD1306 ORIENTATION</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
-<p class="item oledBar"><span class="itemName">SSD1306 CONTRAST</span><span id="oledContrastValue" class="itemValue">&nbsp;</span><input type="range" id="oledContrastSlider" value="11" min="0" max="15" step="1"></p>
+<p class="item tftBar"><span class="itemName">ILI9341 orientation</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
+<p class="item tftBar"><span class="itemName">ILI9341 max brightness</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
+<p class="item oledBar"><span class="itemName">SSD1306 orientation</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
+<p class="item oledBar"><span class="itemName">SSD1306 contrast</span><span id="oledContrastValue" class="itemValue">&nbsp;</span><input type="range" id="oledContrastSlider" value="11" min="0" max="15" step="1"></p>
 </div>
 </div>
 <div class="shadowedBox collapsable">
 <h3>STATUS</h3>
 <div class="settingsBox">
 <p class="item" id="version"></p>
-<p class="item">SYSTEM START:&nbsp;&nbsp;<span id="bootTime"></span></p>
-<p class="item" id="diskSpaceBar">FREE DISK SPACE:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
-<p class="item">PWM STATUS:&nbsp;&nbsp;<span id="pwmStatus"></span></p>
+<p class="item">System start:&nbsp;&nbsp;<span id="bootTime"></span></p>
+<p class="item" id="diskSpaceBar">Free space on FATFS:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
+<p class="item">PWM status:&nbsp;&nbsp;<span id="pwmStatus"></span></p>
 <p class="item" id="wifissid"></p>
 </div>
 </div>
@@ -285,7 +288,7 @@ function getLightStatus(){
     var bttns=$('.light');
     bttns.each(function(index){
       if(item[6]==$(this).text()){
-        $('.light .itemName').eq(index).css("background-color","yellow");
+        $('.light .itemName').eq(index).css("background-color","beige");
         $('.light input').eq(index).css("background-color","aqua");
       }else{
         $('.light .itemName').eq(index).css("background-color","");
@@ -322,7 +325,7 @@ function getSensors(){
 function getWifiSSID(){
   $('#deviceStatus').html("WiFi ssid...");
   $.get("/api/getdevice?wifissid=")
-  .done(function(data){$('#wifissid').html("WIFI NETWORK: "+data);})
+  .done(function(data){$('#wifissid').html("WiFi network: "+data);})
   .fail(function(data){$('#wifissid').html("Error getting wifi SSID: "+data.statusText);})
   .always(function(){if(getAllValues)getBootTime();});
 }
@@ -358,7 +361,7 @@ function getVersion(){
     var sketchVersion;
     if(!data.substr(0,data.search("-")))sketchVersion=data;
     else sketchVersion=data.substr(0,data.search("-"));
-    $.getJSON("https://api.github.com/repos/CelliesProjects/aquacontrol32/releases/latest", function(data,status){
+    $.getJSON("https://api.github.com/repos/CelliesProjects/aquacontrol32/releases/latest",function(data,status){
       if(status==="success"&&sketchVersion!=data.tag_name)$('#version').append(' -<a href="https://github.com/CelliesProjects/aquacontrol32/releases/latest"  target="_blank">Latest release '+data.tag_name+" on GitHub.</a>");
     });
   })
@@ -374,11 +377,11 @@ function getPwmFrequency(){
     getAllValues=false;
     $('#deviceStatus').html("");
     $('.collapsable').last().click();
-    $('input').prop('disabled', false);/* and enable the inputs again */
+    $('input').prop('disabled',false);/* and enable the inputs again */
     $('body').css('opacity','1');/* and show the page */
   });
 }
-$('#timeZoneTextBox, #hostNameInput, #passwordInput, .sensorNameInput').on('input',function(){
+$('#timeZoneTextBox,#hostNameInput,#passwordInput,.sensorNameInput').on('input',function(){
   $(this).css({'background':'yellow'});
 });
 $('input').on('input',function(){
@@ -411,7 +414,7 @@ $('#tftOrientationSlider').on('change',function(){
   if($(this).val()==0)$('#tftOrientation').html('normal');
   if($(this).val()==1)$('#tftOrientation').html('upsidedown');
   $.post("/api/setdevice",{tftorientation:$('#tftOrientation').html()})
-  .done(function(data) {$('#tftOrientation').html(data)})
+  .done(function(data){$('#tftOrientation').html(data)})
   .fail(function(){getTftOrientation();});
 });
 $('#lightsOn').on('click',function(){
@@ -500,7 +503,7 @@ $('#sensorScan').on('click',function(){
   })
   .fail(function(data){console.log(data);});
 });
-$('.collapsable').on('click', function() {
+$('.collapsable').on('click',function(){
   $('.collapsable').css('height','45px').css('cursor','pointer').css('background-color','beige').css('opacity',0.3);
   $(this).css('height','auto').css('cursor','').css('background-color','').css('opacity',1);
 });

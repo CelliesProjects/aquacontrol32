@@ -85,12 +85,12 @@ p{
   display:inline-block;
 }
 .noselect{
--webkit-touch-callout:none;/* iOS Safari */
--webkit-user-select:none;/* Safari */
--khtml-user-select:none;/* Konqueror HTML */
--moz-user-select:none;/* Firefox */
--ms-user-select:none;/* Internet Explorer/Edge */
-user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera */
+-webkit-touch-callout:none;
+-webkit-user-select:none;
+-khtml-user-select:none;
+-moz-user-select:none;
+-ms-user-select:none;
+user-select:none;
 }
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
@@ -112,7 +112,7 @@ function map(x,in_min,in_max,out_min,out_max){return(x-in_min)*(out_max-out_min)
 var grapArea=document.getElementById('editorCanvas');
 var rangeBottom=10;
 var rangeTop   =30;
-var sensorColor=["rgba(255,20,20,1)","rgba(20,255,20,1)","rgba(20,20,255,1)"];
+var sensorColor=["rgba(255,70,70,1)","rgba(70,255,70,1)","rgba(70,70,255,1)"];
 var sensorName =[];
 var measurements;
 var currentFile=undefined;

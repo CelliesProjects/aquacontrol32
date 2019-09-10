@@ -205,6 +205,7 @@ function drawAllGraphs(){
   drawSingleChannel(1,measurements,grapArea,sensorColor[0],rangeBottom,rangeTop);
   drawSingleChannel(2,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop);
   drawSingleChannel(3,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop);
+  s=0;while(sensorName[s]){showChannelColor(s);s++;}
 }
 function drawLogFile(url){
   $.get(url,function(data){
@@ -214,7 +215,6 @@ function drawLogFile(url){
       showRange();
       showBase();
       drawAllGraphs();
-      s=0;while(sensorName[s]){showChannelColor(s);s++;}
     }else{
       ctx.textBaseline="middle";ctx.textAlign="center";ctx.font='20px Roboto';ctx.strokeStyle='rgba(255,255,255,1)';
       ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);

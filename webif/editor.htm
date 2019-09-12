@@ -94,6 +94,8 @@ input[type="button"]:hover{
 }
 .earlierButton,.laterButton,.upButton,.downButton{
   vertical-align:text-bottom;
+  width:70px;
+  height:25px;
 }
 .itemValue{
   width:60px;
@@ -109,7 +111,7 @@ user-select:none;
 }
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/16.7.3/jcanvas.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jcanvas/21.0.1/min/jcanvas.min.js"></script>
 </head>
 <script>
 var githubLink='<a href="https://github.com/CelliesProjects/aquacontrol32">visit aquacontrol32 on GitHub</a>';
@@ -482,6 +484,7 @@ $('#editorCanvas').on('mouseup',function(event){
   }
 });
 $('.channelButton').on('click',function(){
+  if(currentChannel==undefined)$('#statusBox').html('&nbsp;');
   $('.channelButton').css('background','lightgray');
   $(this).css('background','aqua');
   currentChannel=$(this).index();
@@ -547,10 +550,11 @@ $('#uploadButton').on('click',function(){
   var blob=new Blob([fileData],{type:'plain/text'});
   formData.append('file',blob,"/default.aqu");
   var request=new XMLHttpRequest();
-  //only upload if logged in
-  $.post('/api/upload')
+  request.addEventListener("load", function(){$('#statusBox').html('New timer data uploaded');});
+  $.post('/api/upload')//only upload if logged in
   .done(function(){
     request.open("POST","/api/upload");
+    $('#statusBox').html('Uploading...');
     request.send(formData);
   })
   .fail(function(data){

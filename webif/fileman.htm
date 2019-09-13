@@ -103,8 +103,10 @@ button{
 #fileSelection:hover{
   cursor:pointer;
 }
-#uploadProgressBar{
-  margin:10px;
+#uploadProgressBar,#statusLine{
+  display:block;
+  margin:10px auto;
+  padding:0 0 10px 0;
 }
 input{
   margin:5px auto;
@@ -120,15 +122,14 @@ input[type="file"]{
   height:30px;
   width:150px;
   padding:5px 20px;
-  margin:10px;
 }
 .noselect{
--webkit-touch-callout:none;/* iOS Safari */
--webkit-user-select:none;/* Safari */
--khtml-user-select:none;/* Konqueror HTML */
--moz-user-select:none;/* Firefox */
--ms-user-select:none;/* Internet Explorer/Edge */
-user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera */
+-webkit-touch-callout:none;
+-webkit-user-select:none;
+-khtml-user-select:none;
+-moz-user-select:none;
+-ms-user-select:none;
+user-select:none;
 }
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
@@ -145,8 +146,8 @@ user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera
 <form id="uploadForm" enctype="multipart/form-data" method="post" action="api/upload">
 <input id="fileSelection" name="file" type="file" />
 <progress id="uploadProgressBar" value="0" max="0"></progress>
-<p id="statusLine"></p>
 <input id="uploadFileButton" type="submit" value="Upload" disabled="disabled"/>
+<p id="statusLine"></p>
 </form>
 </div>
 <script>
@@ -171,8 +172,8 @@ function deleteFile(file){
     $('#fileList').html('<div><br>Deleting '+file+ '...</div>');
     $.post("/api/deletefile",{filename:file})
     .done(function(data){$('#statusLine').html(data);})
-    .fail(function(data){$('#statusLine').html('ERROR '+data);})
-    .always(function(){readFiles();});
+    .fail(function(data){$('#statusLine').html('ERROR - '+data.statusText+':<br>'+file);})
+    .always(readFiles());
   }
 }
 function readFiles(){
@@ -205,30 +206,21 @@ function uploadProgressHandler(event){
   var percent=(event.loaded/event.total)*100;
   var progress=Math.round(percent);
   $("#statusLine").html(progress +"% uploaded... please wait");
-  $('#uploadProgressBar').attr({
-    value:event.loaded,
-    max:event.total
-  });
+  $('#uploadProgressBar').attr({value:event.loaded,max:event.total});
 }
 function loadHandler(event){
   if(event.target.responseText)$("#statusLine").html(event.target.responseText);
   else $("#statusLine").html(pickFile_Message);
   $('#uploadFileButton').val("Upload");
-  $('#uploadProgressBar').attr({
-    value:0,
-    max:0
-  });
+  $('#uploadProgressBar').attr({value:0,max:0});
   readFiles();
 }
 function errorHandler(event){$("#statusLine").html("Upload failed");}
-
 function abortHandler(event){$("#statusLine").html("Upload aborted");}
-
 $('#fileSelection').on('change',function(){
   if($('#fileSelection').val()!="")$('#uploadFileButton').val("Upload").prop('disabled',false);
   else $('#uploadFileButton').val("Upload").prop('disabled',true);
 });
-
 $("#uploadFileButton").click(function(event){
   event.preventDefault();
   if($('#fileSelection').val()==""){return;}
@@ -268,7 +260,7 @@ $('#fileList').on('click','.deleteButton',function(){
 $(':file').on('change',function(){
   var file=this.files[0];
   if(file.name==''){return;}
-  if(file.size > diskSpace){
+  if(file.size>diskSpace){
     alert('Not enough space left!\n'+formatBytes(diskSpace,1)+' free.\n'+formatBytes(file.size,1)+" in '"+file.name+"'");
     $('#fileSelection').val("");
     $('#uploadFileButton').prop("disabled",true);

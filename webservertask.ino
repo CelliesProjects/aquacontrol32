@@ -143,7 +143,7 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "diskspace" ) ) {
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
-      response->printf( "%lu", FFat.freeBytes() );
+      response->printf( "%lu,%lu", FFat.freeBytes(), FFat.totalBytes() );
       return request->send( response );
     }
 

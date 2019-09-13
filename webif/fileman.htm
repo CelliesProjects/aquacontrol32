@@ -106,6 +106,9 @@ button{
 #uploadProgressBar,#statusLine{
   display:block;
   margin:10px auto;
+  width:700px;
+}
+#statusLine{
   padding:0 0 10px 0;
 }
 input{
@@ -151,6 +154,14 @@ user-select:none;
 </form>
 </div>
 <script>
+const pickFile_Message="Click or drop a file in the box to upload";
+var diskSpace=0;
+var diskSize=0;
+$(document).ready(function(){
+  $("#statusLine").html(pickFile_Message);
+  $('#hostName').load("/api/getdevice?hostname=");
+  readFiles();
+});
 function formatBytes(bytes,decimals){
   if(bytes==0)return'0 Bytes';
   var k=1000,
@@ -162,8 +173,10 @@ function formatBytes(bytes,decimals){
 function updateDiskspace(){
   $.get("/api/getdevice?diskspace=")
   .done(function(data){
-    diskSpace=parseInt(data);
+    var tmp=data.split(',');
+    diskSpace=parseInt(tmp[0]);diskSize=parseInt(tmp[1]);
     $('#diskSpace').html(formatBytes(diskSpace,1)+" LEFT");
+    $('#uploadProgressBar').attr({value:diskSize-diskSpace,max:diskSize});
   })
   .fail(function(){$('#diskSpace').html('<p class="fileName">ERROR GETTING DISKSPACE</p>');});
 }
@@ -195,13 +208,6 @@ function readFiles(){
     $('body').css('opacity','1');
   });
 }
-const pickFile_Message="Click or drop a file in the box to upload";
-var diskSpace=0;
-$(document).ready(function(){
-  $("#statusLine").html(pickFile_Message);
-  $('#hostName').load("/api/getdevice?hostname=");
-  readFiles();
-});
 function uploadProgressHandler(event){
   var percent=(event.loaded/event.total)*100;
   var progress=Math.round(percent);

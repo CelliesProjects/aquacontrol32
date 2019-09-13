@@ -143,12 +143,11 @@ user-select:none;
 <div class="shadowedBox"><p id="diskSpace">&nbsp;</p></div>
 <div id="fileBox" class="shadowedBox">
 <div id="fileList"></div>
-<div id="functionBox"></div>
+<progress id="uploadProgressBar" value="0" max="0"></progress>
 </div>
 <div id="uploadBox" class="shadowedBox">
 <form id="uploadForm" enctype="multipart/form-data" method="post" action="api/upload">
 <input id="fileSelection" name="file" type="file" />
-<progress id="uploadProgressBar" value="0" max="0"></progress>
 <input id="uploadFileButton" type="submit" value="Upload" disabled="disabled"/>
 <p id="statusLine"></p>
 </form>
@@ -165,7 +164,7 @@ $(document).ready(function(){
 function formatBytes(bytes,decimals){
   if(bytes==0)return'0 Bytes';
   var k=1000,
-    dm=decimals/*+1||3*/,
+    dm=decimals,
     sizes=['Bytes','KB','MB','GB','TB','PB','EB','ZB','YB'],
     i=Math.floor(Math.log(bytes)/Math.log(k));
   return parseFloat((bytes/Math.pow(k,i)).toFixed(dm))+' '+sizes[i];
@@ -175,8 +174,8 @@ function updateDiskspace(){
   .done(function(data){
     var tmp=data.split(',');
     diskSpace=parseInt(tmp[0]);diskSize=parseInt(tmp[1]);
-    $('#diskSpace').html(formatBytes(diskSpace,1)+" LEFT");
     $('#uploadProgressBar').attr({value:diskSize-diskSpace,max:diskSize});
+    $('#diskSpace').html(formatBytes(diskSpace,1)+' free / '+formatBytes(diskSize,1)+' total');
   })
   .fail(function(){$('#diskSpace').html('<p class="fileName">ERROR GETTING DISKSPACE</p>');});
 }

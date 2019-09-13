@@ -106,9 +106,6 @@ input[type="range"]{
 .oledBar,.tftBar{
   display:none;
 }
-#diskSpaceBar{
-  display:none;
-}
 input#timeZoneTextBox{
   width:450px;
 }
@@ -179,7 +176,7 @@ user-select:none;
 <div class="settingsBox">
 <p class="item" id="version"></p>
 <p class="item">System start:&nbsp;&nbsp;<span id="bootTime"></span></p>
-<p class="item" id="diskSpaceBar">FATFS:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
+<p class="item">FATFS:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
 <p class="item">PWM status:&nbsp;&nbsp;<span id="pwmStatus"></span></p>
 <p class="item" id="wifissid"></p>
 </div>
@@ -341,7 +338,6 @@ function getDiskSpace(){
   $.get("/api/getdevice?diskspace=")
   .done(function(data){
     var tmp=data.split(',');
-    $('#diskSpaceBar').show();
     $('#freeDiskSpace').html(formatBytes(tmp[0],1)+' free / '+formatBytes(tmp[1],1)+' total');
   })
   .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting diskspace: "+data.responseText);})

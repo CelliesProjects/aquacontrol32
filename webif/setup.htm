@@ -179,7 +179,7 @@ user-select:none;
 <div class="settingsBox">
 <p class="item" id="version"></p>
 <p class="item">System start:&nbsp;&nbsp;<span id="bootTime"></span></p>
-<p class="item" id="diskSpaceBar">Free space on FATFS:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
+<p class="item" id="diskSpaceBar">FATFS:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
 <p class="item">PWM status:&nbsp;&nbsp;<span id="pwmStatus"></span></p>
 <p class="item" id="wifissid"></p>
 </div>
@@ -188,7 +188,7 @@ user-select:none;
 function formatBytes(bytes,decimals){
   if(bytes==0)return'0 Bytes';
   var k=1000,
-  dm=decimals+1||3,
+  dm=decimals,
   sizes=['Bytes','KB','MB','GB','TB','PB','EB','ZB','YB'],
   i=Math.floor(Math.log(bytes)/Math.log(k));
   return parseFloat((bytes/Math.pow(k,i)).toFixed(dm))+' '+sizes[i];
@@ -340,8 +340,9 @@ function getDiskSpace(){
   $('#deviceStatus').html("disk space...");
   $.get("/api/getdevice?diskspace=")
   .done(function(data){
+    var tmp=data.split(',');
     $('#diskSpaceBar').show();
-    $('#freeDiskSpace').html(formatBytes(data,1));
+    $('#freeDiskSpace').html(formatBytes(tmp[0],1)+' free / '+formatBytes(tmp[1],1)+' total');
   })
   .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting diskspace: "+data.responseText);})
   .always(function(){if(getAllValues)getPwmDepth();});

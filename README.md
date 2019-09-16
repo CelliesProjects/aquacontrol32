@@ -31,7 +31,7 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 
 [![VIDEO](https://img.youtube.com/vi/o2aeSjKm6FA/0.jpg  "Click to watch the video")](https://www.youtube.com/watch?v=o2aeSjKm6FA)
 
-#### Features:
+#### Features
 
 - 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
 - Lunar cycle night light.
@@ -47,24 +47,24 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
 - Get a notification in the web interface if a new release is available.
 
-#### You will need:
+#### You will need
 
 - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
 - The [Arduino IDE](https://arduino.cc/) 1.8.9.
-- The [ESP32 Arduino Core 1.0.2](https://github.com/espressif/arduino-esp32/releases/tag/1.0.2).
+- The [ESP32 Arduino Core 1.0.3](https://github.com/espressif/arduino-esp32/releases/tag/1.0.3).
 
-#### Used Libraries:
+#### Used Libraries
 
 Most libraries can be installed with the Arduino library Manager `Sketch > Include Library > Manage Libraries`.
 
 A few have to be downloaded from GitHub:
 
-- [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3
+- [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3 - See [Known issues](#known-issues)
 - [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) 1.0.3
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) 1.2.2
 - [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 1.0.0
 - [Task](https://github.com/CelliesProjects/Task) 1.0.0
-- [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 0.99.0
+- [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 1.0.0
 
 Install these libraries in the esp32 libraries folder.
 
@@ -75,7 +75,7 @@ Install these libraries in the esp32 libraries folder.
 - Flash frequency: 80Mhz
 - Partition scheme: Default with ffat
 
-#### Compile notes:
+#### Compile notes
 
 - Compare your installed libraries versions against the libraries in `aquacontrol32.ino`.
 - Check your device options in `deviceSetup.h`.
@@ -94,7 +94,7 @@ Install these libraries in the esp32 libraries folder.
 <br>Use this command to erase flash (FFat INCLUDED!) in Linux:
 <br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
 
-#### Connecting the hardware:
+#### Connecting the hardware
 
 - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
 - Read the [file](tft_board_pins.md) on connecting a ILI9341 display. Pull-ups are not optional!
@@ -107,13 +107,13 @@ Install these libraries in the esp32 libraries folder.
 <br>To be on the safe side, I use a BC547 transistor (and a 100R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 100R resistor in series to prevent burning up your ESP32.
 
-#### Lunar cycle night light:
+#### Lunar cycle night light
 
 - Moon light settings can be adjusted in the `channels` area of the web-interface.
 - The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
 - The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapted from code kindly licensed by Hugh from [voidware.com](http://www.voidware.com/). Thanks Hugh!
 
-#### SmartConfig:
+#### SmartConfig
 
 - If your ESP32 has connected to your WiFi router before you flash Aquacontrol to your device, it will probably connect automagically .
 - If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
@@ -121,13 +121,14 @@ Install these libraries in the esp32 libraries folder.
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
 - If after 5 minutes SmartConfig has not connected your device will reboot. This is a failsafe for home power outs and slow booting modems/routers.
 
-#### Log files:
+#### Log files
 
 By default log files are not generated.
 <br>That is because log files saved on FFat could reduce the lifetime of the flash memory.
 <br>Sensor logging can be enabled in the web interface.
 
-#### Known issues:
+
+#### Known issues
 
 - The OneWire library that comes with the Arduino IDE does not work with esp32 MCUs. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
 

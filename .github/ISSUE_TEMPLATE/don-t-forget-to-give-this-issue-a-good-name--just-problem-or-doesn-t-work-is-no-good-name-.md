@@ -1,7 +1,8 @@
 ---
-name: issue report
-about: Create a full report to make the issue more clear.
-title: "[Describe your issue in one line.]"
+name: Don't forget to give this issue a good name! Just Problem or Doesn't work is
+  no good name.
+about: Create a report to help make the issue more clear.
+title: "[ISSUE REPORT]"
 labels: ''
 assignees: CelliesProjects
 

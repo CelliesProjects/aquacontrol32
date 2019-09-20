@@ -147,7 +147,7 @@ function loadLogFiles(){
       $('#sideBox').css("display","block");
       $('#editorCanvas,#zapBox,#fileList').show();
       $('#fileList').css("height",400-parseInt($('.controlBox').css("height"))*2+"px");
-      $('.logFile').last().click();
+      var tmp=$('.logFile').last();tmp.click();tmp[0].scrollIntoView();
     }
   })
   .fail(function(){
@@ -292,14 +292,12 @@ $('#sideBox').on('click','.logFile',function(){
 $('#prevbutton').on('click',function(){
   if(currentFile==0)return;
   var tmp=$('.logFile').eq(currentFile-1);
-  $('.logFile').eq(currentFile-1).click();
-  tmp[0].scrollIntoView();
+  tmp.click();tmp[0].scrollIntoView();
 });
 $('#nextbutton').on('click',function(){
   if(currentFile==$('.logFile').length-1)return;
   var tmp=$('.logFile').eq(currentFile+1);
-  $('.logFile').eq(currentFile+1).click();
-  tmp[0].scrollIntoView();
+  tmp.click();tmp[0].scrollIntoView();
 });
 </script>
 </body>

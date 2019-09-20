@@ -288,15 +288,18 @@ $('#sideBox').on('click','.logFile',function(){
   newurl+=$(this).html()+'.log';
   drawLogFile(newurl);
   currentFile=$(this).index();
-  this.scrollIntoView();//if not in view
 });
 $('#prevbutton').on('click',function(){
   if(currentFile==0)return;
+  var tmp=$('.logFile').eq(currentFile-1);
   $('.logFile').eq(currentFile-1).click();
+  tmp[0].scrollIntoView();
 });
 $('#nextbutton').on('click',function(){
   if(currentFile==$('.logFile').length-1)return;
+  var tmp=$('.logFile').eq(currentFile+1);
   $('.logFile').eq(currentFile+1).click();
+  tmp[0].scrollIntoView();
 });
 </script>
 </body>

@@ -1,7 +1,7 @@
 <!doctype HTML>
 <html lang="en">
 <head>
-<title>Channel setup</title>
+<title>&nbsp;</title>
 <meta charset="utf-8">
 <link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">  <!-- https://fonts.google.com/specimen/Roboto?selection.family=Roboto -->
@@ -135,7 +135,7 @@ user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera
 var loadAll=true; // with loadAll set to true, all get calls will be daisy-chained
 $(document).ready(function(){
   $.get("/api/getdevice?hostname=")
-  .done(function(data){$('#hostName').html(data);})
+  .done(function(data){$('#hostName').html(data);document.title=data+' channels';})
   .always(function(){getMoonLevels();})
 });
 function getMoonLevels(){

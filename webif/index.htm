@@ -146,7 +146,7 @@ $(document).ready(function(){
   $.get("/api/getdevice?hostname=")
   .done(function(data){
     $("#hostName").html(data);
-    document.title=data.toUpperCase();
+    document.title=data;
   })
   .fail(function(){console.log("failed getting hostname");})
   .always(function(){getChannelColors();});

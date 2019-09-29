@@ -1,7 +1,7 @@
 <!doctype HTML>
 <html lang="en">
 <head>
-<title>File manager</title>
+<title>&nbsp;</title>
 <meta charset="utf-8">
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">  <!--prevent favicon requests-->
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
@@ -161,8 +161,13 @@ var diskSpace=0;
 var diskSize=0;
 $(document).ready(function(){
   $("#statusLine").html(pickFile_Message);
-  $('#hostName').load("/api/getdevice?hostname=");
-  readFiles();
+  $.get("/api/getdevice?hostname=")
+  .done(function(data){
+    $("#hostName").html(data);
+    document.title=data+' file manager';
+  })
+  .fail(function(){console.log("failed getting hostname");})
+  .always(readFiles());
 });
 function formatBytes(bytes,decimals){
   if(bytes==0)return'0 Bytes';

@@ -397,7 +397,7 @@ function readTimerFile(filename){
       refreshTimerList();
     })
     .fail(function(){
-      $('#statusBox').html("No default timers found");
+      $('#statusBox').prepend("No default timers found. ");
       //load empty timer set
       makeEmptyTimerList();
       refreshCanvas();

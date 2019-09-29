@@ -188,9 +188,8 @@ function deleteFile(file){
   if(confirm("Are you sure you want to delete '"+file+"'?")){
     $('#fileList').html('<p class="sysMessage">Deleting '+file+'</p>');
     $.post("/api/deletefile",{filename:file})
-    .done(function(data){$('#statusLine').html(data);})
-    .fail(function(data){$('#statusLine').html('ERROR - '+data.statusText+':<br>'+file);})
-    .always(readFiles());
+    .done(function(data){$('#statusLine').html(data);readFiles();})
+    .fail(function(data){$('#statusLine').html('ERROR - '+data.statusText+':<br>'+file);readFiles();});
   }
 }
 function readFiles(){

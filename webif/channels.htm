@@ -1,7 +1,7 @@
 <!doctype HTML>
 <html lang="en">
 <head>
-<title>Channel setup</title>
+<title>&nbsp;</title>
 <meta charset="utf-8">
 <link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">  <!-- https://fonts.google.com/specimen/Roboto?selection.family=Roboto -->
@@ -17,8 +17,11 @@ html,body{
 body{
   opacity:0.4;
 }
-h3{
-  margin:10px;
+#menu{
+  overflow:inherit;
+}
+#hostName{
+  margin:0;
 }
 p{
   margin:0;
@@ -31,10 +34,6 @@ a{
   color:black;
   text-decoration:none;
   margin:0 10px;
-}
-#hostName{
-  text-transform:uppercase;
-  margin:10px;
 }
 #lunarPhase{
   width:625px;
@@ -62,7 +61,7 @@ img{
   box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
   border-radius:15px;
   margin:10px 0;
-  padding:2px;
+  overflow:hidden;
 }
 .item{
   margin:10px auto;
@@ -108,40 +107,44 @@ input[type="color"]{
   width:60px;
   margin:0 15px 0 30px;
 }
+.noselect{
+-webkit-touch-callout:none;/* iOS Safari */
+-webkit-user-select:none;/* Safari */
+-khtml-user-select:none;/* Konqueror HTML */
+-moz-user-select:none;/* Firefox */
+-ms-user-select:none;/* Internet Explorer/Edge */
+user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera */
+}
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
 </head>
-<body>
-<p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
-<div class="shadowedBox">
-  <h2 id="hostName">&nbsp;</h2>
-  <p class="infobar">Set up channels and nightlight</p>
-</div>
+<body class="noselect">
+<p id="menu" class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
+<div class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Channel and moon setup</p></div>
 <div class="shadowedBox"><p id="statusBox">&nbsp;</p></div>
 <div class="shadowedBox">
 <div id="lunarPhase"><p id="moonpercent" class="infobar">Loading moonphase...</p><img width="256px" height="256px" id="moonimg" src="https://aquacontrol.wasietsmet.nl/near_side_256x256x8/000.png"></div>
 <div id="copyright"><p>Lunar renders author: Jay Tanner</p><p><a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode" target="_blank">Image license: Creative Commons 3.0</a>-<a href="http://www.neoprogrammics.com/lunar_phase_images/" target="_blank">Original image set</a></p></div>
-  <div class="item channelbar"><p class="itemName">0</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">1</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">2</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">3</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
-  <div class="item channelbar"><p class="itemName">4</p><input type="text" class="channelName" value=""><input type="color" class="colorPicker"><p class="itemName">FULL MOON</p><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue minimumPercent">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
 </div>
 <script>
 var loadAll=true; // with loadAll set to true, all get calls will be daisy-chained
 $(document).ready(function(){
   $.get("/api/getdevice?hostname=")
-  .done(function(data){$('#hostName').html(data);})
+  .done(function(data){$('#hostName').html(data);document.title=data+' channels';})
   .always(function(){getMoonLevels();})
 });
 function getMoonLevels(){
   $.get("/api/getdevice?moonlevels=")
   .done(function(data){
     var values=data.split("\n");
-    console.log( values );
     values.forEach(function(element,index){
       $('.minLevel').eq(index).val(parseFloat(element));
-      $('.minimumPercent').eq(index).html(element.trim()+"%");
+      $('.itemValue').eq(index).html(element.trim()+"%");
     });
   })
   .fail(function(data){console.log(data);})
@@ -181,7 +184,7 @@ $('input').on('input',function(){
   $('#statusBox').html('&nbsp;');
 });
 $('.minLevel').on('input',function(){
-  $('.minimumPercent').eq($(this).index('.minLevel')).html($(this).val()+'%');
+  $('.itemValue').eq($(this).index('.minLevel')).html($(this).val()+'%');
 });
 $('.minLevel').on('change',function(){
   $.post("/api/setchannel",

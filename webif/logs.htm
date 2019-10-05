@@ -3,69 +3,50 @@
 <head>
 <title>Showlog</title>
 <meta charset="utf-8">
-<link rel="icon" href="data:;base64,iVBORw0KGgo=">  <!--prevent favicon requests-->
+<link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 <style>
-  @-webkit-keyframes blinker {
-  from {opacity: 1.0;}
-  to {opacity: 0.0;}
-}
-.blink{
-  color:red;
-	text-decoration: blink;
-	-webkit-animation-name: blinker;
-	-webkit-animation-duration: 0.6s;
-	-webkit-animation-iteration-count:infinite;
-	-webkit-animation-timing-function:ease-in-out;
-	-webkit-animation-direction: alternate;
-}
-html, body{
+html,body{
   margin:0 auto;
   background-color:grey;
-  text-align:center;
   width:1024px;
-	font-variant: small-caps;
   font-size:20px;
-  font-family: monospace;
+  font-family:'Roboto',sans-serif;
 }
-a {
-  color: black;
-  text-decoration: none;
-  margin: 0 10px;
+a{
+  color:black;
+  text-decoration:none;
+  margin:0 10px;
 }
-h3{
-  margin:10px;
+#hostName{
+  margin:0;
 }
 .systemLink{
-  padding: 3px 10px;
+  padding:3px 10px;
 }
-.systemLink:hover {
+.systemLink:hover{
   background:grey;
 }
 p{
   margin:0;
 }
-.shadowedBox  {
-  box-shadow: 0px 0px 13px 0px rgba(0,0,0,1);
-  border-radius: 15px;
+.shadowedBox{
+  text-align:center;
+  box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
+  border-radius:15px;
   margin:10px 0;
-  padding:2px;
 }
-#hostName {
-  text-transform: uppercase;
+.controlBox{
+  position:relative;
 }
 #editorCanvas{
-  background-color:darkgreen;
-  border:solid 1px black;
-  display:inline-block;
-  float:left;
+  background-color:black;
   margin:0;
   display:none;
 }
 #sideBox{
   width:210px;
   height:400px;
-  border:solid 1px black;
-  background-color:green;
   float:right;
   overflow:hidden;
   margin:0;
@@ -73,291 +54,224 @@ p{
 }
 #fileList{
   overflow-y:auto;
-  margin:10px;
-  height:275px;
-}
-.logFile:hover{
-  background-color:yellow;
-  cursor:pointer;
-}
-button:hover{
-  cursor:pointer;
-}
-.rangeButton, .baseButton{
-  font-family: monospace;
-  width:50%;
-}
-.controlBox{
-  margin: 10px;
-  background-color: antiquewhite;
-  font-size: initial;
-  overflow:hidden;
   display:none;
+}
+.logFile{
+  font-size:20px;
+}
+.logFile:hover,button:hover{
+  cursor:pointer;
+}
+.rangeButton,.baseButton{
+  width:50%;
+  padding:10px;
 }
 #loaderBox{
   line-height:400px;
-  background-color:darkgreen;
+  background-color:black;
+  color:yellow;
+}
+#zapBox{
+  overflow:hidden;
+  white-space:nowrap;
+  display:none;
+}
+#prevbutton,#nextbutton{
+  width:10%;
+  padding:15px;
+}
+#datestr{
+  width:80%;
+  display:inline-block;
+}
+.noselect{
+-webkit-touch-callout:none;
+-webkit-user-select:none;
+-khtml-user-select:none;
+-moz-user-select:none;
+-ms-user-select:none;
+user-select:none;
 }
 </style>
-<script src="https://code.jquery.com/jquery-3.2.1.js"></script>
-<body>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+<body class="noselect">
 <p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">HOME</a><a class="systemLink" href="channels">CHANNELS</a><a class="systemLink" href="setup">SETUP</a><a class="systemLink" href="editor">EDITOR</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">FILE MANAGER</a></p>
-<div class="hostName shadowedBox"><h3 id="hostName">Loading...</h3></div>
-<div class="shadowedBox" id="loaderBox">CHECKING...</div>
+<div class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Log files</p></div>
+<div class="shadowedBox" id="loaderBox">Checking for log files...</div>
 <canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
-  <div id="sideBox" class="shadowedBox">
-    <div class="controlBox shadowedBox">
-    <p id="baseStatus">&nbsp;</p>
-    <p><button class="baseButton">CENTER-</button><button class="baseButton">CENTER+</button></p>
-    </div>
-    <div class="controlBox shadowedBox">
-    <p id="rangeStatus">&nbsp;</p>
-    <p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button></p>
-    </div>
-    <div id="fileList" class="shadowedBox controlBox"></div>
-  </div>
+<div id="sideBox" class="shadowedBox" style="background-color:beige;">
+<div class="controlBox "><p id="baseStatus">&nbsp;</p><button class="baseButton">&darr;</button><button class="baseButton">&uarr;</button></div>
+<div class="controlBox"><p id="rangeStatus">&nbsp;</p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button></div>
+<div id="fileList"></div>
+</div>
+<div id="zapBox" class="shadowedBox">
+  <button id="prevbutton" class="zapbutton"><<</button><p id="datestr"></p><button id="nextbutton" class="zapbutton">>></button>
+</div>
 <script>
-//const hostName = 'http://192.168.0.197'; //debug/develop
-const hostName = '';
-var grapArea = document.getElementById( 'editorCanvas' );
-var rangeBottom = 10;
-var rangeTop    = 30;
-var sensorColor = ["","rgba( 255,0, 0, 0.9)","rgba( 0,255,0, 0.9)","rgba( 0,0,255, 0.9)"];
-var sensorName  = [];
+function map(x,in_min,in_max,out_min,out_max){return(x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;}
+var grapArea=document.getElementById('editorCanvas');
+var rangeBottom=10;
+var rangeTop   =30;
+var sensorColor=["rgba(255,70,70,1)","rgba(70,255,70,1)","rgba(70,70,255,1)"];
+var sensorName =[];
 var measurements;
-$( document ).ready( function() {
-  if ( hostName ) $('body').append( '<p class="blink">!!!!!debug enabled!!!!!</p>');
-  $.get( hostName + "/api/getdevice?hostname=")
-    .done(function( data ){
-      $( "#hostName" ).html( data + " LOGS");
-      document.title = data.toUpperCase();
-      $.get( hostName + '/api/getdevice?files=', function( data )
-      {
-        var fileArray = data.split('\n');
-        fileArray.sort();
-        for ( f = 0; f < fileArray.length; f++ )
-        {
-          if ( fileArray[f].substring( 11, 15 ) == '.log' )
-          {
-            $('#fileList').append( '<div class="logFile">'+ fileArray[f].substring( 1, 11 ) + "</div>" );
-          }
-        }
-        if ( !$('.logFile').length )
-        {
-          $('#loaderBox').html( "NO LOGS FOUND" );
-        }
-        else
-        {
-          $('#loaderBox').hide();
-          $('#editorCanvas, #sideBox, .controlBox').show();
-          $('.logFile').last().click();
-        }
-      });
-    })
+var currentFile=undefined;
+$(document).ready(function(){
+  $.get("/api/getdevice?hostname=")
+  .done(function(data){
+    $("#hostName").html(data);
+    document.title=data+' log files';
+    $.get('/api/getdevice?status=')
+    .done(function(data){
+      var statusData=data.split('\n');
+      var offset=7;
+      while(statusData[offset]){
+        var sensorData=statusData[offset].split(',');
+        sensorName[offset-7]=sensorData[0];
+        offset++;
+      }
+    loadLogFiles();
+    });
+  });
 });
-function map( x,  in_min,  in_max,  out_min,  out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+function loadLogFiles(){
+  var nolog="No log files found";
+  $.get('/api/getdevice?files=')
+  .done(function(data){
+    var fileArray=data.split('\n');fileArray.sort();
+    for(var f=0;f<fileArray.length;f++){if(fileArray[f].substring(11,15)=='.log'){$('#fileList').append('<p class="logFile">'+fileArray[f].substring(1,11)+"</p>");}}
+    if(0==$('.logFile').length){
+      $('#loaderBox')/*.show()*/.html(nolog);
+    }else{
+      $('#loaderBox').hide();
+      $('#sideBox').css("display","block");
+      $('#editorCanvas,#zapBox,#fileList').show();
+      $('#fileList').css("height",400-parseInt($('.controlBox').css("height"))*2+"px");
+      var tmp=$('.logFile').last();tmp.click();tmp[0].scrollIntoView();
+    }
+  })
+  .fail(function(){
+    $('#loaderBox').html(nolog);
+  });
 }
-function showAllChannelColors()
-{
-  var currentSensor = 1;
-  while ( sensorName[ currentSensor ] )
-  {
-    showChannelColor( currentSensor );
-    currentSensor++;
-  }
-}
-function showChannelColor( sensor )
-{
-  var ctx = grapArea.getContext( "2d" );
+function showChannelColor(sensor){
+  var ctx=grapArea.getContext("2d");
+  ctx.beginPath();
   ctx.textBaseline="middle";
   ctx.textAlign="left";
-  ctx.strokeStyle = sensorColor[ sensor ];
-  ctx.strokeText( sensorName[ sensor ], 75,  grapArea.height - 40 - ( sensor ) * 20  );
-  ctx.beginPath();
-  ctx.strokeStyle = sensorColor[ sensor ];
-  ctx.moveTo( 30, grapArea.height - 40 - sensor  * 20  );
-  ctx.lineTo( 70, grapArea.height - 40 - sensor  * 20  );
+  ctx.fillStyle=sensorColor[sensor];
+  ctx.strokeStyle="black";
+  ctx.fillText(sensorName[sensor],75,grapArea.height-50-(sensor)*20);
+  ctx.strokeStyle=ctx.fillStyle;
+  ctx.moveTo(30,grapArea.height-50-sensor*20);
+  ctx.lineTo(70,grapArea.height-50-sensor*20);
   ctx.stroke();
 }
-function drawLogFile( url )
-{
-  $.get( url, function( data )
-  {
-    grapArea.width = grapArea.width;
-    var ctx = grapArea.getContext( "2d" );
-    measurements = data.split('\n');
-    var bootCount = 0;
-    var numberOfMeasurements = 0;
-    measurements.forEach( function( item, index )
-    {
-      if ( item.indexOf( 'Aquacontrol32 start' ) > 0  )
-      {
-       bootCount++;
-      }
-      else if ( item )
-      {
-        numberOfMeasurements++;
-      }
-    });
-    if ( numberOfMeasurements )
-    {
-      $('.controlBox').show();
+function drawAllGraphs(){
+  var ctx=grapArea.getContext("2d");ctx.clearRect(0,0,grapArea.width,grapArea.height);
+  const opacity=0.37;
+  const lineDash=[2,2];
+  ctx.beginPath();
+  ctx.strokeStyle='rgba(255,165,0,'+opacity+')';ctx.fillStyle=ctx.strokeStyle;
+  ctx.font='15px Roboto';
+  for(hour=0;hour<25;hour++){
+    var x=map(hour,0,24,0,grapArea.width);
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,grapArea.height);
+    ctx.setLineDash([]);
+    ctx.textBaseline="middle";
+    ctx.textAlign="center";
+    ctx.fillText(hour+"h",x,10);
+    ctx.fillText(hour+"h",x,grapArea.height/2);
+    ctx.fillText(hour+"h",x,grapArea.height-10);
+    ctx.setLineDash(lineDash);
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.strokeStyle='rgba(255,255,255,'+ opacity+')';ctx.fillStyle=ctx.strokeStyle;
+  for(templine=rangeBottom;templine<=rangeTop;templine++){
+    var y=map(templine,rangeBottom,rangeTop,grapArea.height,0);
+    ctx.moveTo(0,y);
+    ctx.lineTo(grapArea.width,y);
+    var tempstr=parseInt(map(y,0,grapArea.height,rangeTop,rangeBottom));
+    tempstr+="°";
+    ctx.setLineDash([]);ctx.textBaseline="middle";ctx.textAlign="center";
+    ctx.fillText(tempstr,20,y);
+    ctx.fillText(tempstr,grapArea.width/2,y);
+    ctx.fillText(tempstr,grapArea.width-20,y);
+    ctx.setLineDash(lineDash) ;
+  }
+  ctx.stroke();
+  drawSingleChannel(1,measurements,grapArea,sensorColor[0],rangeBottom,rangeTop);
+  drawSingleChannel(2,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop);
+  drawSingleChannel(3,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop);
+  s=0;while(sensorName[s]){showChannelColor(s);s++;}
+}
+function drawLogFile(url){
+  $.get(url,function(data){
+    var ctx=grapArea.getContext("2d");
+    measurements=data.split('\n');
+    if(measurements.length){
       showRange();
       showBase();
       drawAllGraphs();
+    }else{
+      ctx.textBaseline="middle";ctx.textAlign="center";ctx.font='20px Roboto';ctx.strokeStyle='rgba(255,255,255,1)';
+      ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
     }
-    if ( !numberOfMeasurements )
-    {
-      $('.baseButton, .rangeButton').attr('disabled', 'disabled');
-
-      ctx.textBaseline="middle";
-      ctx.textAlign="center";
-      ctx.font = '20px serif';
-      ctx.strokeStyle = 'rgba( 255, 255, 255, 1 )';
-      ctx.strokeText( "No sensor data found", grapArea.width / 2,  grapArea.height / 2 );
-    }
-    else
-    {
-      $.get( hostName + '/api/getdevice?status=', function( data )
-      {
-        var statusData = data.split( '\n' );
-        var offset = 7;
-        while ( statusData[ offset ] )
-        {
-          var sensorData = statusData[ offset ].split(',');
-          sensorName[ offset - 6 ] = sensorData[0];
-          showChannelColor( offset - 6 );
-          offset++;
-        }
-        $('.baseButton, .rangeButton').removeAttr('disabled');
-      });
-    }
-    if ( bootCount )
-    {
-      url += " - System reboots: " + bootCount;
-    }
-    ctx.textBaseline="bottom";
-    ctx.textAlign="left";
-    ctx.font = '15px serif';
-    ctx.strokeStyle = 'rgba( 255, 255, 255, 0.9 )';
-    ctx.strokeText( url, 10,  grapArea.height - 10 );
+    $('#datestr').html('<a href="'+url.substring(1)+'" target="_blank">'+new Date(measurements[0].substr(0,measurements[0].indexOf(',',0))*1000).toLocaleString(window.navigator.userLanguage||window.navigator.language,{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</a>');
   });
 }
-function drawSingleChannel( sensor, data, canvas, color, mintemp, maxtemp, drawGrid )
-{
-  const opacity = 0.3;
-  const lineDash = [ 2, 2 ];
-  var ctx = canvas.getContext( "2d" );
+function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp){
+  var ctx=canvas.getContext("2d");
   ctx.beginPath();
-  if ( drawGrid )
-  {
-    ctx.strokeStyle = 'rgba( 255, 165, 0, ' + opacity + ')';
-    ctx.font = '15px serif';
-    for ( hour = 0; hour < 25; hour++ )
-    {
-      var x = map( hour, 0, 24, 0, canvas.width );
-      ctx.moveTo( x, 0 );
-      ctx.lineTo( x, canvas.height );
-      ctx.setLineDash([]);
-      ctx.textBaseline="middle";
-      ctx.textAlign="center";
-      ctx.strokeText( hour + "h", x, 10 );
-      ctx.strokeText( hour + "h", x, canvas.height / 2 );
-      ctx.strokeText( hour + "h", x, canvas.height - 10 );
-      ctx.setLineDash( lineDash );
-    }
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgba( 255,255,255, '+ opacity+ ')';
-    for ( templine = rangeBottom; templine <= rangeTop; templine++ )
-    {
-      var y = map( templine, rangeBottom, rangeTop, canvas.height, 0 );
-      ctx.moveTo( 0, y );
-      ctx.lineTo( canvas.width, y );
-      var tempstr = parseInt( map( y, 0, canvas.height, maxtemp, mintemp ) );
-      tempstr += "°";
-      ctx.setLineDash([]);
-      ctx.textBaseline="middle";
-      ctx.textAlign="center";
-      ctx.strokeText( tempstr, 20, y );
-      ctx.strokeText( tempstr, canvas.width / 2, y );
-      ctx.strokeText( tempstr, canvas.width - 20, y );
-      ctx.setLineDash( lineDash) ;
-    }
-    ctx.stroke();
-    ctx.beginPath();
-  }
   ctx.setLineDash([]);
-  ctx.strokeStyle = color;
-  /* draw the actual graph */
-  var closeLine = true;
-  for ( p = 0; p < data.length; p++ )
-  {
-    var temp = data[ p ].split(',');
-    var date = new Date( temp[0] * 1000 );
+  ctx.strokeStyle=sensorColor[sensor-1];ctx.fillStyle=color;
+  /* draw the actual graph*/
+  var closeLine=true;
+  for(p=0;p<data.length;p++){
+    var temp=data[p].split(',');
+    var date=new Date(temp[0]*1000);
 
-    if ( isNaN( date.getTime() ) )
-    {
-      closeLine = true;
-    }
-    else
-    {
-      var secondsToday = date.getHours() * 3600;
-      secondsToday += date.getMinutes() * 60;
-      secondsToday += date.getSeconds();
-      var y = map( temp[ sensor ], mintemp, maxtemp, canvas.height, 0 );
-      var x = map( secondsToday, 0, 86400, 0, canvas.width );
-      if ( closeLine )
-      {
-        ctx.moveTo( x, y );
-        closeLine = false;
+    if(isNaN(date.getTime())){
+      closeLine=true;
+    }else{
+      var secondsToday=date.getHours()*3600;
+      secondsToday+=date.getMinutes()*60;
+      secondsToday+=date.getSeconds();
+      var y=map(temp[sensor],mintemp,maxtemp,canvas.height,0);
+      var x=map(secondsToday,0,86400,0,canvas.width);
+      if(closeLine){
+        ctx.moveTo(x,y);
+        closeLine=false;
       }
-      ctx.lineTo( x, y );
+      ctx.lineTo(x,y);
     }
   }
   ctx.stroke();
 }
-$('#sideBox').on( 'click', '.logFile', function()
-{
-  if ( $(this).css( "background-color" ) == "rgb(0, 100, 0)" ) return;
-  $( '.logFile' ).css( { "background-color" : "" } );
-  $(this).css( { "background-color" : "rgb(0, 100, 0)" } );
-  var newurl = hostName + '/';
-  newurl += $( this ).html() + '.log';
-  drawLogFile( newurl );
-});
-function showRange()
-{
-  $('#rangeStatus').html(  rangeBottom + "° - " + rangeTop  + "°" );
+function showRange(){
+  $('#rangeStatus').html(rangeBottom+"°-"+rangeTop +"°");
 }
-$('.rangeButton').on( 'click', function()
-{
-  if ( $(this).index() == 0 )
-  {
+$('.rangeButton').on('click',function(){
+  if($(this).index('.rangeButton')==0){
     rangeBottom++;
     rangeTop--;
-  } else
-  {
+  }else{
     rangeBottom--;
     rangeTop++;
   }
   showRange();
   drawAllGraphs();
 });
-function showBase()
-{
-  $('#baseStatus').html( ( rangeTop - ( rangeTop - rangeBottom ) / 2 ) + "°" );
+function showBase(){
+  $('#baseStatus').html((rangeTop-(rangeTop-rangeBottom)/2)+"°");
 }
-$('.baseButton').on( 'click', function()
-{
-  if ( $(this).index() == 0 )
-  {
+$('.baseButton').on('click',function(){
+  if($(this).index('.baseButton')==0){
     rangeBottom--;
     rangeTop--;
-  } else
-  {
+  }else{
     rangeBottom++;
     rangeTop++;
   }
@@ -365,15 +279,26 @@ $('.baseButton').on( 'click', function()
   showRange();
   drawAllGraphs();
 });
-function drawAllGraphs()
-{
-  var ctx = grapArea.getContext( "2d" );
-  ctx.clearRect(0, 0, grapArea.width, grapArea.height);
-  drawSingleChannel( 1, measurements, grapArea, sensorColor[1], rangeBottom, rangeTop, true );
-  drawSingleChannel( 2, measurements, grapArea, sensorColor[2], rangeBottom, rangeTop, false );
-  drawSingleChannel( 3, measurements, grapArea, sensorColor[3], rangeBottom, rangeTop, false );
-  showAllChannelColors();
-}
+$('#sideBox').on('click','.logFile',function(){
+  if(currentFile==$(this).index())return;
+  $('#datestr').html('Loading...');
+  $('.logFile').css({"background-color":""});
+  $(this).css({"background-color":"yellow"});
+  var newurl='/';
+  newurl+=$(this).html()+'.log';
+  drawLogFile(newurl);
+  currentFile=$(this).index();
+});
+$('#prevbutton').on('click',function(){
+  if(currentFile==0)return;
+  var tmp=$('.logFile').eq(currentFile-1);
+  tmp.click();tmp[0].scrollIntoView();
+});
+$('#nextbutton').on('click',function(){
+  if(currentFile==$('.logFile').length-1)return;
+  var tmp=$('.logFile').eq(currentFile+1);
+  tmp.click();tmp[0].scrollIntoView();
+});
 </script>
 </body>
 </html>

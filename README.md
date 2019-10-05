@@ -38,10 +38,9 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 - 50 timers per channel.
 - Password protected web interface to control the device. (default login is user:admin password:esp32)
 <br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
-- Automatic NTP timekeeping.
-- Timezone support.
+- SNTP timekeeping with timezone support.
 - OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
-- I2C SSD1306 128x64 OLED support.
+- I<sup>2</sup>C SSD1306 128x64 OLED support.
 - SPI ILI9341 320x240 TFT with XPT2046 touchscreen support.
 - All device settings are saved in NVS.
 - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
@@ -59,7 +58,7 @@ Most libraries can be installed with the Arduino library Manager `Sketch > Inclu
 
 A few have to be downloaded from GitHub:
 
-- [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3 - See [Known issues](#known-issues)
+- [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3 - Use this library instead of the standard Arduino OneWire library. 
 - [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) 1.0.3
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) 1.2.2
 - [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 1.0.0

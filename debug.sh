@@ -11,6 +11,6 @@ else
   currentVersion=$(git branch | grep \* | cut -d ' ' -f2):$(git rev-parse --short HEAD)
 fi
 echo "const char * sketchVersion = \"$currentVersion\";" > gitTagVersion.h
-echo -e Compiling aquacontrol32 version: '\e[36m'$currentVersion'\e[0m'
-~/arduino-1.8.10/arduino --board espressif:esp32:mhetesp32minikit --pref custom_DebugLevel=esp32_none --port /dev/ttyUSB0 --pref upload.speed=921600 --preserve-temp-files --pref build.path=temp --pref build.partitions=default_ffat --pref build.flash_freq=80m -v --verify aquacontrol32.ino | grep  -e 'Using core' -e 'Using board' -e ' uses ' -e 'Using library' -e 'Compiling' -e 'Global'
+echo -e Compiling and flashing aquacontrol32 version: '\e[36m'$currentVersion'\e[0m'
+~/arduino-1.8.10/arduino --board espressif:esp32:esp32 --pref custom_DebugLevel=esp32_info --port /dev/ttyUSB0 --pref upload.speed=921600 --preserve-temp-files --pref build.path=temp --pref build.partitions=default_ffat --pref build.flash_freq=80m -v --upload aquacontrol32.ino | grep  -e 'Using core' -e 'Using board' -e ' uses ' -e 'Using library' -e 'Compiling' -e 'Global'
 rm gitTagVersion.h

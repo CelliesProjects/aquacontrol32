@@ -49,8 +49,8 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 #### You will need
 
 - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
-- The [Arduino IDE](https://arduino.cc/) 1.8.9.
-- The [ESP32 Arduino Core 1.0.3](https://github.com/espressif/arduino-esp32/releases/tag/1.0.3).
+- The [Arduino IDE](https://arduino.cc/) 1.8.10.
+- The [ESP32 Arduino Core 1.0.4](https://github.com/espressif/arduino-esp32/releases/tag/1.0.4).
 
 #### Used Libraries
 

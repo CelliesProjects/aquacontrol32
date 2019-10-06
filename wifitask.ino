@@ -45,7 +45,7 @@ void wifiTask( void * pvParameters ) {
         tft.print( remainingSCTime );
       }
       else
-        digitalWrite( BUILTIN_LED, !gpio_get_level( gpio_num_t( BUILTIN_LED ) ) );
+        digitalWrite( LED_BUILTIN, !gpio_get_level( gpio_num_t( LED_BUILTIN ) ) );
       vTaskDelay( 500 / portTICK_PERIOD_MS );
     }
 
@@ -53,7 +53,7 @@ void wifiTask( void * pvParameters ) {
       ESP.restart();
 
     if ( !xTftTaskHandle )
-      digitalWrite( BUILTIN_LED, LOW );
+      digitalWrite( LED_BUILTIN, LOW );
   }
 
   waitForWifi();

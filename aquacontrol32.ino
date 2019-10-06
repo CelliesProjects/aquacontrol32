@@ -27,6 +27,10 @@
 const char * sketchVersion = "unsupported";
 #endif
 
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2
+#endif
+
 /**************************************************************************
        defines for OLED display orientation
 **************************************************************************/

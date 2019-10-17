@@ -1,6 +1,7 @@
 void wifiTask( void * pvParameters ) {
   /* trying last accesspoint */
   WiFi.mode( WIFI_STA );
+  WiFi.setSleep( false );
   WiFi.begin();
   //WiFi.onEvent( WiFiEvent );
 

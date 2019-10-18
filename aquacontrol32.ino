@@ -241,7 +241,7 @@ void setup()
   pinMode( I2C_SCL_PIN, INPUT_PULLUP );
   pinMode( I2C_SDA_PIN, INPUT_PULLUP );
 
-  pinMode( ONEWIRE_PIN, INPUT_PULLUP );
+  pinMode( ONEWIRE_PIN, INPUT );
 
   gpio_set_drive_capability( (gpio_num_t)LED0_PIN, GPIO_DRIVE_CAP_3 );
   gpio_set_drive_capability( (gpio_num_t)LED1_PIN, GPIO_DRIVE_CAP_3 );

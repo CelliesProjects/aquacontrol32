@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 if [ $(grep GIT_TAG deviceSetup.h | grep -ic TRUE) != "1" ]
 then
   echo -e '\e[31m'ERROR'\e[0m' GIT_TAG not set to true in deviceSetup.h.

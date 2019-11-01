@@ -1,3 +1,5 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e743c6ad2f0f416e9d43cfb87965b89e)](https://www.codacy.com/manual/CelliesProjects/aquacontrol32?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CelliesProjects/aquacontrol32&amp;utm_campaign=Badge_Grade)
+
 ### Aquacontrol32
 
 Aquacontrol32 can control 5 led strips to create more natural sunrises and sunsets in your aquarium.

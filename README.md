@@ -2,11 +2,7 @@
 
 ### Aquacontrol32
 
-Aquacontrol32 can control 5 led strips to create more natural sunrises and sunsets in your aquarium.
-
-Other than the led dimming hardware, no additional hardware is needed.
-
-Aquacontrol32 is developed for and tested on [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32) MCUs.
+Aquacontrol32 can control 5 led strips to create more natural sunrises and sunsets in your aquarium. It is developed for and tested on [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32) MCUs. Other than the led dimming hardware, no additional hardware is needed.
 
 The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 100R gate resistors to 5 NPN mosfets.
 
@@ -14,9 +10,10 @@ With some modifications and provided there are enough pins broken out, Aquacontr
 
 You can connect a 128x64 I2C OLED and/or a ILI9341 SPI tft display to have some feedback on the display(s). The ILI9341 displays usually come with a XPT2046 touch controller which is supported (and assumed).
 
-Another feature is support for 3 Dallas DS18B20 temperature sensors, with temperature logging to FATFS and a 30 day temperature history.
+Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with temperature logging to FATFS and a 30 day temperature history.
 
 ### Index
+
 - [Video](#aquacontrol32-dimming-down-youtube-video)
 - [Features](#features)
 - [Libraries](#used-libraries)
@@ -35,13 +32,13 @@ Another feature is support for 3 Dallas DS18B20 temperature sensors, with temper
 
 #### Features
 
-- 5 channels led dimming (common anode) at 1.22kHz with 16 bit (65535 steps) resolution.
+- 5 channels led dimming (common anode) through 1.22kHz PWM at 16 bit (65535 steps) resolution. The dimming control task runs at 100Hz to ensure smooth dimming.
 - Lunar cycle night light.
-- 50 timers per channel.
+- 50 timers per channel with a 1 minute resolution.
 - Password protected web interface to control the device. (default login is user:admin password:esp32)
 <br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
 - SNTP timekeeping with timezone support.
-- OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
+- 3x OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
 - I<sup>2</sup>C SSD1306 128x64 OLED support.
 - SPI ILI9341 320x240 TFT with XPT2046 touchscreen support.
 - All device settings are saved in NVS.
@@ -71,15 +68,13 @@ Install these libraries in the esp32 libraries folder.
 
 #### Compile options.
 
-- Board: MH ET LIVE ESP32MiniKit
-- Upload Speed: 921600 (or lower)
-- Flash frequency: 80Mhz
-- Partition scheme: Default with ffat
+  - Board: MH ET LIVE ESP32MiniKit (A lot of other boards work just fine without any code changes. Check/adjust the particular pin setup if not.)
+  - Partition scheme: Default with ffat
 
 #### Compile notes
 
 - Compare your installed libraries versions against the libraries in `aquacontrol32.ino`.
-- Check your device options in `deviceSetup.h`.
+- Check your device options in `deviceSetup.h` an `devicePinSetup.h`.
 - Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information.
 <br>Setting `GIT_TAG` to `true` makes that the Arduino IDE can no longer compile or flash your script.
 <br>You then have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
@@ -90,10 +85,6 @@ Install these libraries in the esp32 libraries folder.
 <br>`custom_DebugLevel` should be set to `esp32_none` in the `flash.sh` script for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)
-- If your controller has a problem after flashing (no Wifi or stuck/not properly booting) a reflash after a full flash erase will solve it almost always.
-<br>Backup your `default.aqu` in the file manager before erasing and upload it back to the controller after you flashed your controller.
-<br>Use this command to erase flash (FFat INCLUDED!) in Linux:
-<br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
 
 #### Connecting the hardware
 
@@ -128,10 +119,13 @@ By default log files are not generated.
 <br>That is because log files saved on FFat could reduce the lifetime of the flash memory.
 <br>Sensor logging can be enabled in the web interface.
 
-
 #### Known issues
 
 - The OneWire library that comes with the Arduino IDE does not work with esp32 MCUs. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
+- If your controller has a problem after flashing (no Wifi or stuck/not properly booting) a reflash after a full flash erase will solve it almost always.
+<br>Backup your `default.aqu` in the file manager before erasing and upload it back to the controller after you flashed your controller.
+<br>Use this command to erase flash (FFat INCLUDED!) in Linux:
+<br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
 
 #### The test hardware:
 

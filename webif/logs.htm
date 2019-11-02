@@ -219,7 +219,8 @@ function drawLogFile(url){
       ctx.textBaseline="middle";ctx.textAlign="center";ctx.font='20px Roboto';ctx.strokeStyle='rgba(255,255,255,1)';
       ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
     }
-    $('#datestr').html('<a href="'+url.substring(1)+'" target="_blank">'+new Date(measurements[0].substr(0,measurements[0].indexOf(',',0))*1000).toLocaleString(window.navigator.userLanguage||window.navigator.language,{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</a>');
+    var counter=0;while(measurements[counter].charAt(0)=='#')counter++;
+    $('#datestr').html('<a href="'+url.substring(1)+'" target="_blank">'+new Date(measurements[counter].substr(0,measurements[counter].indexOf(',',0))*1000).toLocaleString(window.navigator.userLanguage||window.navigator.language,{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</a>');
   });
 }
 function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp){

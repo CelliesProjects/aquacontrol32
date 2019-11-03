@@ -62,7 +62,7 @@ A few have to be downloaded from GitHub:
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) 1.2.3
 - [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 1.0.0
 - [Task](https://github.com/CelliesProjects/Task) 1.0.0
-- [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 1.0.0
+- [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 1.0.1
 
 Install these libraries in the esp32 libraries folder.
 

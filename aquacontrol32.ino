@@ -14,7 +14,7 @@
 #include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* Reports as 1.2.3 https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <moonPhase.h>             /* Install 1.0.0 https://github.com/CelliesProjects/moonPhase */
-#include <FFatSensor.h>            /* Install 1.0.0 https://github.com/CelliesProjects/FFatSensor */
+#include <FFatSensor.h>            /* Install 1.0.1 https://github.com/CelliesProjects/FFatSensor */
 #include <Task.h>                  /* Install 1.0.0 https://github.com/CelliesProjects/Task */
 #include "ledState.h"
 

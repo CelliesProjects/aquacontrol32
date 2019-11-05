@@ -11,8 +11,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
 {
   const TickType_t dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS / portTICK_PERIOD_MS;
 
-  hw_timer_t * moonTimer = NULL;
-  moonTimer = timerBegin( MOON_HWTIMER, 80, true );
+  hw_timer_t * moonTimer = timerBegin( MOON_HWTIMER, 80, true );
   timerAttachInterrupt( moonTimer, &_moonISR, true );
   timerAlarmWrite( moonTimer, 1000000 * 10, true );
   timerAlarmEnable( moonTimer );

@@ -14,17 +14,17 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 
 ### Index
 
-- [Video](#aquacontrol32-dimming-down-youtube-video)
-- [Features](#features)
-- [Libraries](#used-libraries)
-- [Software used](#you-will-need)
-- [Compile options](#compile-options)
-- [Compile notes](#compile-notes)
-- [Connecting the hardware](#connecting-the-hardware)
-- [Lunar cycle night light](#lunar-cycle-night-light)
-- [Smart config](#smartconfig)
-- [Log files](#log-files)
-- [Known issues](#known-issues)
+  - [Video](#aquacontrol32-dimming-down-youtube-video)
+  - [Features](#features)
+  - [Libraries](#used-libraries)
+  - [Software used](#you-will-need)
+  - [Compile options](#compile-options)
+  - [Compile notes](#compile-notes)
+  - [Connecting the hardware](#connecting-the-hardware)
+  - [Lunar cycle night light](#lunar-cycle-night-light)
+  - [Smart config](#smartconfig)
+  - [Log files](#log-files)
+  - [Known issues](#known-issues)
 
 #### Aquacontrol32 dimming down YouTube video
 
@@ -32,24 +32,32 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 
 #### Features
 
-- 5 channels led dimming (common anode) through 1.22kHz PWM at 16 bit (65535 steps) resolution. The dimming control task runs at 100Hz to ensure smooth dimming.
-- Lunar cycle night light.
-- 50 timers per channel with a 1 minute resolution.
-- Password protected web interface to control the device. (default login is user:admin password:esp32)
+  - 5 channels led dimming (common anode) through 1.22kHz PWM at 16 bit (65535 steps) resolution. The dimming control task runs at 100Hz to ensure smooth dimming.
+  - Lunar cycle night light.
+  - 50 timers per channel with a 1 minute resolution.
+  - Password protected web interface to control the device. (default login is user:admin password:esp32)
 <br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
-- SNTP timekeeping with timezone support.
-- 3x OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
-- I<sup>2</sup>C SSD1306 128x64 OLED support.
-- SPI ILI9341 320x240 TFT with XPT2046 touchscreen support.
-- All device settings are saved in NVS.
-- Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
-- Get a notification in the web interface if a new release is available.
+  - SNTP timekeeping with timezone support.
+  - 3x OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
+  - I<sup>2</sup>C SSD1306 128x64 OLED support.
+  - SPI ILI9341 320x240 TFT with XPT2046 touchscreen support.
+  - All device settings are saved in NVS.
+  - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
+  - Get a notification in the web interface if a new release is available.
 
 #### You will need
 
-- The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
-- The [Arduino IDE](https://arduino.cc/) 1.8.10.
-- The [ESP32 Arduino Core 1.0.4](https://github.com/espressif/arduino-esp32/releases/tag/1.0.4).
+  - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
+  - The [Arduino IDE](https://arduino.cc/) 1.8.10.
+  - The [ESP32 Arduino Core 1.0.4](https://github.com/espressif/arduino-esp32/releases/tag/1.0.4).
+
+#### Quick start
+
+  1. Download and unpack the latest release.
+  2. Check if all libraries are installed and the correct version. (in `aquacontrol32.ino`)
+  3. Adjust the `wifi_password` and `wifi_network`. (in `aquacontrol32.ino`)
+  4. Check and adjust device specific setup in `deviceSetup.h` and `devicePinSetup.h`.
+  5. Flash your device.
 
 #### Used Libraries
 
@@ -57,25 +65,25 @@ Most libraries can be installed with the Arduino library Manager `Sketch > Inclu
 
 A few have to be downloaded from GitHub:
 
-- [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3 - Use this library instead of the standard Arduino OneWire library. 
-- [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) 1.0.3
-- [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) 1.2.3
-- [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 1.0.0
-- [Task](https://github.com/CelliesProjects/Task) 1.0.0
-- [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 1.0.1
+  - [OneWire](https://github.com/stickbreaker/OneWire) 2.3.3 - Use this library instead of the standard Arduino OneWire library.
+  - [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) 1.0.3
+  - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) 1.2.3
+  - [MoonPhase](https://github.com/CelliesProjects/MoonPhase) 1.0.0
+  - [Task](https://github.com/CelliesProjects/Task) 1.0.0
+  - [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 1.0.1
 
 Install these libraries in the esp32 libraries folder.
 
-#### Compile options.
+#### Compile options
 
   - Board: MH ET LIVE ESP32MiniKit (A lot of other boards work just fine without any code changes. Check/adjust the particular pin setup if not.)
   - Partition scheme: Default with ffat
 
 #### Compile notes
 
-- Compare your installed libraries versions against the libraries in `aquacontrol32.ino`.
-- Check your device options in `deviceSetup.h` an `devicePinSetup.h`.
-- Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information.
+  - Compare your installed libraries versions against the libraries in `aquacontrol32.ino`.
+  - Check your device options in `deviceSetup.h` an `devicePinSetup.h`.
+  - Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information.
 <br>Setting `GIT_TAG` to `true` makes that the Arduino IDE can no longer compile or flash your script.
 <br>You then have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
 <br>Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
@@ -88,9 +96,9 @@ Install these libraries in the esp32 libraries folder.
 
 #### Connecting the hardware
 
-- Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
-- Read the [file](tft_board_pins.md) on connecting a ILI9341 display. Pull-ups are not optional!
-- The ILI9341 boards from AliExpress, DealExtreme or any other supplier are not all equal.
+  - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
+  - Read the [file](tft_board_pins.md) on connecting a ILI9341 display. Pull-ups are not optional!
+  - The ILI9341 boards from AliExpress, DealExtreme or any other supplier are not all equal.
 <br>Among the tested boards I encountered some that have no MISO pin connected, so they can't respond to read commands.
 <br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to `true`) in `deviceSetup.h`.
 - Some ILI9341 boards have their touch coordinates inverted.
@@ -105,10 +113,12 @@ Install these libraries in the esp32 libraries folder.
 - The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
 - The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapted from code kindly licensed by Hugh from [voidware.com](http://www.voidware.com/). Thanks Hugh!
 
-#### SmartConfig
+#### SmartConfig / WiFi setup
 
-- If your ESP32 has connected to your WiFi router before you flash Aquacontrol to your device, it will probably connect automagically .
-- If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
+Set your `wifi_network` and `wifi_password` in `aquacontrol32.ino` before you flash your device.
+
+  - If your ESP32 has connected to your WiFi router before you flash Aquacontrol to your device, it will probably connect automagically .
+  - If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
 - If after 5 minutes SmartConfig has not connected your device will reboot. This is a failsafe for home power outs and slow booting modems/routers.
@@ -121,13 +131,14 @@ By default log files are not generated.
 
 #### Known issues
 
-- The OneWire library that comes with the Arduino IDE does not work with esp32 MCUs. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
-- If your controller has a problem after flashing (no Wifi or stuck/not properly booting) a reflash after a full flash erase will solve it almost always.
+  - Boards without a 4.7K pull-up on the `ONEWIRE_PIN` will in some cases display ghost sensors.
+  - The `OneWire` library that comes with the Arduino IDE does not work with esp32 MCUs. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
+  - If your controller has a problem after flashing (no Wifi or stuck/not properly booting) a reflash after a full flash erase will solve it almost always.
 <br>Backup your `default.aqu` in the file manager before erasing and upload it back to the controller after you flashed your controller.
 <br>Use this command to erase flash (FFat INCLUDED!) in Linux:
 <br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
 
-#### The test hardware:
+#### The test hardware
 
 <a href="https://user-images.githubusercontent.com/24290108/33763793-1df0fe98-dc12-11e7-82a5-853e5a1d07d1.JPG"><img src="https://user-images.githubusercontent.com/24290108/33763798-2385a69c-dc12-11e7-81c4-2429f2fb88fd.JPG" height="320" width="512" ></a>
 

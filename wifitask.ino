@@ -2,7 +2,8 @@ void wifiTask( void * pvParameters ) {
   /* trying last accesspoint */
   WiFi.mode( WIFI_STA );
   WiFi.setSleep( false );
-  WiFi.begin();
+  if ( wifi_network != "" ) WiFi.begin( wifi_network, wifi_password );
+  else WiFi.begin();
   //WiFi.onEvent( WiFiEvent );
 
   ESP_LOGI( TAG, "Connecting WiFi" );

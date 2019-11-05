@@ -18,6 +18,9 @@
 #include <Task.h>                  /* Install 1.0.0 https://github.com/CelliesProjects/Task */
 #include "ledState.h"
 
+const char * wifi_network = "";    /* Change your WiFi username and password before compiling! */
+const char * wifi_password = "";
+
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
 
@@ -25,10 +28,6 @@
 #include "gitTagVersion.h"
 #else
 const char * sketchVersion = "unsupported";
-#endif
-
-#ifndef LED_BUILTIN
-#define LED_BUILTIN 2
 #endif
 
 /**************************************************************************

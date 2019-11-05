@@ -1,8 +1,21 @@
+volatile bool moonUpdate = true;
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+
+void IRAM_ATTR _moonISR() {
+  portENTER_CRITICAL_ISR(&timerMux);
+  moonUpdate = true;
+  portEXIT_CRITICAL_ISR(&timerMux);
+}
+
 void IRAM_ATTR dimmerTask ( void * pvParameters )
 {
   const TickType_t dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS / portTICK_PERIOD_MS;
 
-  TickType_t xLastWakeTime;
+  hw_timer_t * moonTimer = NULL;
+  moonTimer = timerBegin( MOON_HWTIMER, 80, true );
+  timerAttachInterrupt( moonTimer, &_moonISR, true );
+  timerAlarmWrite( moonTimer, 1000000 * 10, true );
+  timerAlarmEnable( moonTimer );
 
   if ( defaultTimersLoaded() ) ESP_LOGI( TAG, "Default timers loaded." );
   else {
@@ -37,9 +50,16 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
 
   ESP_LOGI( TAG, "Lights running after %i ms.", millis() );
 
-  xLastWakeTime = xTaskGetTickCount();
+  TickType_t xLastWakeTime = xTaskGetTickCount();
 
   while (1) {
+    if ( moonUpdate ) {
+      moonData = moonPhase.getPhase();
+      ESP_LOGI( TAG, "Moon phase updated: %i degrees %.6f%% lit", moonData.angle, moonData.percentLit * 100 );
+      portENTER_CRITICAL(&timerMux);
+      moonUpdate = false;
+      portEXIT_CRITICAL(&timerMux);
+    }
 
     if ( leds.state() != LIGHTS_AUTO ) {
       lightState_t currentState = leds.state();
@@ -49,7 +69,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
         channel[num].currentPercentage = percentage;
         ledcWrite( num, pwmValue );
       }
-      while ( leds.state() == currentState ) delay( 100 );
+      while ( leds.state() == currentState ) delay( dimmerTaskdelayTime );
     }
     else {
       struct timeval microSecondTime;

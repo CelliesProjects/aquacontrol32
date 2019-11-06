@@ -16,11 +16,12 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 
   - [Video](#aquacontrol32-dimming-down-youtube-video)
   - [Features](#features)
-  - [Libraries](#used-libraries)
-  - [Software used](#you-will-need)
+  - [Requirements](#requirements)
+  - [Libraries](#libraries)
+  - [Quick start](#quick-start)
   - [Compile options](#compile-options)
   - [Compile notes](#compile-notes)
-  - [Connecting the hardware](#connecting-the-hardware)
+  - [Connecting the hardware](#connecting-the-ILI9341)
   - [Lunar cycle night light](#lunar-cycle-night-light)
   - [Smart config](#smartconfig)
   - [Log files](#log-files)
@@ -45,21 +46,13 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
   - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
   - Get a notification in the web interface if a new release is available.
 
-#### You will need
+#### Requirements
 
   - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
   - The [Arduino IDE](https://arduino.cc/) 1.8.10.
   - The [ESP32 Arduino Core 1.0.4](https://github.com/espressif/arduino-esp32/releases/tag/1.0.4).
 
-#### Quick start
-
-  1. Download and unpack the latest release.
-  2. Check if all libraries are installed and the correct version. (in `aquacontrol32.ino`)
-  3. Adjust the `wifi_password` and `wifi_network`. (in `aquacontrol32.ino`)
-  4. Check and adjust device specific setup in `deviceSetup.h` and `devicePinSetup.h`.
-  5. Flash your device.
-
-#### Used Libraries
+#### Libraries
 
 Most libraries can be installed with the Arduino library Manager `Sketch > Include Library > Manage Libraries`.
 
@@ -73,6 +66,14 @@ A few have to be downloaded from GitHub:
   - [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 1.0.1
 
 Install these libraries in the esp32 libraries folder.
+
+#### Quick start
+
+  1. Download and unpack the latest release.
+  2. Check if all libraries are installed and the correct version. (in `aquacontrol32.ino`)
+  3. Adjust the `wifi_password` and `wifi_network`. (in `aquacontrol32.ino`)
+  4. Check and adjust device specific setup in `deviceSetup.h` and `devicePinSetup.h`.
+  5. Flash your device.
 
 #### Compile options
 
@@ -94,7 +95,7 @@ Install these libraries in the esp32 libraries folder.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)
 
-#### Connecting the hardware
+#### Connecting the ILI9341
 
   - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
   - Read the [file](tft_board_pins.md) on connecting a ILI9341 display. Pull-ups are not optional!
@@ -126,7 +127,7 @@ Set your `wifi_network` and `wifi_password` in `aquacontrol32.ino` before you fl
 #### Log files
 
 By default log files are not generated.
-<br>That is because log files saved on FFat could reduce the lifetime of the flash memory.
+<br>This is because log files saved on FFat could reduce the lifetime of the flash memory.
 <br>Sensor logging can be enabled in the web interface.
 
 #### Known issues
@@ -135,7 +136,7 @@ By default log files are not generated.
   - The `OneWire` library that comes with the Arduino IDE does not work with esp32 MCUs. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
   - If your controller has a problem after flashing (no Wifi or stuck/not properly booting) a reflash after a full flash erase will solve it almost always.
 <br>Backup your `default.aqu` in the file manager before erasing and upload it back to the controller after you flashed your controller.
-<br>Use this command to erase flash (FFat INCLUDED!) in Linux:
+<br>Use this command to erase flash (FFat INCLUDED!) in Debian based Linux:
 <br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
 
 #### The test hardware

@@ -1,7 +1,8 @@
 volatile bool moonUpdate = true;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
-void IRAM_ATTR _moonISR() {
+void IRAM_ATTR _moonISR()
+{
   portENTER_CRITICAL_ISR(&timerMux);
   moonUpdate = true;
   portEXIT_CRITICAL_ISR(&timerMux);
@@ -10,11 +11,6 @@ void IRAM_ATTR _moonISR() {
 void IRAM_ATTR dimmerTask ( void * pvParameters )
 {
   const TickType_t dimmerTaskdelayTime = 1000 / UPDATE_FREQ_LEDS / portTICK_PERIOD_MS;
-
-  hw_timer_t * moonTimer = timerBegin( MOON_HWTIMER, 80, true );
-  timerAttachInterrupt( moonTimer, &_moonISR, true );
-  timerAlarmWrite( moonTimer, 1000000 * 10, true );
-  timerAlarmEnable( moonTimer );
 
   if ( defaultTimersLoaded() ) ESP_LOGI( TAG, "Default timers loaded." );
   else {
@@ -45,11 +41,17 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
 
   setupDimmerPWMfrequency( preferences.getDouble( "pwmfrequency", LEDC_MAXIMUM_FREQ ),
                            preferences.getUInt( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
+
+  hw_timer_t * moonTimer = timerBegin( MOON_HWTIMER, 80, true );
+  timerAttachInterrupt( moonTimer, &_moonISR, true );
+  timerAlarmWrite( moonTimer, 1000000 * 10, true );
+  timerAlarmEnable( moonTimer );
+
   leds.setState( LIGHTS_AUTO );
 
-  ESP_LOGI( TAG, "Lights running after %i ms.", millis() );
-
   TickType_t xLastWakeTime = xTaskGetTickCount();
+
+  ESP_LOGI( TAG, "Lights running after %i ms.", millis() );
 
   while (1) {
     if ( moonUpdate ) {
@@ -60,8 +62,8 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
       portEXIT_CRITICAL(&timerMux);
     }
 
-    if ( leds.state() != LIGHTS_AUTO ) {
-      lightState_t currentState = leds.state();
+    lightState_t currentState = leds.state();
+    if ( currentState != LIGHTS_AUTO ) {
       uint16_t pwmValue = ( currentState == LIGHTS_OFF ) ? 0 : ledcMaxValue;
       float percentage = ( pwmValue == 0 ) ? 0 : 100;
       for ( uint8_t num = 0; num < NUMBER_OF_CHANNELS; num++ ) {
@@ -80,7 +82,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
       suseconds_t milliSecondsToday = ( localTime.tm_hour       * 3600000U ) +
                                       ( localTime.tm_min        * 60000U ) +
                                       ( localTime.tm_sec        * 1000U ) +
-                                      ( microSecondTime.tv_usec  / 1000U );
+                                      ( microSecondTime.tv_usec / 1000U );
 
       if ( milliSecondsToday ) { /* to solve flashing at 00:00:000 due to the fact that the first timer has no predecessor */
         for ( uint8_t num = 0; num < NUMBER_OF_CHANNELS; num++ ) {
@@ -90,8 +92,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
             thisTimer++;
 
           float newPercentage;
-
-          /* only do a lot of math if really neccesary */
+          /* only do a lot of float math if really neccesary */
           if ( channel[num].timer[thisTimer].percentage != channel[num].timer[thisTimer - 1].percentage ) {
             newPercentage = mapFloat( milliSecondsToday,
                                       channel[num].timer[thisTimer - 1].time * 1000U,

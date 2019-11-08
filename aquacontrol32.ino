@@ -147,7 +147,10 @@ const uint8_t ntpTaskPriority          = 5;
 const uint8_t oledTaskPriority         = 4;
 const uint8_t wifiTaskPriority         = 3;
 const uint8_t webserverTaskPriority    = 1;
-const uint8_t moonSimtaskPriority      = 0;
+
+/* used esp32 HW timers */
+const uint8_t SENSOR_HWTIMER           = 0;
+const uint8_t MOON_HWTIMER             = 1;
 
 /**************************************************************************
        start of global variables

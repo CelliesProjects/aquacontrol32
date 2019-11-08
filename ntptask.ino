@@ -29,7 +29,8 @@ void ntpTask( void * pvParameters )
 
   /* start time dependent tasks */
 
-  logger.startSensors( NUMBER_OF_SENSORS, ONEWIRE_PIN );
+  logger.startSensors( NUMBER_OF_SENSORS, ONEWIRE_PIN, SENSOR_HWTIMER );
+
 
   BaseType_t xReturned;
 
@@ -40,15 +41,6 @@ void ntpTask( void * pvParameters )
                 NULL,                           /* Task input parameter */
                 dimmerTaskPriority,             /* Priority of the task */
                 &xDimmerTaskHandle,             /* Task handle. */
-                1);                             /* Core where the task should run */
-
-  xReturned = xTaskCreatePinnedToCore(
-                moonSimtask,                    /* Function to implement the task */
-                "moonSimtask",                  /* Name of the task */
-                2200,                           /* Stack size in words */
-                NULL,                           /* Task input parameter */
-                moonSimtaskPriority,            /* Priority of the task */
-                NULL,                           /* Task handle. */
                 1);                             /* Core where the task should run */
 
   vTaskDelete( NULL );

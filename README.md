@@ -16,11 +16,12 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 
   - [Video](#aquacontrol32-dimming-down-youtube-video)
   - [Features](#features)
-  - [Libraries](#used-libraries)
-  - [Software used](#you-will-need)
+  - [Requirements](#requirements)
+  - [Libraries](#libraries)
+  - [Quick start](#quick-start)
   - [Compile options](#compile-options)
   - [Compile notes](#compile-notes)
-  - [Connecting the hardware](#connecting-the-hardware)
+  - [Connecting a ILI9341](#connecting-a-ILI9341)
   - [Lunar cycle night light](#lunar-cycle-night-light)
   - [Smart config](#smartconfig)
   - [Log files](#log-files)
@@ -45,21 +46,13 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
   - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
   - Get a notification in the web interface if a new release is available.
 
-#### You will need
+#### Requirements
 
   - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
   - The [Arduino IDE](https://arduino.cc/) 1.8.10.
   - The [ESP32 Arduino Core 1.0.4](https://github.com/espressif/arduino-esp32/releases/tag/1.0.4).
 
-#### Quick start
-
-  1. Download and unpack the latest release.
-  2. Check if all libraries are installed and the correct version. (in `aquacontrol32.ino`)
-  3. Adjust the `wifi_password` and `wifi_network`. (in `aquacontrol32.ino`)
-  4. Check and adjust device specific setup in `deviceSetup.h` and `devicePinSetup.h`.
-  5. Flash your device.
-
-#### Used Libraries
+#### Libraries
 
 Most libraries can be installed with the Arduino library Manager `Sketch > Include Library > Manage Libraries`.
 
@@ -72,7 +65,18 @@ A few have to be downloaded from GitHub:
   - [Task](https://github.com/CelliesProjects/Task) 1.0.0
   - [FFatSensor](https://github.com/CelliesProjects/FFatSensor) 1.0.1
 
-Install these libraries in the esp32 libraries folder.
+Install in the Arduino libraries or ESP32 libraries folder.
+
+#### Quick start
+
+  1. Download and unpack the latest release.
+  2. Check if all libraries are installed and the correct version. (in `aquacontrol32.ino`)
+  3. Adjust the `wifi_password` and `wifi_network`. (in `aquacontrol32.ino`)
+  4. Check and adjust device specific setup in `deviceSetup.h` and `devicePinSetup.h`.
+  5. Flash your device. Remember to use a FFat partition!
+  6. On the first boot ( or after a flash erase ) the internal flash drive will be formatted so first boot will take a little longer. Updating aquacontrol to a new version will not format the drive.
+
+The sensors and displays should be plug and play, except the ILI9341 when it has no MISO pin connected. For these displays you can enable `TFT_HAS_NO_MISO` (set it to `true`) in `deviceSetup.h`.
 
 #### Compile options
 
@@ -83,35 +87,36 @@ Install these libraries in the esp32 libraries folder.
 
   - Compare your installed libraries versions against the libraries in `aquacontrol32.ino`.
   - Check your device options in `deviceSetup.h` an `devicePinSetup.h`.
-  - Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information.
-<br>Setting `GIT_TAG` to `true` makes that the Arduino IDE can no longer compile or flash your script.
-<br>You then have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller.
-<br>Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
-- Source are compiled for `mhetesp32minikit` which has support for ESP_LOGX macros.
+  - Source are compiled for `mhetesp32minikit` which has support for ESP_LOGX macros.
 <br>This can be changed to a particular esp32 board by changing the `--board` option in the `compile.sh` and `flash.sh` scripts.
 <br>Look in `~/Arduino/hardware/espressif/esp32/boards.txt` to find the relevant board desciption.
 <br>`custom_DebugLevel` should be set to `esp32_none` in the `flash.sh` script for production use.
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)
 
-#### Connecting the hardware
+Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information. 
+<br>Setting `GIT_TAG` to `true` makes that the Arduino IDE can no longer compile or flash your script.
+<br>You then have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller. You might have to adjust these scripts for your particular OS.
+<br>Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
+  
+#### Connecting a ILI9341
 
   - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
   - Read the [file](tft_board_pins.md) on connecting a ILI9341 display. Pull-ups are not optional!
   - The ILI9341 boards from AliExpress, DealExtreme or any other supplier are not all equal.
 <br>Among the tested boards I encountered some that have no MISO pin connected, so they can't respond to read commands.
 <br>For these boards you can enable `TFT_HAS_NO_MISO` (set it to `true`) in `deviceSetup.h`.
-- Some ILI9341 boards have their touch coordinates inverted.
+  - Some ILI9341/XPT2046 boards have their touch coordinates inverted.
 <br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to `true`) in `deviceSetup.h`.
-- Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
+  - Don't forget to connect the tft LED to 3.3V. (default: GPIO PIN 2)
 <br>To be on the safe side, I use a BC547 transistor (and a 100R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 100R resistor in series to prevent burning up your ESP32.
 
 #### Lunar cycle night light
 
-- Moon light settings can be adjusted in the `channels` area of the web-interface.
-- The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
-- The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapted from code kindly licensed by Hugh from [voidware.com](http://www.voidware.com/). Thanks Hugh!
+  - Moon light settings can be adjusted in the `channels` area of the web-interface.
+  - The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
+  - The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapted from code kindly licensed by Hugh from [voidware.com](http://www.voidware.com/). Thanks Hugh!
 
 #### SmartConfig / WiFi setup
 
@@ -126,17 +131,20 @@ Set your `wifi_network` and `wifi_password` in `aquacontrol32.ino` before you fl
 #### Log files
 
 By default log files are not generated.
-<br>That is because log files saved on FFat could reduce the lifetime of the flash memory.
+<br>This is because log files saved on FFat could reduce the lifetime of the flash memory.
 <br>Sensor logging can be enabled in the web interface.
 
 #### Known issues
 
   - Boards without a 4.7K pull-up on the `ONEWIRE_PIN` will in some cases display ghost sensors.
   - The `OneWire` library that comes with the Arduino IDE does not work with esp32 MCUs. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
-  - If your controller has a problem after flashing (no Wifi or stuck/not properly booting) a reflash after a full flash erase will solve it almost always.
-<br>Backup your `default.aqu` in the file manager before erasing and upload it back to the controller after you flashed your controller.
-<br>Use this command to erase flash (FFat INCLUDED!) in Linux:
-<br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSB1 erase_flash`
+  - Some ILI9341/XPT2046 boards have their touch coordinates inverted.
+<br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to `true`) in `deviceSetup.h`.
+
+Not really an issue but if your controller has a problem after flashing (no Wifi or stuck/not properly booting) reflashing after a full flash erase will solve it almost always.
+<br>Backup your `default.aqu` in the file manager before flashing and upload it back to the controller after you succesfully flashed your controller.
+<br>Use this command to erase flash (FFat INCLUDED!) in Debian based Linux:
+<br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSBx erase_flash`
 
 #### The test hardware
 

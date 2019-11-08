@@ -29,7 +29,7 @@ void ntpTask( void * pvParameters )
 
   /* start time dependent tasks */
 
-  logger.startSensors( NUMBER_OF_SENSORS, ONEWIRE_PIN, SENSOR_HWTIMER );
+  logger.startSensors( NUMBER_OF_SENSORS, ONEWIRE_PIN, HWTIMER0_SENSOR );
 
 
   BaseType_t xReturned;

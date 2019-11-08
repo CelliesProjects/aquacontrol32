@@ -42,7 +42,7 @@ void IRAM_ATTR dimmerTask ( void * pvParameters )
   setupDimmerPWMfrequency( preferences.getDouble( "pwmfrequency", LEDC_MAXIMUM_FREQ ),
                            preferences.getUInt( "pwmdepth", LEDC_NUMBER_OF_BIT ) );
 
-  hw_timer_t * moonTimer = timerBegin( MOON_HWTIMER, 80, true );
+  hw_timer_t * moonTimer = timerBegin( HWTIMER1_MOON, 80, true );
   timerAttachInterrupt( moonTimer, &_moonISR, true );
   timerAlarmWrite( moonTimer, 1000000 * 10, true );
   timerAlarmEnable( moonTimer );

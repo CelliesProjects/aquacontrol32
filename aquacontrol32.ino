@@ -149,8 +149,8 @@ const uint8_t wifiTaskPriority         = 3;
 const uint8_t webserverTaskPriority    = 1;
 
 /* used esp32 HW timers */
-const uint8_t SENSOR_HWTIMER           = 0;
-const uint8_t MOON_HWTIMER             = 1;
+const uint8_t HWTIMER0_SENSOR          = 0;
+const uint8_t HWTIMER1_MOON            = 1;
 
 /**************************************************************************
        start of global variables

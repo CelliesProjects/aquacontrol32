@@ -260,30 +260,13 @@ void setup()
 
   preferences.begin( "aquacontrol32", false );
 
-  //check if a token in NVS is set...
-  if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
-    ESP_LOGI( TAG, "Formatting FFat..." ); // if not, format FFat
-    char label[5] = "ffat";
-    FFat.format( true, label );
-    preferences.putString( "firstrun", "false" ); // and set token
-  }
-
-  if ( FFat.begin() ) {
-    ESP_LOGI( TAG, "FFat mounted." );
-  } else {
-    ESP_LOGI( TAG, "Could not mount FFat." );
-  }
-
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
 
   tft.begin( TFT_SPI_CLOCK );
 
-  if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
-  {
+  if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 ) {
     touch.begin();
-
     ESP_LOGI( TAG, "%s an ILI9341 display on SPI.", TFT_HAS_NO_MISO ? "Forced" : "Found" );
-
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
       "tftTask",                      /* Name of the task */
@@ -293,21 +276,27 @@ void setup()
       &xTftTaskHandle,                /* Task handle. */
       1);                             /* Core where the task should run */
   }
-  else
-  {
-    ESP_LOGI( TAG, "No ILI9341 found" );
-  }
+  else ESP_LOGI( TAG, "No ILI9341 found" );
 
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 400000 );
-
   Wire.beginTransmission( OLED_ADDRESS );
   uint8_t error = Wire.endTransmission();
-  if ( error )
-  {
-    ESP_LOGI( TAG, "No SSD1306 OLED found." );
-  }
-  else
-  {
+  if ( error ) ESP_LOGI( TAG, "No SSD1306 OLED found." );
+  else {
+    OLED.init();
+    ESP_LOGI( TAG, "OLED initialized." );
+    if ( preferences.getString( "oledorientation", "normal" ) == "upsidedown" ) {
+      oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
+      OLED.flipScreenVertically();
+    }
+    oledContrast = preferences.getUInt( "oledcontrast", 15 );
+    OLED.setContrast( oledContrast << 0x04 );
+
+    OLED.setTextAlignment( TEXT_ALIGN_CENTER );
+    OLED.setFont( ArialMT_Plain_16 );
+    OLED.drawString( 64, 0, F( "AquaControl32" ) );
+    OLED.display();
+
     ESP_LOGI( TAG, "Found SSD1306 OLED at address 0x%x.", OLED_ADDRESS );
     xTaskCreatePinnedToCore(
       oledTask,                       /* Function to implement the task */
@@ -319,6 +308,29 @@ void setup()
       1);                             /* Core where the task should run */
   }
 
+  /* format fatfs on first boot */
+  if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
+    //show on tft
+    if ( xTftTaskHandle ) {
+
+    }
+    ESP_LOGI( TAG, "Formatting FFat..." ); // if not, format FFat
+    char label[5] = "ffat";
+    if ( xOledTaskHandle ) {
+      OLED.drawString( 64, 20, F( "Formatting..." ) );
+      OLED.display();
+    }
+    FFat.format( true, label );
+    preferences.putString( "firstrun", "false" ); // and set token
+  }
+
+  if ( FFat.begin() ) ESP_LOGI( TAG, "FFat mounted." );
+  else ESP_LOGI( TAG, "Could not mount FFat." );
+
+  if ( xOledTaskHandle ) {
+    OLED.drawString( 64, 40, F( "Connecting..." ) );
+    OLED.display();
+  }
   xTaskCreatePinnedToCore(
     wifiTask,                       /* Function to implement the task */
     "wifiTask",                     /* Name of the task */

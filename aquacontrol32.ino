@@ -90,7 +90,7 @@ const char * sketchVersion = "aquacontrol32";
 /**************************************************************************
        default hostname if no hostname is set
 **************************************************************************/
-#define DEFAULT_HOSTNAME_PREFIX             "aquacontrol32-"
+#define DEFAULT_HOSTNAME_PREFIX             "aquacontrol32"
 
 
 /**************************************************************************

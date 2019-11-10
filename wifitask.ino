@@ -1,10 +1,10 @@
 void wifiTask( void * pvParameters ) {
   /* trying last accesspoint */
+  //WiFi.onEvent( WiFiEvent );
   WiFi.mode( WIFI_STA );
   WiFi.setSleep( false );
   if ( wifi_network != "" ) WiFi.begin( wifi_network, wifi_password );
   else WiFi.begin();
-  //WiFi.onEvent( WiFiEvent );
 
   ESP_LOGI( TAG, "Connecting WiFi" );
 
@@ -61,20 +61,18 @@ void wifiTask( void * pvParameters ) {
   waitForWifi();
 
   /* We have succesfully connected */
-  uint8_t mac[6];
-  esp_efuse_mac_get_default(mac);
-  ESP_LOGI( TAG, "WiFi '%s' %s %02x:%02x:%02x:%02x:%02x:%02x",
-            WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), mac[0], mac[1], mac[2], mac[3], mac[4], mac[5] );
+  ESP_LOGI( TAG, "WiFi connected to '%s' %s %s",
+            WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), WiFi.macAddress().c_str() );
   if ( xTftTaskHandle ) {
     tft.invertDisplay( false );
-    tft.printf( "WiFi connected.\nLocal IP: %s\n", WiFi.localIP().toString() );
+    tft.printf( "WiFi connected.\nIP: %s\nmac: %s\n", WiFi.localIP().toString().c_str(), WiFi.macAddress().c_str() );
   }
   if ( xOledTaskHandle )
     OLED.normalDisplay();
   strncpy( hostName, preferences.getString( "hostname", "" ).c_str(), sizeof( hostName ) );
 
   if ( hostName[0] ==  0 ) {
-    snprintf( hostName, sizeof( hostName ), "%s%c%c%c%c%c%c", DEFAULT_HOSTNAME_PREFIX,
+    snprintf( hostName, sizeof( hostName ), "%s-%c%c%c%c%c%c", DEFAULT_HOSTNAME_PREFIX,
               WiFi.macAddress()[9], WiFi.macAddress()[10],
               WiFi.macAddress()[12], WiFi.macAddress()[13],
               WiFi.macAddress()[15], WiFi.macAddress()[16]
@@ -115,7 +113,7 @@ void wifiTask( void * pvParameters ) {
 
 /* https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFiType.h */
 void waitForWifi() {
-  unsigned long timeOut = millis() + 10000;
+  unsigned long timeOut = millis() + 10000UL;
   while ( !WiFi.isConnected() && millis() < timeOut )
     vTaskDelay( 20 / portTICK_PERIOD_MS );
 }

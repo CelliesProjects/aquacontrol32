@@ -1,12 +1,3 @@
-const uint16_t TFT_BACK_COLOR         = ILI9341_MAROON;
-const uint16_t TFT_TEXT_COLOR         = ILI9341_WHITE;
-const uint16_t TFT_DATE_COLOR         = ILI9341_WHITE;
-const uint16_t TFT_TEMP_COLOR         = ILI9341_WHITE;
-const uint8_t  TFT_BACKLIGHT_BITDEPTH = 16;               /*min 11 bits, max 16 bits */
-const uint8_t  TFT_BACKLIGHT_CHANNEL  = NUMBER_OF_CHANNELS;
-const uint16_t TFT_BUTTON_WIDTH       = 100;
-const uint16_t TFT_BUTTON_HEIGHT      =  40;
-
 const bool     TFT_SHOW_RAW           = false;            /* show raw PWM values */
 const bool     HIGH_VIZ_PERCENTAGE    = true;             /* show channel percent values in TFT_TEXT_COLOR instead of the channel color to improve visibility */
 
@@ -90,7 +81,6 @@ const tftButton::button_t MENU_BUTTON {
 
 tftButton::button_t tempArea[NUMBER_OF_SENSORS];
 
-uint16_t backlightMaxvalue;
 
 displayState tftState = normal;
 
@@ -100,20 +90,6 @@ void drawSensors();
 
 void tftTask( void * pvParameters ) {
   const TickType_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
-
-  tft.fillScreen( TFT_BACK_COLOR );
-
-  /* setup backlight pwm */
-  ledcAttachPin( TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_CHANNEL );
-  double backlightFrequency = ledcSetup( TFT_BACKLIGHT_CHANNEL , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
-
-  backlightMaxvalue = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
-
-  tftBrightness = preferences.getFloat( "tftbrightness", tftBrightness );
-  ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
-
-  ( preferences.getString( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
-  tft.setRotation( tftOrientation );
 
   while ( !xDimmerTaskHandle ) vTaskDelay( 10 / portTICK_PERIOD_MS );
 
@@ -150,13 +126,13 @@ void showMenu() {
     snprintf( versionString.text, sizeof( versionString.text ), sketchVersion );
     button.updateText( versionString );
     displayedLightStatus = leds.state();
-    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) );
+    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM ) );
     tftClearScreen = false;
   }
 
   /* check if tftBrightness has changed */
-  if ( map( tftBrightness, 0, 100, 0, backlightMaxvalue ) != ledcRead( TFT_BACKLIGHT_CHANNEL ) ) {
-    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, backlightMaxvalue ) ); /* set new backlight value */
+  if ( map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM ) != ledcRead( TFT_BACKLIGHT_CHANNEL ) ) {
+    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM ) ); /* set new backlight value */
     button.updateSlider( BL_SLIDER_AREA, tftBrightness, 0, 100 );
   }
 
@@ -357,7 +333,7 @@ void showStatus() {
 
   averageLedBrightness = averageLedBrightness / NUMBER_OF_CHANNELS;
 
-  uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, backlightMaxvalue );
+  uint16_t rawBrightness = map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM );
 
   ledcWrite( TFT_BACKLIGHT_CHANNEL, ( averageLedBrightness > rawBrightness ) ? rawBrightness : averageLedBrightness );
 

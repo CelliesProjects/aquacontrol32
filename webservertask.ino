@@ -683,7 +683,7 @@ String humanReadableSize( const size_t bytes ) {
 
 bool setupMDNS( const char *hostname ) {
   for ( uint8_t currentChar = 0; currentChar < strlen( hostname ); currentChar++ ) {
-    if ( hostname[currentChar] != 0x20  && !isalnum( hostname[currentChar] ) )
+    if ( hostname[currentChar] != 0x20 && hostname[currentChar] != '-'  && !isalnum( hostname[currentChar] ) )
       return false;
   }
 

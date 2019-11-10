@@ -1,33 +1,14 @@
 void oledTask( void * pvParameters ) {
   const TickType_t oledTaskdelayTime = 1000 / UPDATE_FREQ_OLED / portTICK_PERIOD_MS;
 
-  OLED.init();
-  ESP_LOGI( TAG, "OLED initialized." );
-
-  if ( preferences.getString( "oledorientation", "normal" ) == "upsidedown" ) {
-    oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
-    OLED.flipScreenVertically();
-  }
-
-  OLED.setTextAlignment( TEXT_ALIGN_CENTER );
-  OLED.setFont( ArialMT_Plain_16 );
-  OLED.drawString( 64, 10, F( "AquaControl32" ) );
-  OLED.drawString( 64, 30, F( "Starting WiFi..." ) );
-  OLED.display();
-
   while ( !xDimmerTaskHandle )
     vTaskDelay( 10 / portTICK_PERIOD_MS );
-
-  oledContrast = preferences.getUInt( "oledcontrast", 15 );
-  OLED.setContrast( oledContrast << 0x04 );
 
   OLED.setFont( ArialMT_Plain_10 );
 
   while (1) {
     static char content[64];
-
     OLED.clear();
-
     if ( OLED_SHOW_SYSTEMDATA ) {
       //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
       time_t now = time(NULL);

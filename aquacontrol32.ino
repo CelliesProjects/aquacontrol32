@@ -14,7 +14,7 @@
 #include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* Reports as 1.2.3 https://github.com/me-no-dev/ESPAsyncWebServer */
 #include <moonPhase.h>             /* Install 1.0.0 https://github.com/CelliesProjects/moonPhase */
-#include <FFatSensor.h>            /* Install 1.0.1 https://github.com/CelliesProjects/FFatSensor */
+#include <FFatSensor.h>            /* Install 1.0.2 https://github.com/CelliesProjects/FFatSensor */
 #include <Task.h>                  /* Install 1.0.0 https://github.com/CelliesProjects/Task */
 #include "ledState.h"
 
@@ -27,7 +27,7 @@ const char * wifi_password = "";
 #if GIT_TAG
 #include "gitTagVersion.h"
 #else
-const char * sketchVersion = "unsupported";
+const char * sketchVersion = "aquacontrol32";
 #endif
 
 /**************************************************************************
@@ -90,7 +90,7 @@ const char * sketchVersion = "unsupported";
 /**************************************************************************
        default hostname if no hostname is set
 **************************************************************************/
-#define DEFAULT_HOSTNAME_PREFIX             "aquacontrol32_"
+#define DEFAULT_HOSTNAME_PREFIX             "aquacontrol32-"
 
 
 /**************************************************************************
@@ -151,6 +151,17 @@ const uint8_t webserverTaskPriority    = 1;
 /* used esp32 HW timers */
 const uint8_t HWTIMER0_SENSOR          = 0;
 const uint8_t HWTIMER1_MOON            = 1;
+
+/* TFT related */
+const uint16_t TFT_BACK_COLOR          = ILI9341_MAROON;
+const uint16_t TFT_TEXT_COLOR          = ILI9341_WHITE;
+const uint16_t TFT_DATE_COLOR          = ILI9341_WHITE;
+const uint16_t TFT_TEMP_COLOR          = ILI9341_WHITE;
+const uint8_t  TFT_BACKLIGHT_BITDEPTH  = 16;               /*min 11 bits, max 16 bits */
+const uint8_t  TFT_BACKLIGHT_CHANNEL   = NUMBER_OF_CHANNELS;
+const uint16_t TFT_BUTTON_WIDTH        = 100;
+const uint16_t TFT_BUTTON_HEIGHT       = 40;
+const uint16_t TFT_BACKLIGHT_MAXPWM    = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
 /**************************************************************************
        start of global variables
@@ -260,30 +271,28 @@ void setup()
 
   preferences.begin( "aquacontrol32", false );
 
-  //check if a token in NVS is set...
-  if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
-    ESP_LOGI( TAG, "Formatting FFat..." ); // if not, format FFat
-    char label[5] = "ffat";
-    FFat.format( true, label );
-    preferences.putString( "firstrun", "false" ); // and set token
-  }
-
-  if ( FFat.begin() ) {
-    ESP_LOGI( TAG, "FFat mounted." );
-  } else {
-    ESP_LOGI( TAG, "Could not mount FFat." );
-  }
-
   SPI.begin( SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN );
 
   tft.begin( TFT_SPI_CLOCK );
 
-  if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 )
-  {
+  if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 ) {
+    tft.setTextSize( 2 );
+    tft.fillScreen( TFT_BACK_COLOR );
+
+    /* setup backlight pwm */
+    ledcAttachPin( TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_CHANNEL );
+    double backlightFrequency = ledcSetup( TFT_BACKLIGHT_CHANNEL , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
+
+    tftBrightness = preferences.getFloat( "tftbrightness", tftBrightness );
+    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM ) );
+
+    ( preferences.getString( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
+    tft.setRotation( tftOrientation );
+
     touch.begin();
 
+    tft.println( "Aquacontrol32");
     ESP_LOGI( TAG, "%s an ILI9341 display on SPI.", TFT_HAS_NO_MISO ? "Forced" : "Found" );
-
     xTaskCreatePinnedToCore(
       tftTask,                        /* Function to implement the task */
       "tftTask",                      /* Name of the task */
@@ -293,22 +302,26 @@ void setup()
       &xTftTaskHandle,                /* Task handle. */
       1);                             /* Core where the task should run */
   }
-  else
-  {
-    ESP_LOGI( TAG, "No ILI9341 found" );
-  }
+  else ESP_LOGI( TAG, "No ILI9341 found" );
 
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN, 400000 );
-
   Wire.beginTransmission( OLED_ADDRESS );
   uint8_t error = Wire.endTransmission();
-  if ( error )
-  {
-    ESP_LOGI( TAG, "No SSD1306 OLED found." );
-  }
-  else
-  {
-    ESP_LOGI( TAG, "Found SSD1306 OLED at address 0x%x.", OLED_ADDRESS );
+  if ( error ) ESP_LOGI( TAG, "No SSD1306 OLED found." );
+  else {
+    OLED.init();
+    ESP_LOGI( TAG, "Found SSD1306 OLED on I2C at address 0x%x.", OLED_ADDRESS );
+    if ( preferences.getString( "oledorientation", "normal" ) == "upsidedown" ) {
+      oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
+      OLED.flipScreenVertically();
+    }
+    oledContrast = preferences.getUInt( "oledcontrast", 15 );
+    OLED.setContrast( oledContrast << 0x04 );
+    OLED.setTextAlignment( TEXT_ALIGN_CENTER );
+    OLED.setFont( ArialMT_Plain_16 );
+    OLED.drawString( 64, 0, F( "AquaControl32" ) );
+    OLED.display();
+
     xTaskCreatePinnedToCore(
       oledTask,                       /* Function to implement the task */
       "oledTask",                     /* Name of the task */
@@ -319,6 +332,31 @@ void setup()
       1);                             /* Core where the task should run */
   }
 
+  /* format fatfs on first boot */
+  if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
+    if ( xTftTaskHandle ) {
+      tft.println( "Formatting FFat..." );
+    }
+    ESP_LOGI( TAG, "Formatting FFat..." ); // if not, format FFat
+    if ( xOledTaskHandle ) {
+      OLED.drawString( 64, 20, "Formatting..." );
+      OLED.display();
+    }
+    if ( FFat.format( true, (char*)"ffat" ) )
+      preferences.putString( "firstrun", "false" ); // and set token
+    else
+      ESP_LOGI( TAG, "Could not format FFat." );
+  }
+
+  if ( FFat.begin() )
+    ESP_LOGI( TAG, "FFat mounted." );
+  else
+    ESP_LOGI( TAG, "Could not mount FFat." );
+
+  if ( xOledTaskHandle ) {
+    OLED.drawString( 64, 40, "Connecting..." );
+    OLED.display();
+  }
   xTaskCreatePinnedToCore(
     wifiTask,                       /* Function to implement the task */
     "wifiTask",                     /* Name of the task */

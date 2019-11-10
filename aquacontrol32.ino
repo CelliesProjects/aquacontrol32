@@ -161,8 +161,7 @@ const uint8_t  TFT_BACKLIGHT_BITDEPTH  = 16;               /*min 11 bits, max 16
 const uint8_t  TFT_BACKLIGHT_CHANNEL   = NUMBER_OF_CHANNELS;
 const uint16_t TFT_BUTTON_WIDTH        = 100;
 const uint16_t TFT_BUTTON_HEIGHT       = 40;
-
-const uint16_t TFT_BACKLIGHT_MAXPWM   = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
+const uint16_t TFT_BACKLIGHT_MAXPWM    = ( 0x00000001 << TFT_BACKLIGHT_BITDEPTH ) - 1;
 
 /**************************************************************************
        start of global variables

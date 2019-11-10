@@ -8,9 +8,7 @@ void oledTask( void * pvParameters ) {
 
   while (1) {
     static char content[64];
-
     OLED.clear();
-
     if ( OLED_SHOW_SYSTEMDATA ) {
       //https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/sntp_example_main.c
       time_t now = time(NULL);

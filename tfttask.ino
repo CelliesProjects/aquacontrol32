@@ -403,6 +403,7 @@ void showIPAddress() {
   int16_t x, y;
   uint16_t w, h;
   snprintf( buff, sizeof( buff ), "%s", WiFi.localIP().toString().c_str() );
+  tft.fillRect( networkArea.x, networkArea.y, networkArea.w, networkArea.h, TFT_BACK_COLOR );
   tft.setTextSize( networkArea.fontsize );
   tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
   tft.setCursor( ( networkArea.x + networkArea.w / 2 ) - w / 2,

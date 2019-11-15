@@ -13,6 +13,7 @@
 #include <XPT2046_Touchscreen.h>   /* Install 1.3 via 'Manage Libraries' in Arduino IDE */
 #include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
 #include <ESPAsyncWebServer.h>     /* Reports as 1.2.3 https://github.com/me-no-dev/ESPAsyncWebServer */
+#include <OneWire.h>               /* Use this version instead of the standard Arduino library: https://github.com/stickbreaker/OneWire */
 #include <moonPhase.h>             /* Install 1.0.0 https://github.com/CelliesProjects/moonPhase */
 #include <FFatSensor.h>            /* Install 1.0.2 https://github.com/CelliesProjects/FFatSensor */
 #include <Task.h>                  /* Install 1.0.0 https://github.com/CelliesProjects/Task */
@@ -334,14 +335,17 @@ void setup()
 
   /* format fatfs on first boot */
   if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
+    const char * formatStr = "Formatting...";
     if ( xTftTaskHandle ) {
-      tft.println( "Formatting FFat..." );
+      tft.println( formatStr );
     }
-    ESP_LOGI( TAG, "Formatting FFat..." ); // if not, format FFat
     if ( xOledTaskHandle ) {
-      OLED.drawString( 64, 20, "Formatting..." );
+      OLED.drawString( 64, 20, formatStr );
       OLED.display();
     }
+
+    ESP_LOGI( TAG, "%s", formatStr );
+
     if ( FFat.format( true, (char*)"ffat" ) )
       preferences.putString( "firstrun", "false" ); // and set token
     else

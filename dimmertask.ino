@@ -127,9 +127,7 @@ bool defaultTimersLoaded() {
   //find 'default.aqu' on selected storage and if present load the timerdata from this file
   //return true on success
   //return false on error
-
   if ( !FFat.exists( defaultTimerFile ) ) {
-    ESP_LOGI( TAG, "No default timer file found. [%s]", defaultTimerFile );
     return false;
   }
 

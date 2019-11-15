@@ -1,12 +1,10 @@
 void wifiTask( void * pvParameters ) {
   /* trying last accesspoint */
-  //WiFi.onEvent( WiFiEvent );
   WiFi.mode( WIFI_STA );
   WiFi.setSleep( false );
+
   if ( wifi_network != "" ) WiFi.begin( wifi_network, wifi_password );
   else WiFi.begin();
-
-  ESP_LOGI( TAG, "Connecting WiFi" );
 
   if ( xTftTaskHandle ) {
     tft.setTextColor( TFT_TEXT_COLOR , TFT_BACK_COLOR );
@@ -15,7 +13,7 @@ void wifiTask( void * pvParameters ) {
 
   WiFi.waitForConnectResult();
 
-  if ( WiFi.status() != WL_CONNECTED ) {
+  if ( WiFi.status() != WL_CONNECTED && ( WiFi.status() != WL_CONNECT_FAILED ) ) {
     if ( xTftTaskHandle ) {
       tft.println( "\nNo WiFi connection.\nWaiting for SmartConfig." );
       tft.invertDisplay( true );
@@ -24,19 +22,18 @@ void wifiTask( void * pvParameters ) {
     WiFi.mode( WIFI_AP_STA );
     WiFi.beginSmartConfig();
 
-    const unsigned long rebootDelayMs = 60 * 5 * 1000;
+    const time_t DELAY_SECONDS = 60 * 5;
+    const time_t END_TIME = time( NULL ) + DELAY_SECONDS;
 
-    const unsigned long smartConfigStartMs = millis();
+    ESP_LOGI( TAG, "Waiting %i seconds for SmartConfig.", DELAY_SECONDS );
 
-    ESP_LOGI( TAG, "Waiting %i seconds for SmartConfig.", rebootDelayMs / 1000 );
-
-    while ( !WiFi.smartConfigDone() && ( (unsigned long)millis() - smartConfigStartMs ) < rebootDelayMs ) {
+    while ( !WiFi.smartConfigDone() && time( NULL ) < END_TIME ) {
       char remainingSCTime[12];
       if ( xOledTaskHandle ) {
         OLED.clear();
         OLED.setFont( ArialMT_Plain_10 );
         OLED.drawString( 64, 10, "Waiting for SmartConfig." );
-        snprintf( remainingSCTime, sizeof( remainingSCTime), "%i seconds", ( (unsigned long)( smartConfigStartMs + rebootDelayMs ) - millis() ) / 1000 );
+        snprintf( remainingSCTime, sizeof( remainingSCTime), "%3.i seconds", END_TIME - time( NULL ) );
         OLED.drawString( 64, 30, remainingSCTime );
         OLED.invertDisplay();
         OLED.display();
@@ -60,7 +57,9 @@ void wifiTask( void * pvParameters ) {
 
   waitForWifi();
 
+  WiFi.setAutoReconnect( true );
   /* We have succesfully connected */
+  WiFi.onEvent( WiFiEvent );
   ESP_LOGI( TAG, "WiFi connected to '%s' %s %s",
             WiFi.SSID().c_str(), WiFi.localIP().toString().c_str(), WiFi.macAddress().c_str() );
   if ( xTftTaskHandle ) {
@@ -100,15 +99,17 @@ void wifiTask( void * pvParameters ) {
     webserverTaskPriority,          /* Priority of the task */
     NULL,                           /* Task handle. */
     1);                             /* Core where the task should run */
-
-  while (1) {
-    if ( !WiFi.isConnected() ) {
-      ESP_LOGI( TAG, "No Wifi. Reconnecting.." );
-      WiFi.reconnect();
-      vTaskDelay( 9000 / portTICK_PERIOD_MS );
+  /*
+    while (1) {
+      if ( !WiFi.isConnected() ) {
+        ESP_LOGI( TAG, "No Wifi. Reconnecting.." );
+        WiFi.reconnect();
+        vTaskDelay( 9000 / portTICK_PERIOD_MS );
+      }
+      vTaskDelay( 1000 / portTICK_PERIOD_MS );
     }
-    vTaskDelay( 1000 / portTICK_PERIOD_MS );
-  }
+  */
+  vTaskDelete(NULL);
 }
 
 /* https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/src/WiFiType.h */
@@ -145,6 +146,7 @@ void WiFiEvent( WiFiEvent_t event ) {
       break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
       ESP_LOGI( TAG, "STA Disconnected");
+      WiFi.begin();
       break;
     case SYSTEM_EVENT_STA_STOP:
       ESP_LOGI( TAG, "STA Stopped");

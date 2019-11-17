@@ -128,6 +128,8 @@ Set your `wifi_network` and `wifi_password` in `aquacontrol32.ino` before you fl
 <br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
 - If after 5 minutes SmartConfig has not connected your device will reboot. This is a failsafe for home power outs and slow booting modems/routers.
 
+Note: ESP32s can only connect to a 2.4Ghz WiFi network. Connect your phone to a 2.4Ghz network before starting the SmartConfig app.
+
 #### Log files
 
 By default log files are not generated.

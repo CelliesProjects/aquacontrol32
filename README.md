@@ -2,7 +2,7 @@
 
 ### Aquacontrol32
 
-Aquacontrol32 can control 5 led strips to create more natural sunrises and sunsets in your aquarium. It is developed for and tested on [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32) MCUs. Other than the led dimming hardware, no additional hardware is needed.
+Aquacontrol32 can control 5 led strips to create gradual sunrises and sunsets in your aquarium. It is developed for and tested on [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32) MCUs. Other than the led dimming hardware, no additional hardware is needed to control the device.
 
 The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 100R gate resistors to 5 NPN mosfets.
 
@@ -14,18 +14,18 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 
 ### Index
 
-  - [Video](#aquacontrol32-dimming-down-youtube-video)
-  - [Features](#features)
-  - [Requirements](#requirements)
-  - [Libraries](#libraries)
-  - [Quick start](#quick-start)
-  - [Compile options](#compile-options)
-  - [Compile notes](#compile-notes)
-  - [Connecting a ILI9341](#connecting-a-ILI9341)
-  - [Lunar cycle night light](#lunar-cycle-night-light)
-  - [Smart config](#smartconfig)
-  - [Log files](#log-files)
-  - [Known issues](#known-issues)
+- [Video](#aquacontrol32-dimming-down-youtube-video)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Libraries](#libraries)
+- [Quick start](#quick-start)
+- [Compile options](#compile-options)
+- [Compile notes](#compile-notes)
+- [Connecting a ILI9341](#connecting-a-ili9341)
+- [Lunar cycle night light](#lunar-cycle-night-light)
+- [SmartConfig and WiFi setup](#smartconfig-and-wifi-setup)
+- [Log files](#log-files)
+- [Known issues](#known-issues)
 
 #### Aquacontrol32 dimming down YouTube video
 
@@ -40,10 +40,10 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 <br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
   - SNTP timekeeping with timezone support.
   - 3x OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
-  - I<sup>2</sup>C SSD1306 128x64 OLED support.
-  - SPI ILI9341 320x240 TFT with XPT2046 touchscreen support.
+  - SSD1306 128x64 OLED over I<sup>2</sup>C support.
+  - ILI9341 320x240 TFT with XPT2046 touchscreen over SPI support.
   - All device settings are saved in NVS.
-  - Easily connect your controller to WiFi with the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl).
+  - Easily connect your controller to WiFi with the [Espressif EsptouchForAndroid app](https://github.com/EspressifApp/EsptouchForAndroid/releases/latest).
   - Get a notification in the web interface if a new release is available.
 
 #### Requirements
@@ -71,7 +71,7 @@ Install in the Arduino libraries or ESP32 libraries folder.
 
   1. Download and unpack the latest release.
   2. Check if all libraries are installed and the correct version. (in `aquacontrol32.ino`)
-  3. Adjust the `wifi_password` and `wifi_network`. (in `aquacontrol32.ino`)
+  3. (Optional) Adjust the `wifi_password` and `wifi_network`. (in `aquacontrol32.ino`)
   4. Check and adjust device specific setup in `deviceSetup.h` and `devicePinSetup.h`.
   5. Flash your device. Remember to use a FFat partition!
   6. On the first boot ( or after a flash erase ) the internal flash drive will be formatted so first boot will take a little longer. Updating aquacontrol to a new version will not format the drive.
@@ -118,7 +118,7 @@ Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version info
   - The lunar images used in the web interface are rendered by Jay Tanner and licenced under the [Creative Commons Attribution-ShareAlike 3.0 license](docs/near_side_256x256x8/README.md).
   - The [moon phase library](https://github.com/CelliesProjects/MoonPhase) is adapted from code kindly licensed by Hugh from [voidware.com](http://www.voidware.com/). Thanks Hugh!
 
-#### SmartConfig / WiFi setup
+#### SmartConfig and WiFi setup
 
 Set your `wifi_network` and `wifi_password` in `aquacontrol32.ino` before you flash your device.
 Double check because setting a wrong `wifi_network` or `wifi_password` will result in a boot loop!
@@ -128,7 +128,7 @@ Or use SmartConfig and take note of the next couple of things.
   - If your ESP32 has connected to your WiFi router before you flash Aquacontrol to your device, it will probably connect automagically .
   - If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
-<br>You can then use the [Espressif SmartConfig app](https://github.com/EspressifApp/EsptouchForAndroid/releases/latest) or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your WiFi connection.
+<br>You can then use the Android [Espressif SmartConfig app](https://github.com/EspressifApp/EsptouchForAndroid/releases/latest) or the Android [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) or the IOS [EsptouchForIOS app](https://github.com/EspressifApp/EsptouchForIOS) to setup your WiFi connection.
 - If after 5 minutes SmartConfig has not connected your device will reboot. This is a failsafe for home power outs and slow booting modems/routers.
 
 ##### Note: ESP32s can only connect to a 2.4Ghz WiFi network. Connect your phone to a 2.4Ghz network before starting the SmartConfig app.
@@ -150,7 +150,7 @@ By default log files are not generated.
 <br>For these boards you can enable `TOUCH_IS_INVERTED` (set it to `true`) in `deviceSetup.h`.
 
 Not really an issue but if your controller has a problem after flashing (no Wifi or stuck/not properly booting) reflashing after a full flash erase will solve it almost always.
-<br>Backup your `default.aqu` in the file manager before flashing and upload it back to the controller after you succesfully flashed your controller.
+<br>Always backup your `default.aqu` in the file manager before flashing and upload it back to the controller after you succesfully flashed your controller.
 <br>Use this command to erase flash (FFat INCLUDED!) in Debian based Linux:
 <br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSBx erase_flash`
 

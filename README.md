@@ -121,14 +121,19 @@ Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version info
 #### SmartConfig / WiFi setup
 
 Set your `wifi_network` and `wifi_password` in `aquacontrol32.ino` before you flash your device.
+Double check because setting a wrong `wifi_network` or `wifi_password` will result in a boot loop!
+
+Or use SmartConfig and take note of the next couple of things.
 
   - If your ESP32 has connected to your WiFi router before you flash Aquacontrol to your device, it will probably connect automagically .
   - If you try to connect to an unknown WiFi network or changed your WiFi router settings, Aquacontrol will fail to connect and start SmartConfig.
 <br>If you have no oled or tft connected, the onboard led will blink at 1Hz to show you the device is in SmartConfig mode.
-<br>You can then use the Espressif SmartConfig app or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your Aquacontrol WiFi connction.
+<br>You can then use the [Espressif SmartConfig app](https://github.com/EspressifApp/EsptouchForAndroid/releases/latest) or the [ESP8266 SmartConfig Android app](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch&hl=nl) to setup your WiFi connection.
 - If after 5 minutes SmartConfig has not connected your device will reboot. This is a failsafe for home power outs and slow booting modems/routers.
 
-Note: ESP32s can only connect to a 2.4Ghz WiFi network. Connect your phone to a 2.4Ghz network before starting the SmartConfig app.
+##### Note: ESP32s can only connect to a 2.4Ghz WiFi network. Connect your phone to a 2.4Ghz network before starting the SmartConfig app.
+
+##### Note 2: Since Android 9 only the latest Espressif app seems to work. Android apps now requires location access to probe WiFi.
 
 #### Log files
 
@@ -138,6 +143,7 @@ By default log files are not generated.
 
 #### Known issues
 
+  - SmartConfig (actually the whole esp32) does not work on 5Ghz Wifi. Make sure you try to connect to 2.4Ghz Wifi.
   - Boards without a 4.7K pull-up on the `ONEWIRE_PIN` will in some cases display ghost sensors.
   - The `OneWire` library that comes with the Arduino IDE does not work with esp32 MCUs. Use the [stickbreaker OneWire library](https://github.com/stickbreaker/OneWire) for troublefree temperature sensors.
   - Some ILI9341/XPT2046 boards have their touch coordinates inverted.

@@ -13,7 +13,7 @@ else
 fi
 echo "const char * sketchVersion = \"$currentVersion\";" > gitTagVersion.h
 echo -e "Compiling and flashing aquacontrol32 version: \e[36m$currentVersion\e[0m"
-~/arduino-1.8.10/arduino \
+~/arduino-1.8.11/arduino \
   --board espressif:esp32:mhetesp32minikit \
   --port /dev/ttyUSB0 \
   --preserve-temp-files \

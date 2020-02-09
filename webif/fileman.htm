@@ -178,9 +178,12 @@ function updateDiskspace(){
   $.get("/api/getdevice?diskspace=")
   .done(function(data){
     var tmp=data.split(',');
-    diskSpace=parseInt(tmp[0]);diskSize=parseInt(tmp[1]);
-    $('#progressBar').attr({value:diskSize-diskSpace,max:diskSize});
-    $('#diskSpace').html(formatBytes(diskSpace,1)+' free / '+formatBytes(diskSize,1)+' total');
+    if(0==parseInt(tmp[1]))$('#diskSpace').html("No ffat partition found");
+    else{
+      diskSpace=parseInt(tmp[0]);diskSize=parseInt(tmp[1]);
+      $('#progressBar').attr({value:diskSize-diskSpace,max:diskSize});
+      $('#diskSpace').html(formatBytes(diskSpace,1)+' free / '+formatBytes(diskSize,1)+' total');
+    }
   })
   .fail(function(){$('#diskSpace').html('<p class="sysMessage">ERROR GETTING DISKSPACE</p>');});
 }

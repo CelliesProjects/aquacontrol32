@@ -7,8 +7,8 @@
 #include <ESPmDNS.h>               /* should be installed together with ESP32 Arduino install */
 #include <Preferences.h>           /* should be installed together with ESP32 Arduino install */
 #include <WiFi.h>                  /* should be installed together with ESP32 Arduino install */
-#include <Adafruit_ILI9341.h>      /* Install 1.5.1 via 'Manage Libraries' in Arduino IDE */
-#include <Adafruit_GFX.h>          /* Install 1.6.1 via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_ILI9341.h>      /* Install 1.5.4 via 'Manage Libraries' in Arduino IDE */
+#include <Adafruit_GFX.h>          /* Install 1.7.5 via 'Manage Libraries' in Arduino IDE */
 #include <SSD1306.h>               /* Install 4.0.0 via 'Manage Libraries' in Arduino IDE -> https://github.com/ThingPulse/esp8266-oled-ssd1306 */
 #include <XPT2046_Touchscreen.h>   /* Install 1.3 via 'Manage Libraries' in Arduino IDE */
 #include <AsyncTCP.h>              /* Reports as 1.0.3 https://github.com/me-no-dev/AsyncTCP */
@@ -333,8 +333,26 @@ void setup()
       1);                             /* Core where the task should run */
   }
 
-  /* format fatfs on first boot */
-  if ( !preferences.getString("firstrun", "true" ).equals( "false" ) ) {
+  /* check if a ffat partition is defined and halt the system if it is not defined*/
+  if (!esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, "ffat")) {
+    ESP_LOGI( TAG, "No FFat partition defined. Halting.\nCheck 'Tools>Partition Scheme' in the Arduino IDE and select a FFat partition." );
+    const char * noffatStr = "No FFat found...";
+    if ( xTftTaskHandle ) {
+      tft.println( noffatStr );
+    }
+    if ( xOledTaskHandle ) {
+      OLED.drawString( 64, 20, noffatStr );
+      OLED.display();
+    }
+    while (true) delay(1000); /* system is halted */
+  }
+
+  /* partition is defined - try to mount it */
+  if ( FFat.begin() )
+    ESP_LOGI( TAG, "FFat mounted." );
+
+  /* partition is present, but does not mount so now we just format it */
+  else {
     const char * formatStr = "Formatting...";
     if ( xTftTaskHandle ) {
       tft.println( formatStr );
@@ -343,19 +361,13 @@ void setup()
       OLED.drawString( 64, 20, formatStr );
       OLED.display();
     }
-
     ESP_LOGI( TAG, "%s", formatStr );
-
-    if ( FFat.format( true, (char*)"ffat" ) )
-      preferences.putString( "firstrun", "false" ); // and set token
-    else
-      ESP_LOGI( TAG, "Could not format FFat." );
+    FFat.format( true, (char*)"ffat" );
+    if (!FFat.begin()) {
+      ESP_LOGI( TAG, "FFat not mounted after formatting. Halting." );
+      while (true) delay(1000); /* system is halted */;
+    }
   }
-
-  if ( FFat.begin() )
-    ESP_LOGI( TAG, "FFat mounted." );
-  else
-    ESP_LOGI( TAG, "Could not mount FFat." );
 
   if ( xOledTaskHandle ) {
     OLED.drawString( 64, 40, "Connecting..." );

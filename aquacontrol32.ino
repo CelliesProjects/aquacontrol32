@@ -363,9 +363,17 @@ void setup()
     }
     ESP_LOGI( TAG, "%s", formatStr );
     FFat.format( true, (char*)"ffat" );
-    if (!FFat.begin()) {
-      ESP_LOGI( TAG, "FFat not mounted after formatting. Halting." );
-      while (true) delay(1000); /* system is halted */;
+    if (!FFat.format( true, (char*)"ffat" ) || !FFat.begin()) {
+      ESP_LOGI( TAG, "FFat error while formatting. Halting." );
+      const char * errorffatStr = "FFat error.";
+      if ( xTftTaskHandle ) {
+        tft.println( errorffatStr );
+      }
+      if ( xOledTaskHandle ) {
+        OLED.drawString( 64, 20, errorffatStr );
+        OLED.display();
+      }
+    while (true) delay(1000); /* system is halted */;
     }
   }
 

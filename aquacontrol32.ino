@@ -20,15 +20,15 @@
 #include "ledState.h"
 
 const char * wifi_network = "";    /* Change your WiFi username and password before compiling! */
-const char * wifi_password = "";
-
+const char * wifi_password = "";   /* Or use https://github.com/EspressifApp/EsptouchForAndroid/releases/latest for Android phones */
+                                   /* Or use https://github.com/EspressifApp/EsptouchForIOS/releases/tag/v1.0.0 for iPhones */
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
 
 #if GIT_TAG
 #include "gitTagVersion.h"
 #else
-const char * sketchVersion = "aquacontrol32";
+const char * sketchVersion = "v1.6.5-master-Arduino";
 #endif
 
 /**************************************************************************

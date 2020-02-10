@@ -17,15 +17,18 @@ void webServerTask ( void * pvParameters ) {
   static const char * PASSWD_KEY_NVS           = "wwwpassword";  //the (changed) admin password is saved in NVS under this key
   static const char * HEADER_LASTMODIFIED      = "Last-Modified";
   static const char * HEADER_HTML              = "text/html";
+  static const char * INVALID_OPTION           = "Invalid option";
+  static const char * NO_SENSORNUMBER          = "No sensornumber";
+  static const char * INVALID_SENSORNUMBER     = "Invalid sensornumber";
 
   static AsyncWebServer server(80);
 
   while ( !systemStart.tv_sec )
     delay(100);
 
-  static char date[30];
+  static char modifiedDate[30];
 
-  strftime( date, sizeof( date ), "%a, %d %b %Y %X GMT", gmtime( &systemStart.tv_sec ) );
+  strftime( modifiedDate, sizeof( modifiedDate ), "%a, %d %b %Y %X GMT", gmtime( &systemStart.tv_sec ) );
 
   server.on( "/robots.txt", HTTP_GET, []( AsyncWebServerRequest * request ) {
     request->send( 200, HEADER_HTML, "User-agent: *\nDisallow: /\n" );
@@ -39,49 +42,49 @@ void webServerTask ( void * pvParameters ) {
   });
 
   server.on( "/", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
-    if ( htmlUnmodified( request, date ) ) return request->send(304);
+    if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, index_htm, index_htm_len );
-    response->addHeader( HEADER_LASTMODIFIED, date );
+    response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
     request->send( response );
   });
 
   //  /channels or 'channels.htm'
   server.on( "/channels", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
-    if ( htmlUnmodified( request, date ) ) return request->send(304);
+    if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, channels_htm, channels_htm_len );
-    response->addHeader( HEADER_LASTMODIFIED, date );
+    response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
     request->send( response );
   });
 
   //  /editor or 'editor.htm'
   server.on( "/editor", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
-    if ( htmlUnmodified( request, date ) ) return request->send(304);
+    if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, editor_htm, editor_htm_len );
-    response->addHeader( HEADER_LASTMODIFIED, date );
+    response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
     request->send( response );
   });
 
   //  /logs or 'logs.htm'
   server.on( "/logs", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
-    if ( htmlUnmodified( request, date ) ) return request->send(304);
+    if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, logs_htm, logs_htm_len );
-    response->addHeader( HEADER_LASTMODIFIED, date );
+    response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
     request->send( response );
   });
 
   //  /setup or 'setup.htm'
   server.on( "/setup", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
-    if ( htmlUnmodified( request, date ) ) return request->send(304);
+    if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, setup_htm, setup_htm_len );
-    response->addHeader( HEADER_LASTMODIFIED, date );
+    response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
     request->send( response );
   });
 
   //  /filemanager or 'fileman.htm'
   server.on( "/filemanager", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
-    if ( htmlUnmodified( request, date ) ) return request->send(304);
+    if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
     AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, fileman_htm, fileman_htm_len );
-    response->addHeader( HEADER_LASTMODIFIED, date );
+    response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
     request->send( response );
   });
 
@@ -207,9 +210,9 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "sensor" ) ) {
       if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
-      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
+      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, NO_SENSORNUMBER );
       uint8_t num = request->arg( "number" ).toInt();
-      if ( num >= logger.sensorCount() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
+      if ( num >= logger.sensorCount() ) return request->send( 400, HEADER_HTML, INVALID_SENSORNUMBER );
       sensorName_t name;
       sensorId_t id;
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
@@ -240,9 +243,9 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "sensorname" ) ) {
       if ( !logger.sensorCount() ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
-      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
+      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, NO_SENSORNUMBER );
       uint8_t num = request->arg( "number" ).toInt();
-      if ( num >= logger.sensorCount() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
+      if ( num >= logger.sensorCount() ) return request->send( 400, HEADER_HTML, INVALID_SENSORNUMBER );
       sensorName_t name;
       return request->send( 200, HEADER_HTML, logger.getSensorName( num, name ) );
     }
@@ -295,7 +298,7 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else {
-      return request->send( 400, HEADER_HTML, "Invalid option" );
+      return request->send( 400, HEADER_HTML, INVALID_OPTION );
     }
   });
 
@@ -358,24 +361,13 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else {
-      return request->send( 400, HEADER_HTML, "Invalid option" );
+      return request->send( 400, HEADER_HTML, INVALID_OPTION );
     }
   });
 
   server.on( "/api/setdevice", HTTP_POST, []( AsyncWebServerRequest * request ) {
     if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) ) {
       return request->requestAuthentication();
-    }
-
-    if ( request->hasArg( "clearnvs" ) ) {
-      preferences.clear();
-      return request->send( 200, HEADER_HTML, "NVS cleared" );
-    }
-
-    if ( request->hasArg( "clearwifi" ) ) {
-      request->send( 200, HEADER_HTML, "WiFi data erased" );
-      WiFi.disconnect(true);
-      return;
     }
 
     else if ( request->hasArg( "hostname" ) ) {
@@ -495,7 +487,7 @@ void webServerTask ( void * pvParameters ) {
         logger.stopTempLogging();
         return request->send( 200, HEADER_HTML, "OFF" );
       }
-      else return request->send( 400, HEADER_HTML, "Invalid option." );
+      else return request->send( 400, HEADER_HTML, INVALID_OPTION );
     }
 
     else if ( request->hasArg( "sensorerrorlogging" ) ) {
@@ -509,16 +501,16 @@ void webServerTask ( void * pvParameters ) {
         logger.stopErrorLogging();
         return request->send( 200, HEADER_HTML, "OFF" );
       }
-      else return request->send( 400, HEADER_HTML, "Invalid option." );
+      else return request->send( 400, HEADER_HTML, INVALID_OPTION );
     }
 
     else if ( request->hasArg( "sensorname" ) ) {
       if ( request->arg( "sensorname" ).length() > sizeof( sensorName_t ) )
         return request->send( 400, HEADER_HTML, "Sensorname too long" );
 
-      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, "No sensornumber" );
+      if ( !request->hasArg( "number" ) ) return request->send( 400, HEADER_HTML, NO_SENSORNUMBER );
       uint8_t num = request->arg( "number" ).toInt();
-      if ( num > logger.sensorCount() ) return request->send( 400, HEADER_HTML, "Invalid sensornumber" );
+      if ( num > logger.sensorCount() ) return request->send( 400, HEADER_HTML, INVALID_SENSORNUMBER );
       sensorId_t id;
       logger.getSensorId( num, id );
       if ( !logger.setSensorName( id, request->arg( "sensorname" ).c_str() ) )
@@ -586,7 +578,7 @@ void webServerTask ( void * pvParameters ) {
 
     else
     {
-      return request->send( 400, HEADER_HTML, "Invalid option" );
+      return request->send( 400, HEADER_HTML, INVALID_OPTION );
     }
   });
 

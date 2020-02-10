@@ -362,7 +362,6 @@ void setup()
       OLED.display();
     }
     ESP_LOGI( TAG, "%s", formatStr );
-    FFat.format( true, (char*)"ffat" );
     if (!FFat.format( true, (char*)"ffat" ) || !FFat.begin()) {
       ESP_LOGI( TAG, "FFat error while formatting. Halting." );
       const char * errorffatStr = "FFat error.";

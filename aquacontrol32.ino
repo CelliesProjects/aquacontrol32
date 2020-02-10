@@ -28,7 +28,7 @@ const char * wifi_password = "";   /* Or use https://github.com/EspressifApp/Esp
 #if GIT_TAG
 #include "gitTagVersion.h"
 #else
-const char * sketchVersion = "v1.6.5-master-Arduino";
+const char * sketchVersion = "v1.6.6-master";
 #endif
 
 /**************************************************************************

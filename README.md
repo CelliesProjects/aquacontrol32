@@ -17,7 +17,7 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 - [Video](#aquacontrol32-dimming-down-youtube-video)
 - [Features](#features)
 - [Requirements](#requirements)
-- [Libraries](#libraries)
+- [Libraries needed for compiling](#libraries)
 - [Quick start](#quick-start)
 - [Compile options](#compile-options)
 - [Compile notes](#compile-notes)
@@ -26,7 +26,7 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 - [SmartConfig and WiFi setup](#smartconfig-and-wifi-setup)
 - [Log files](#log-files)
 - [Known issues](#known-issues)
-- [Used libraries](#Libraries-used-in-aquacontrol32)
+- [Libraries in the web interface](#Libraries-used-in-web-interface)
 
 #### Aquacontrol32 dimming down YouTube video
 
@@ -155,7 +155,7 @@ Not really an issue but if your controller has a problem after flashing (no Wifi
 <br>Use this command to erase flash (FFat INCLUDED!) in Debian based Linux:
 <br>`~/Arduino/hardware/espressif/esp32/tools/esptool.py --port /dev/ttyUSBx erase_flash`
 
-#### Libraries used in aquacontrol32
+#### Libraries used in web interface
 
 - [jQuery 3.4.1](https://code.jquery.com/jquery-3.4.1.js) which is [available under MIT license](https://jquery.org/license/).
 - [jCanvas 21.0.1](https://cdnjs.cloudflare.com/ajax/libs/jcanvas/21.0.1/min/jcanvas.min.js) which is [available under MIT license](https://github.com/caleb531/jcanvas/blob/master/LICENSE.txt).

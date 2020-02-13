@@ -9,6 +9,10 @@
 
 static const char * HEADER_MODIFIED_SINCE      = "If-Modified-Since";
 
+static inline __attribute__((always_inline)) bool htmlUnmodified( const AsyncWebServerRequest * request, const char * date ) {
+  return request->hasHeader( HEADER_MODIFIED_SINCE ) && request->header( HEADER_MODIFIED_SINCE ).equals( date );
+}
+
 void webServerTask ( void * pvParameters ) {
   static const char * WWW_USERNAME             = "admin";
   static const char * WWW_DEFAULT_PASSWD       = "esp32";
@@ -702,8 +706,4 @@ bool setupMDNS( const char *hostname ) {
   mdns_service_txt_set( "_http", "_tcp", serviceTxtData, 3 );
   preferences.putString( "hostname", hostname );
   return true;
-}
-
-static inline __attribute__((always_inline)) bool htmlUnmodified( const AsyncWebServerRequest * request, const char * date ) {
-  return request->hasHeader( HEADER_MODIFIED_SINCE ) && request->header( HEADER_MODIFIED_SINCE ).equals( date );
 }

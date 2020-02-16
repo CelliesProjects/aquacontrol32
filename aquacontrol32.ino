@@ -287,7 +287,7 @@ void setup()
     tftBrightness = preferences.getFloat( "tftbrightness", tftBrightness );
     ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM ) );
 
-    ( preferences.getString( "tftorientation", "normal" ) == "normal" ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
+    ( preferences.getString( "tftorientation", "normal" ).equals( "normal" ) ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
     tft.setRotation( tftOrientation );
 
     touch.begin();
@@ -312,7 +312,7 @@ void setup()
   else {
     OLED.init();
     ESP_LOGI( TAG, "Found SSD1306 OLED on I2C at address 0x%x.", OLED_ADDRESS );
-    if ( preferences.getString( "oledorientation", "normal" ) == "upsidedown" ) {
+    if ( preferences.getString( "oledorientation", "normal" ).equals( "upsidedown" ) ) {
       oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
       OLED.flipScreenVertically();
     }
@@ -335,7 +335,7 @@ void setup()
 
   /* check if a ffat partition is defined and halt the system if it is not defined*/
   if (!esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_FAT, "ffat")) {
-    ESP_LOGI( TAG, "No FFat partition defined. Halting.\nCheck 'Tools>Partition Scheme' in the Arduino IDE and select a FFat partition." );
+    ESP_LOGE( TAG, "No FFat partition defined. Halting.\nCheck 'Tools>Partition Scheme' in the Arduino IDE and select a FFat partition." );
     const char * noffatStr = "No FFat found...";
     if ( xTftTaskHandle ) {
       tft.println( noffatStr );
@@ -363,7 +363,7 @@ void setup()
     }
     ESP_LOGI( TAG, "%s", formatStr );
     if (!FFat.format( true, (char*)"ffat" ) || !FFat.begin()) {
-      ESP_LOGI( TAG, "FFat error while formatting. Halting." );
+      ESP_LOGE( TAG, "FFat error while formatting. Halting." );
       const char * errorffatStr = "FFat error.";
       if ( xTftTaskHandle ) {
         tft.println( errorffatStr );

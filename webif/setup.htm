@@ -165,6 +165,17 @@ user-select:none;
 <div class="shadowedBox collapsable">
 <h3>DISPLAYS</h3>
 <div class="settingsBox">
+
+
+
+
+
+  <p class="item tftBar" id="tftForce"><span class="itemName">ILI9341 force</span><span id="tftOverrideValue" class="itemValue">&nbsp;</span><input type="range" id="tftOverrideSlider" min="0" max="1"></p>
+
+
+
+
+
 <p class="item tftBar"><span class="itemName">ILI9341 orientation</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
 <p class="item tftBar"><span class="itemName">ILI9341 max brightness</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
 <p class="item oledBar"><span class="itemName">SSD1306 orientation</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
@@ -238,9 +249,61 @@ function getTftOrientation(){
     if(data=='normal'){$('#tftOrientationSlider').val(0);}
     if(data=='upsidedown'){$('#tftOrientationSlider').val(1);}
   })
-  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting tft orientation.");})
+
+
+
+
+  .fail(function(data){
+    if(data.status==501){
+      $('#tftForce').show();
+      $('#tftOverrideSlider').val(0);
+      $('#tftOverrideValue').html("AUTO");
+    }
+    else{
+      $('#deviceStatus').html("Error getting tft orientation.");
+    }
+  })
+
+
+
+
+
+
+
+
+
+
   .always(function(){if(getAllValues)getSensorLoggingStatus();});
 }
+
+$('#tftOverrideSlider').on('change',function(){
+  if(0==$(this).val()){
+    $('#tftOverrideValue').html("AUTO");
+  }
+  if(1==$(this).val()){
+    $('#tftOverrideValue').html("FORCED");
+  }
+
+  //set the new value on the server
+  var state=(1==$(this).val())?"forcetft":"killtft";
+  console.log(state);
+  $.post("/api/setdevice",{tftstate:state})
+  .done(function(data){$('#deviceStatus').html(data);})
+  .fail(function(data){$('#deviceStatus').html(data.statusText);})
+  //refresh all tft related stuff
+  .always(function(data){
+    getTftOrientation();
+    getTftMaxBrightness();
+  });
+})
+
+
+
+
+
+
+
+
 function getSensorLoggingStatus(){
   $('#deviceStatus').html("sensor logging...");
   $.get("/api/getdevice?sensorlogging=")

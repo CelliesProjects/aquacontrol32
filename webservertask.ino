@@ -156,10 +156,16 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "files" ) ) {
       File root = FFat.open( "/" );
-      if ( !root ) { return request->send( 503, HEADER_HTML, "Storage not available." ); }
-      if ( !root.isDirectory() ) { return request->send( 400, HEADER_HTML, "No root on Storage."); }
+      if ( !root ) {
+        return request->send( 503, HEADER_HTML, "Storage not available." );
+      }
+      if ( !root.isDirectory() ) {
+        return request->send( 400, HEADER_HTML, "No root on Storage.");
+      }
       File file = root.openNextFile();
-      if ( !file ) { return request->send( 404 ); }
+      if ( !file ) {
+        return request->send( 404 );
+      }
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       while ( file ) {
         if ( !file.isDirectory() ) {
@@ -189,14 +195,18 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else if ( request->hasArg( "oledcontrast" ) ) {
-      if ( !xOledTaskHandle ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
+      if ( !xOledTaskHandle ) {
+        return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      }
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%i", oledContrast );
       return request->send( response );
     }
 
     else if ( request->hasArg( "oledorientation" ) ) {
-      if ( !xOledTaskHandle ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
+      if ( !xOledTaskHandle ) {
+        return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      }
       return request->send( 200, HEADER_HTML, oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
     }
 
@@ -278,14 +288,18 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else if ( request->hasArg( "tftbrightness" ) ) {
-      if ( !xTftTaskHandle ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
+      if ( !xTftTaskHandle ) {
+        return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      }
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%.2f", tftBrightness );
       return request->send( response );
     }
 
     else if ( request->hasArg( "tftorientation" ) ) {
-      if ( !xTftTaskHandle ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
+      if ( !xTftTaskHandle ) {
+        return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
+      }
       return request->send( 200, HEADER_HTML, ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
     }
 
@@ -373,6 +387,40 @@ void webServerTask ( void * pvParameters ) {
     if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) ) {
       return request->requestAuthentication();
     }
+
+
+
+
+
+
+
+
+
+    else if ( request->hasArg( "tftstate" ) ) {
+      if ( request->arg( "tftstate" ).equals("forcetft")) {
+        if (xTftTaskHandle) return request->send( 400, HEADER_HTML, "ERROR TFT already started" );
+        TaskHandle_t res = startTFT();
+        if (!res) {
+          ESP_LOGE(TAG, "Could not start TFT task.");
+          return request->send( 400, HEADER_HTML, "ERROR starting TFT" );
+        }
+        return request->send( 200, HEADER_HTML, "Started TFT" );
+      }
+      else if ( request->arg( "tftstate" ).equals("killtft")) {
+        return request->send( 400, HEADER_HTML, "NOT IMPLEMENTED" );
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     else if ( request->hasArg( "hostname" ) ) {
       if ( !setupMDNS( request->arg( "hostname" ).c_str() ) ) {

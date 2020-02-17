@@ -88,10 +88,59 @@ bool tftClearScreen = true;
 
 void drawSensors();
 
+
+
+
+
+
+
 void tftTask( void * pvParameters ) {
   const TickType_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
 
+  tft.setTextSize( 2 );
+  tft.fillScreen( TFT_BACK_COLOR );
+
+  //* setup backlight pwm *
+  ledcAttachPin( TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_CHANNEL );
+  double backlightFrequency = ledcSetup( TFT_BACKLIGHT_CHANNEL , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
+
+  tftBrightness = preferences.getFloat( "tftbrightness", tftBrightness );
+  ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM ) );
+
+  ( preferences.getString( "tftorientation", "normal" ).equals( "normal" ) ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
+  tft.setRotation( tftOrientation );
+
+  touch.begin();
+
+  tft.println( "Aquacontrol32");
+
+  ESP_LOGI( TAG, "%s an ILI9341 display on SPI.", TFT_HAS_NO_MISO ? "Forced" : "Found" );
+
   while ( !xDimmerTaskHandle ) vTaskDelay( 10 / portTICK_PERIOD_MS );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   ledcWrite( TFT_BACKLIGHT_CHANNEL, 0 );
 

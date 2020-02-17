@@ -399,16 +399,13 @@ void webServerTask ( void * pvParameters ) {
     else if ( request->hasArg( "tftstate" ) ) {
       if ( request->arg( "tftstate" ).equals("forcetft")) {
         if (xTftTaskHandle) return request->send( 400, HEADER_HTML, "ERROR TFT already started" );
-        TaskHandle_t res = startTFT();
-        if (!res) {
+        if (!startTFT()) {
           ESP_LOGE(TAG, "Could not start TFT task.");
           return request->send( 400, HEADER_HTML, "ERROR starting TFT" );
         }
         return request->send( 200, HEADER_HTML, "Started TFT" );
       }
-      else if ( request->arg( "tftstate" ).equals("killtft")) {
-        return request->send( 400, HEADER_HTML, "NOT IMPLEMENTED" );
-      }
+      else return request->send( 400, HEADER_HTML, INVALID_OPTION );
     }
 
 

@@ -97,6 +97,20 @@ void drawSensors();
 void tftTask( void * pvParameters ) {
   const TickType_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   tft.setTextSize( 2 );
   tft.fillScreen( TFT_BACK_COLOR );
 
@@ -114,7 +128,7 @@ void tftTask( void * pvParameters ) {
 
   tft.println( "Aquacontrol32");
 
-  ESP_LOGI( TAG, "%s an ILI9341 display on SPI.", TFT_HAS_NO_MISO ? "Forced" : "Found" );
+  ESP_LOGI( TAG, "started a ILI9341 display on SPI." );
 
   while ( !xDimmerTaskHandle ) vTaskDelay( 10 / portTICK_PERIOD_MS );
 

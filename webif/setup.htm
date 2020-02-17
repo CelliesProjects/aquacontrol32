@@ -170,7 +170,7 @@ user-select:none;
 
 
 
-  <p class="item tftBar" id="tftForce"><span class="itemName">ILI9341 force</span><span id="tftOverrideValue" class="itemValue">&nbsp;</span><input type="range" id="tftOverrideSlider" min="0" max="1"></p>
+  <p class="item tftBar" id="tftOverrideBar"><span class="itemName">ILI9341 force</span><span id="tftOverrideValue" class="itemValue">&nbsp;</span><input type="range" id="tftOverrideSlider" min="0" max="1"></p>
 
 
 
@@ -245,6 +245,7 @@ function getTftOrientation(){
   $.get("/api/getdevice?tftorientation=")
   .done(function(data){
     $('.tftBar').show();
+    $('#tftOverrideBar').hide();
     $('#tftOrientation').html(data);
     if(data=='normal'){$('#tftOrientationSlider').val(0);}
     if(data=='upsidedown'){$('#tftOrientationSlider').val(1);}
@@ -253,9 +254,19 @@ function getTftOrientation(){
 
 
 
+
+
+
+
+
+
+
+
+
+
   .fail(function(data){
     if(data.status==501){
-      $('#tftForce').show();
+      $('#tftOverrideBar').show();
       $('#tftOverrideSlider').val(0);
       $('#tftOverrideValue').html("AUTO");
     }
@@ -263,39 +274,45 @@ function getTftOrientation(){
       $('#deviceStatus').html("Error getting tft orientation.");
     }
   })
-
-
-
-
-
-
-
-
-
-
   .always(function(){if(getAllValues)getSensorLoggingStatus();});
 }
 
+//when ready move this to handlers below
 $('#tftOverrideSlider').on('change',function(){
-  if(0==$(this).val()){
-    $('#tftOverrideValue').html("AUTO");
-  }
-  if(1==$(this).val()){
-    $('#tftOverrideValue').html("FORCED");
-  }
-
-  //set the new value on the server
-  var state=(1==$(this).val())?"forcetft":"killtft";
-  console.log(state);
-  $.post("/api/setdevice",{tftstate:state})
-  .done(function(data){$('#deviceStatus').html(data);})
-  .fail(function(data){$('#deviceStatus').html(data.statusText);})
-  //refresh all tft related stuff
-  .always(function(data){
+  if(0==$(this).val())$('#tftOverrideValue').html("AUTO");
+  else if(1==$(this).val())$('#tftOverrideValue').html("FORCED");
+  //set the new value on the server 
+  $.post("/api/setdevice",{tftstate:(1==$(this).val())?"forcetft":""})
+  .done(function(data){
+    $('#deviceStatus').html(data);
+    //refresh all tft related stuff TODO: make serial instead of parallel!
     getTftOrientation();
     getTftMaxBrightness();
+  })
+  .fail(function(data){
+    $('#deviceStatus').html(data.statusText);
+  })
+  .always(function(data){
+    //getTftOrientation();
+    //getTftMaxBrightness();
   });
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

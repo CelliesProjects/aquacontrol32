@@ -503,12 +503,12 @@ $('.sensorNameInput').on('change',function(){
 });
 $('#sensorScan').on('click',function(){
   $.post("/api/setdevice",{sensorscan:true})
-  .done(function(data){
+  .done(function(){
     var updateSensors=setTimeout(getSensors,800);
     $('p.item.sensorname').hide();
     $('.sensorbutton').hide();
   })
-  .fail(function(){$('#deviceStatus').html("No sensors found");});
+  .fail(function(){$('#deviceStatus').html("Error scanning sensors");});
 });
 $('.collapsable').on('click',function(){
   $('.collapsable').css('height','45px').css('cursor','pointer').css('background-color','beige').css('opacity',0.3);

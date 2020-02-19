@@ -388,14 +388,6 @@ void webServerTask ( void * pvParameters ) {
       return request->requestAuthentication();
     }
 
-
-
-
-
-
-
-
-
     else if ( request->hasArg( "tftstate" ) ) {
       if ( request->arg( "tftstate" ).equals("forcetft")) {
         if (xTftTaskHandle) return request->send( 400, HEADER_HTML, "ERROR TFT already started" );
@@ -407,17 +399,6 @@ void webServerTask ( void * pvParameters ) {
       }
       else return request->send( 400, HEADER_HTML, INVALID_OPTION );
     }
-
-
-
-
-
-
-
-
-
-
-
 
     else if ( request->hasArg( "hostname" ) ) {
       if ( !setupMDNS( request->arg( "hostname" ).c_str() ) ) {

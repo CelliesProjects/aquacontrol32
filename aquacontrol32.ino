@@ -289,29 +289,7 @@ void setup()
   tft.begin( TFT_SPI_CLOCK );
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 ) {
-/*
-    tft.setTextSize( 2 );
-    tft.fillScreen( TFT_BACK_COLOR );
-
-    //* setup backlight pwm *
-    ledcAttachPin( TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_CHANNEL );
-    double backlightFrequency = ledcSetup( TFT_BACKLIGHT_CHANNEL , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
-
-    tftBrightness = preferences.getFloat( "tftbrightness", tftBrightness );
-    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM ) );
-
-    ( preferences.getString( "tftorientation", "normal" ).equals( "normal" ) ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
-    tft.setRotation( tftOrientation );
-
-    touch.begin();
-
-    tft.println( "Aquacontrol32");
-    
-    ESP_LOGI( TAG, "%s an ILI9341 display on SPI.", TFT_HAS_NO_MISO ? "Forced" : "Found" );
-*/
-    if (!startTFT()){
-      ESP_LOGE(TAG,"Could not start TFT task.");
-    }
+    if (!startTFT()) ESP_LOGE(TAG,"Could not start TFT task.");
   }
   else ESP_LOGI( TAG, "No ILI9341 found" );
 

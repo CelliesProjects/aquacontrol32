@@ -88,28 +88,8 @@ bool tftClearScreen = true;
 
 void drawSensors();
 
-
-
-
-
-
-
 void tftTask( void * pvParameters ) {
   const TickType_t tftTaskdelayTime = ( 1000 / UPDATE_FREQ_TFT) / portTICK_PERIOD_MS;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   tft.setTextSize( 2 );
   tft.fillScreen( TFT_BACK_COLOR );
@@ -131,30 +111,6 @@ void tftTask( void * pvParameters ) {
   ESP_LOGI( TAG, "started a ILI9341 display on SPI." );
 
   while ( !xDimmerTaskHandle ) vTaskDelay( 10 / portTICK_PERIOD_MS );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   ledcWrite( TFT_BACKLIGHT_CHANNEL, 0 );
 

@@ -165,7 +165,7 @@ user-select:none;
 <div class="shadowedBox collapsable">
 <h3>DISPLAYS</h3>
 <div class="settingsBox">
-<p class="item tftBar" id="tftOverrideBar"><span class="itemName">ILI9341 force</span><span id="tftOverrideValue" class="itemValue">&nbsp;</span><input type="range" id="tftOverrideSlider" min="0" max="1"></p>
+<p class="item tftBar" id="tftOverrideBar"><span class="itemName">ILI9341 force</span><span id="tftOverrideValue" class="itemValue">&nbsp;</span><input type="button" id="tftOverrideButton" value="Force"></p>
 <p class="item tftBar"><span class="itemName">ILI9341 orientation</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
 <p class="item tftBar"><span class="itemName">ILI9341 max brightness</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
 <p class="item oledBar"><span class="itemName">SSD1306 orientation</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
@@ -238,7 +238,7 @@ function getTftOrientation(){
   .fail(function(data){
     if(data.status==501){
       $('#tftOverrideBar').show();
-      $('#tftOverrideSlider').val(0);
+      $('#tftOverrideButton').val("Force");
       $('#tftOverrideValue').html("AUTO");
     }
     else{
@@ -399,7 +399,7 @@ $('#passwordInput').on('change',function(){
   .fail(function(){$('#passwordInput').css({'background':'red'});});
 });
 $('#oledOrientationSlider').on('change',function(){
-  $(this).val()==1?$('#oledOrientationValue').html('upsidedown'):$('#oledOrientationValue').html('normal');
+  $('#oledOrientationValue').html($(this).val()==1?'upsidedown':'normal');
   $.post("/api/setdevice",{oledorientation:$('#oledOrientationValue').html()})
   .done(function(data){$('#oledOrientationValue').html(data);})
   .fail(function(){getOledOrientation();});
@@ -456,9 +456,9 @@ $('#tftBrightnessSlider').on('change',function(){
   .done(function(data){$('#tftBrightnessSlider').val(data);})
   .fail(function(){getTftMaxBrightness();});
 });
-$('#tftOverrideSlider').on('change',function(){
+$('#tftOverrideButton').on('click',function(){
   $('#tftOverrideValue').html((0==$(this).val())?"AUTO":"FORCED");
-  $.post("/api/setdevice",{tftstate:(1==$(this).val())?"forcetft":""})
+  $.post("/api/setdevice",{tftstate:"forcetft"})
   .done(function(){
     getTftOrientation();
     getTftMaxBrightness();

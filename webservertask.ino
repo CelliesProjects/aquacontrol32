@@ -392,7 +392,7 @@ void webServerTask ( void * pvParameters ) {
       if (xTftTaskHandle) return request->send(400, HEADER_HTML, "ERROR TFT already started");
       if (!startTFT()) {
         ESP_LOGE(TAG, "Could not start TFT task.");
-        return request->send(400, HEADER_HTML, "ERROR starting TFT");
+        return request->send(400, HEADER_HTML, "ERROR starting TFT (OUT of MEM?)");
       }
       return request->send(200, HEADER_HTML, "Started TFT");
     }

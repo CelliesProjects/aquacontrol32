@@ -410,11 +410,11 @@ void webServerTask ( void * pvParameters ) {
       return request->send( response );
     }
 
-    else if ( request->hasArg( "oledorientation" ) ) {
-      if ( request->arg( "oledorientation" ) == "upsidedown" ) {
+    else if (request->hasArg( "oledorientation")) {
+      if (request->arg("oledorientation").equals("upsidedown")) {
         oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
       }
-      else if ( request->arg( "oledorientation" ) == "normal" ) {
+      else if (request->arg("oledorientation").equals("normal")) {
         oledOrientation = OLED_ORIENTATION_NORMAL;
       }
       else {
@@ -430,7 +430,7 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "password" ) ) {
       //TODO:check password is valid
-      if ( request->arg( "password") == "" ) {
+      if ( request->arg("password").equals("")) {
         return request->send( 400, HEADER_HTML, "Supply a password. Password not changed." );
       }
       //some more tests...
@@ -519,18 +519,10 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "tftorientation" ) )
     {
-      if (  request->arg( "tftorientation" ) == "normal" )
-      {
-        tftOrientation = TFT_ORIENTATION_NORMAL;
-      }
-      else if ( request->arg( "tftorientation" ) == "upsidedown" )
-      {
-        tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
-      }
-      else
-      {
-        return request->send( 400, HEADER_HTML, "Invalid tft orientation." );
-      }
+      if (request->arg( "tftorientation" ).equals("normal")) tftOrientation = TFT_ORIENTATION_NORMAL;
+      else if (request->arg( "tftorientation" ).equals("upsidedown")) tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
+      else return request->send( 400, HEADER_HTML, "Invalid tft orientation." );
+
       tft.setRotation( tftOrientation );
       tftClearScreen = true;
       preferences.putString( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
@@ -542,10 +534,7 @@ void webServerTask ( void * pvParameters ) {
     else if ( request->hasArg( "tftbrightness" ) )
     {
       float brightness = request->arg( "tftbrightness" ).toFloat();
-      if ( brightness < 0 || brightness > 100 )
-      {
-        return request->send( 400, HEADER_HTML, "Invalid tft brightness." );
-      }
+      if ( brightness < 0 || brightness > 100 ) return request->send( 400, HEADER_HTML, "Invalid tft brightness." );
       tftBrightness = brightness;
       preferences.putFloat( "tftbrightness", brightness );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );

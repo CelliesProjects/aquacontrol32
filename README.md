@@ -113,6 +113,8 @@ Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version info
 <br>To be on the safe side, I use a BC547 transistor (and a 100R resistor) between the ESP32 pin and the LED connector on the tft board.
 <br>If you connect the LED directly to a ESP32 pin, connect it through a 100R resistor in series to prevent burning up your ESP32.
 
+To override the device detection for ILI9341 displays you can use the `ILI9341 force` button in the `setup` page of the web interface. This will force a ILI9341 display until the device reboots.
+
 #### Lunar cycle night light
 
   - Moon light settings can be adjusted in the `channels` area of the web-interface.

@@ -457,7 +457,6 @@ $('#tftBrightnessSlider').on('change',function(){
   .fail(function(){getTftMaxBrightness();});
 });
 $('#tftOverrideButton').on('click',function(){
-  $('#tftOverrideValue').html((0==$(this).val())?"AUTO":"FORCED");
   $.post("/api/setdevice",{tftstate:"forcetft"})
   .done(function(){
     getTftOrientation();
@@ -504,7 +503,7 @@ $('.sensorNameInput').on('change',function(){
 $('#sensorScan').on('click',function(){
   $.post("/api/setdevice",{sensorscan:true})
   .done(function(){
-    var updateSensors=setTimeout(getSensors,800);
+    var updateSensors=setTimeout(getSensors,1500);
     $('p.item.sensorname').hide();
     $('.sensorbutton').hide();
   })

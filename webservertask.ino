@@ -388,16 +388,13 @@ void webServerTask ( void * pvParameters ) {
       return request->requestAuthentication();
     }
 
-    else if ( request->hasArg( "tftstate" ) ) {
-      if ( request->arg( "tftstate" ).equals("forcetft")) {
-        if (xTftTaskHandle) return request->send( 400, HEADER_HTML, "ERROR TFT already started" );
-        if (!startTFT()) {
-          ESP_LOGE(TAG, "Could not start TFT task.");
-          return request->send( 400, HEADER_HTML, "ERROR starting TFT" );
-        }
-        return request->send( 200, HEADER_HTML, "Started TFT" );
+    else if (request->hasArg("tftstate") && request->arg("tftstate" ).equals("forcetft")) {
+      if (xTftTaskHandle) return request->send(400, HEADER_HTML, "ERROR TFT already started");
+      if (!startTFT()) {
+        ESP_LOGE(TAG, "Could not start TFT task.");
+        return request->send(400, HEADER_HTML, "ERROR starting TFT");
       }
-      else return request->send( 400, HEADER_HTML, INVALID_OPTION );
+      return request->send(200, HEADER_HTML, "Started TFT");
     }
 
     else if ( request->hasArg( "hostname" ) ) {

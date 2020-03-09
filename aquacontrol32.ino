@@ -243,6 +243,18 @@ const char * threeDigitPercentage( char * buffer, const uint8_t &bufferSize, con
   return buffer;
 }
 
+const TaskHandle_t startTFT() {
+  xTaskCreatePinnedToCore(
+    tftTask,                        /* Function to implement the task */
+    "tftTask",                      /* Name of the task */
+    4000,                           /* Stack size in words */
+    NULL,                           /* Task input parameter */
+    tftTaskPriority,                /* Priority of the task */
+    &xTftTaskHandle,                /* Task handle. */
+    1);       
+    return xTftTaskHandle;
+}
+
 void setup()
 {
   pinMode( LED0_PIN, OUTPUT );
@@ -277,31 +289,7 @@ void setup()
   tft.begin( TFT_SPI_CLOCK );
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 ) {
-    tft.setTextSize( 2 );
-    tft.fillScreen( TFT_BACK_COLOR );
-
-    /* setup backlight pwm */
-    ledcAttachPin( TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_CHANNEL );
-    double backlightFrequency = ledcSetup( TFT_BACKLIGHT_CHANNEL , LEDC_MAXIMUM_FREQ, TFT_BACKLIGHT_BITDEPTH );
-
-    tftBrightness = preferences.getFloat( "tftbrightness", tftBrightness );
-    ledcWrite( TFT_BACKLIGHT_CHANNEL, map( tftBrightness, 0, 100, 0, TFT_BACKLIGHT_MAXPWM ) );
-
-    ( preferences.getString( "tftorientation", "normal" ).equals( "normal" ) ) ? tftOrientation = TFT_ORIENTATION_NORMAL : tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
-    tft.setRotation( tftOrientation );
-
-    touch.begin();
-
-    tft.println( "Aquacontrol32");
-    ESP_LOGI( TAG, "%s an ILI9341 display on SPI.", TFT_HAS_NO_MISO ? "Forced" : "Found" );
-    xTaskCreatePinnedToCore(
-      tftTask,                        /* Function to implement the task */
-      "tftTask",                      /* Name of the task */
-      4000,                           /* Stack size in words */
-      NULL,                           /* Task input parameter */
-      tftTaskPriority,                /* Priority of the task */
-      &xTftTaskHandle,                /* Task handle. */
-      1);                             /* Core where the task should run */
+    if (!startTFT()) ESP_LOGE(TAG,"Could not start TFT task.");
   }
   else ESP_LOGI( TAG, "No ILI9341 found" );
 

@@ -100,16 +100,10 @@ void webServerTask ( void * pvParameters ) {
     if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) ) {
       return request->requestAuthentication();
     }
-    if ( !request->hasArg( "filename" ) ) {
-      return request->send( 400, HEADER_HTML, "Invalid filename." );
-    }
+    if ( !request->hasArg( "filename" ) ) return request->send( 400, HEADER_HTML, "Invalid filename." );
     String path;
-    if ( !request->arg( "filename" ).startsWith( "/" ) ) {
-      path = "/" + request->arg( "filename" );
-    }
-    else {
-      path = request->arg( "filename" );
-    }
+    if ( !request->arg( "filename" ).startsWith( "/" ) ) path = "/" + request->arg( "filename" );
+    else path = request->arg( "filename" );
 
     if ( !FFat.exists( path ) ) {
       path = request->arg( "filename" ) + " not found.";
@@ -121,9 +115,7 @@ void webServerTask ( void * pvParameters ) {
   });
 
   server.on( "/api/getdevice", HTTP_GET, []( AsyncWebServerRequest * request) {
-    if ( request->hasArg( "bootlog" ) ) {
-      return request->send( 200, HEADER_HTML, preferences.getString( "bootlog", "OFF" ) );
-    }
+    if ( request->hasArg( "bootlog" ) ) return request->send( 200, HEADER_HTML, preferences.getString( "bootlog", "OFF" ) );
 
     else if ( request->hasArg( "boottime" ) ) {
       char response[25];
@@ -156,10 +148,11 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "files" ) ) {
       File root = FFat.open( "/" );
-      if ( !root ) { return request->send( 503, HEADER_HTML, "Storage not available." ); }
-      if ( !root.isDirectory() ) { return request->send( 400, HEADER_HTML, "No root on Storage."); }
+      if ( !root ) return request->send( 503, HEADER_HTML, "Storage not available." );
+      if ( !root.isDirectory() ) return request->send( 400, HEADER_HTML, "No root on Storage.");
+
       File file = root.openNextFile();
-      if ( !file ) { return request->send( 404 ); }
+      if ( !file ) return request->send( 404 );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       while ( file ) {
         if ( !file.isDirectory() ) {
@@ -170,9 +163,7 @@ void webServerTask ( void * pvParameters ) {
       return request->send( response );
     }
 
-    else if ( request->hasArg( "hostname" ) ) {
-      return request->send( 200, HEADER_HTML, hostName );
-    }
+    else if ( request->hasArg( "hostname" ) ) return request->send( 200, HEADER_HTML, hostName );
 
     else if ( request->hasArg( "moonlevels" ) ) {
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
@@ -189,14 +180,14 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else if ( request->hasArg( "oledcontrast" ) ) {
-      if ( !xOledTaskHandle ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
+      if ( !xOledTaskHandle ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%i", oledContrast );
       return request->send( response );
     }
 
     else if ( request->hasArg( "oledorientation" ) ) {
-      if ( !xOledTaskHandle ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
+      if ( !xOledTaskHandle ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       return request->send( 200, HEADER_HTML, oledOrientation == OLED_ORIENTATION_NORMAL ? "normal" : "upsidedown" );
     }
 
@@ -278,32 +269,24 @@ void webServerTask ( void * pvParameters ) {
     }
 
     else if ( request->hasArg( "tftbrightness" ) ) {
-      if ( !xTftTaskHandle ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
+      if ( !xTftTaskHandle ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );
       response->printf( "%.2f", tftBrightness );
       return request->send( response );
     }
 
     else if ( request->hasArg( "tftorientation" ) ) {
-      if ( !xTftTaskHandle ) { return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 ); }
+      if ( !xTftTaskHandle ) return request->send( 501, HEADER_HTML, NOT_PRESENT_ERROR_501 );
       return request->send( 200, HEADER_HTML, ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
     }
 
-    else if ( request->hasArg( "timezone" ) ) {
-      return request->send( 200, HEADER_HTML, getenv( "TZ" ) );
-    }
+    else if ( request->hasArg( "timezone" ) ) return request->send( 200, HEADER_HTML, getenv( "TZ" ) );
 
-    else if ( request->hasArg( "version" ) ) {
-      return request->send( 200, HEADER_HTML, sketchVersion );
-    }
+    else if ( request->hasArg( "version" ) ) return request->send( 200, HEADER_HTML, sketchVersion );
 
-    else if ( request->hasArg( "wifissid" ) ) {
-      return request->send( 200, HEADER_HTML, WiFi.SSID().c_str() );
-    }
+    else if ( request->hasArg( "wifissid" ) ) return request->send( 200, HEADER_HTML, WiFi.SSID().c_str() );
 
-    else {
-      return request->send( 400, HEADER_HTML, INVALID_OPTION );
-    }
+    else return request->send( 400, HEADER_HTML, INVALID_OPTION );
   });
 
   server.on( "/api/setchannel", HTTP_POST, []( AsyncWebServerRequest * request ) {
@@ -332,9 +315,7 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "minimum" ) ) {
       float minLevel = request->arg( "minimum" ).toFloat();
-      if ( minLevel < 0 || minLevel > 0.991 ) {
-        return request->send( 400, HEADER_HTML, "Invalid level" );
-      }
+      if ( minLevel < 0 || minLevel > 0.991 ) return request->send( 400, HEADER_HTML, "Invalid level" );
       channel[ channelNumber ].fullMoonLevel = minLevel;
       snprintf( nvsKeyname, sizeof( nvsKeyname ), "channelminimum%i", channelNumber );
       preferences.putFloat( nvsKeyname, channel[channelNumber].fullMoonLevel );
@@ -364,14 +345,21 @@ void webServerTask ( void * pvParameters ) {
       return request->send( response );
     }
 
-    else {
-      return request->send( 400, HEADER_HTML, INVALID_OPTION );
-    }
+    else return request->send( 400, HEADER_HTML, INVALID_OPTION );
   });
 
   server.on( "/api/setdevice", HTTP_POST, []( AsyncWebServerRequest * request ) {
     if ( !request->authenticate( WWW_USERNAME, preferences.getString( PASSWD_KEY_NVS, WWW_DEFAULT_PASSWD ).c_str() ) ) {
       return request->requestAuthentication();
+    }
+
+    else if (request->hasArg("tftstate") && request->arg("tftstate" ).equals("forcetft")) {
+      if (xTftTaskHandle) return request->send(400, HEADER_HTML, "ERROR TFT already started");
+      if (!startTFT()) {
+        ESP_LOGE(TAG, "Could not start TFT task.");
+        return request->send(400, HEADER_HTML, "ERROR starting TFT (OUT of MEM?)");
+      }
+      return request->send(200, HEADER_HTML, "Started TFT");
     }
 
     else if ( request->hasArg( "hostname" ) ) {
@@ -413,9 +401,7 @@ void webServerTask ( void * pvParameters ) {
     else if ( request->hasArg( "oledcontrast" ) ) {
       request->arg( "oledcontrast" );
       uint8_t contrast = request->arg( "oledcontrast" ).toInt();
-      if ( contrast < 0 || contrast > 15 ) {
-        return request->send( 400, HEADER_HTML, "Invalid contrast." );
-      }
+      if ( contrast < 0 || contrast > 15 ) return request->send( 400, HEADER_HTML, "Invalid contrast." );
       oledContrast = contrast;
       OLED.setContrast( contrast << 4 );
       preferences.putUInt( "oledcontrast", oledContrast );
@@ -424,11 +410,11 @@ void webServerTask ( void * pvParameters ) {
       return request->send( response );
     }
 
-    else if ( request->hasArg( "oledorientation" ) ) {
-      if ( request->arg( "oledorientation" ) == "upsidedown" ) {
+    else if (request->hasArg( "oledorientation")) {
+      if (request->arg("oledorientation").equals("upsidedown")) {
         oledOrientation = OLED_ORIENTATION_UPSIDEDOWN;
       }
-      else if ( request->arg( "oledorientation" ) == "normal" ) {
+      else if (request->arg("oledorientation").equals("normal")) {
         oledOrientation = OLED_ORIENTATION_NORMAL;
       }
       else {
@@ -444,7 +430,7 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "password" ) ) {
       //TODO:check password is valid
-      if ( request->arg( "password") == "" ) {
+      if ( request->arg("password").equals("")) {
         return request->send( 400, HEADER_HTML, "Supply a password. Password not changed." );
       }
       //some more tests...
@@ -533,18 +519,10 @@ void webServerTask ( void * pvParameters ) {
 
     else if ( request->hasArg( "tftorientation" ) )
     {
-      if (  request->arg( "tftorientation" ) == "normal" )
-      {
-        tftOrientation = TFT_ORIENTATION_NORMAL;
-      }
-      else if ( request->arg( "tftorientation" ) == "upsidedown" )
-      {
-        tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
-      }
-      else
-      {
-        return request->send( 400, HEADER_HTML, "Invalid tft orientation." );
-      }
+      if (request->arg( "tftorientation" ).equals("normal")) tftOrientation = TFT_ORIENTATION_NORMAL;
+      else if (request->arg( "tftorientation" ).equals("upsidedown")) tftOrientation = TFT_ORIENTATION_UPSIDEDOWN;
+      else return request->send( 400, HEADER_HTML, "Invalid tft orientation." );
+
       tft.setRotation( tftOrientation );
       tftClearScreen = true;
       preferences.putString( "tftorientation", ( tftOrientation == TFT_ORIENTATION_NORMAL ) ? "normal" : "upsidedown" );
@@ -556,10 +534,7 @@ void webServerTask ( void * pvParameters ) {
     else if ( request->hasArg( "tftbrightness" ) )
     {
       float brightness = request->arg( "tftbrightness" ).toFloat();
-      if ( brightness < 0 || brightness > 100 )
-      {
-        return request->send( 400, HEADER_HTML, "Invalid tft brightness." );
-      }
+      if ( brightness < 0 || brightness > 100 ) return request->send( 400, HEADER_HTML, "Invalid tft brightness." );
       tftBrightness = brightness;
       preferences.putFloat( "tftbrightness", brightness );
       AsyncResponseStream *response = request->beginResponseStream( HEADER_HTML );

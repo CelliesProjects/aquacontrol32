@@ -165,6 +165,7 @@ user-select:none;
 <div class="shadowedBox collapsable">
 <h3>DISPLAYS</h3>
 <div class="settingsBox">
+<p class="item tftBar" id="tftOverrideBar"><span class="itemName">ILI9341 force</span><span id="tftOverrideValue" class="itemValue">&nbsp;</span><input type="button" id="tftOverrideButton" value="Force"></p>
 <p class="item tftBar"><span class="itemName">ILI9341 orientation</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
 <p class="item tftBar"><span class="itemName">ILI9341 max brightness</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
 <p class="item oledBar"><span class="itemName">SSD1306 orientation</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
@@ -190,25 +191,22 @@ function formatBytes(bytes,decimals){
 var getAllValues;
 $(document).ready(function(){
   getAllValues=true;
-  $('#deviceStatus').html("hostname...");
   $.get("/api/getdevice?hostname=")
   .done(function(data){
     $('#hostNameInput').val(data);
     $('#hostName').html(data);
     document.title=data+" setup";
   })
-  .fail(function(){$('#deviceStatus').html("Problem getting hostname.");})
+  .fail(function(){$('#deviceStatus').html("Problem getting hostname");})
   .always(function(){if(getAllValues)getBootlog();})
 });
 function getBootlog(){
-  $('#deviceStatus').html("reset reason...");
   $.get("/api/getdevice?bootlog=")
   .done(function(data){$('#bootlog').val(data.toUpperCase());})
   .fail(function(){})
   .always(function(){if(getAllValues)getOledOrientation();});
 }
 function getOledOrientation(){
-  $('#deviceStatus').html("oled orientation...");
   $.get("/api/getdevice?oledorientation=")
   .done(function(data){
     $('.oledBar').show();
@@ -220,7 +218,6 @@ function getOledOrientation(){
   .always(function(){if(getAllValues)getOledContrast();});
 }
 function getOledContrast(){
-  $('#deviceStatus').html("oled contrast...");
   $.get("/api/getdevice?oledcontrast=")
   .done(function(data){
     $('#oledContrastValue').html(data);
@@ -230,50 +227,56 @@ function getOledContrast(){
   .always(function(){if(getAllValues)getTftOrientation();});
 }
 function getTftOrientation(){
-  $('#deviceStatus').html("9341 orientation...");
   $.get("/api/getdevice?tftorientation=")
   .done(function(data){
     $('.tftBar').show();
+    $('#tftOverrideBar').hide();
     $('#tftOrientation').html(data);
     if(data=='normal'){$('#tftOrientationSlider').val(0);}
     if(data=='upsidedown'){$('#tftOrientationSlider').val(1);}
   })
-  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting tft orientation.");})
+  .fail(function(data){
+    if(data.status==501){
+      $('#tftOverrideBar').show();
+      $('#tftOverrideButton').val("Force");
+      $('#tftOverrideValue').html("AUTO");
+    }
+    else{
+      $('#deviceStatus').html("Error getting tft orientation");
+    }
+  })
   .always(function(){if(getAllValues)getSensorLoggingStatus();});
 }
+
 function getSensorLoggingStatus(){
-  $('#deviceStatus').html("sensor logging...");
   $.get("/api/getdevice?sensorlogging=")
   .done( function(data){
     $('#sensorLogging').prop('value',data);
     $('.sensorbutton').show();
   })
-  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting sensor status.");})
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting sensor status");})
   .always(function(){if(getAllValues)getSensorErrorLoggingStatus();});
 }
 function getSensorErrorLoggingStatus(){
-  $('#deviceStatus').html("sensor error logging...");
   $.get("/api/getdevice?sensorerrorlogging=")
   .done(function(data){$('#sensorErrorLogging').prop('value',data);})
-  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting sensor status.");})
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting sensor status");})
   .always(function(){if(getAllValues)getTftMaxBrightness();});
 }
 function getTftMaxBrightness(){
-  $('#deviceStatus').html("tft brightness...");
   $.get("/api/getdevice?tftbrightness=")
   .done(function(data){
     $('#tftBrightnessValue').html( parseInt(data)+"%");
     $('#tftBrightnessSlider').val(data);
   })
-  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting tft brightness.");})
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting tft brightness");})
   .always(function(){if(getAllValues)getTimeZone();});
 }
 function getTimeZone(){
-  $('#deviceStatus').html("time zone...");
   $.get("/api/getdevice?timezone=")
   .done(function(data){$('#timeZoneTextBox').val(data);})
   .fail(function(data){$('#deviceStatus').html(data.statusText);})
-  .always(function(){if(getAllValues){$('#deviceStatus').html("loading lightstatus...");getLightStatus();}});
+  .always(function(){if(getAllValues)getLightStatus();});
 }
 function getLightStatus(){
   $.get("/api/getdevice?status=")
@@ -290,11 +293,10 @@ function getLightStatus(){
       }
     });
   })
-  .fail(function(){$('#deviceStatus').html("Error getting lightstatus.");})
+  .fail(function(){$('#deviceStatus').html("Error getting lightstatus");})
   .always(function(){if(getAllValues)getSensors();});
 }
 function getSensors(){
-  $('#deviceStatus').html("loading sensors...");
   $.get("/api/getdevice?sensors")
   .done(function(data){
     var item=data.split('\n');var sensor=0;
@@ -309,29 +311,29 @@ function getSensors(){
       $('.sensorname .itemName').eq(sensor).html(String(sensorid).toUpperCase()+" - "+temp);
       $('.sensorNameInput').eq(sensor).val(name);
       $('.sensorname').eq(sensor).show();
+      $('.sensorbutton').show();
       sensor++;
     }
+    getSensorLoggingStatus();
+    getSensorErrorLoggingStatus()
     $('#deviceStatus').html("");
   })
-  .fail(function(){$('#deviceStatus').html("Error getting sensors.");})
+  .fail(function(data){if(!getAllValues)$('#deviceStatus').html("No sensors found");})
   .always(function(){if(getAllValues)getWifiSSID()});
 }
 function getWifiSSID(){
-  $('#deviceStatus').html("WiFi ssid...");
   $.get("/api/getdevice?wifissid=")
   .done(function(data){$('#wifissid').html("WiFi network: "+data);})
   .fail(function(data){$('#wifissid').html("Error getting wifi SSID: "+data.statusText);})
   .always(function(){if(getAllValues)getBootTime();});
 }
 function getBootTime(){
-  $('#deviceStatus').html("system start...");
   $.get("/api/getdevice?boottime=")
   .done(function(data){$('#bootTime').html(data);})
   .fail(function(data){$('#deviceStatus').html("Error getting boottime: "+data.statusText);})
   .always(function(){if(getAllValues)getDiskSpace();});
 }
 function getDiskSpace(){
-  $('#deviceStatus').html("disk space...");
   $.get("/api/getdevice?diskspace=")
   .done(function(data){
     var tmp=data.split(',');
@@ -342,14 +344,12 @@ function getDiskSpace(){
   .always(function(){if(getAllValues)getPwmDepth();});
 }
 function getPwmDepth(){
-  $('#deviceStatus').html("pwm depth...");
   $.get("/api/getdevice?pwmdepth=")
   .done(function(data){$('#pwmStatus').html(data+"bit - ");})
   .fail(function(data){$('#deviceStatus').html("Error getting pwmdepth "+data.responseText);})
   .always(function(){if(getAllValues)getVersion();});
 }
 function getVersion(){
-  $('#deviceStatus').html("firmware version...");
   $.get("/api/getdevice?version=")
   .done(function(data){
     $('#version').html(data);
@@ -364,7 +364,6 @@ function getVersion(){
   .always(function(){if(getAllValues)getPwmFrequency();});
 }
 function getPwmFrequency(){
-  $('#deviceStatus').html("pwm frequency...");
   $.get("/api/getdevice?pwmfrequency=")
   .done(function(data){$('#pwmStatus').append(data+"Hz");})
   .fail(function(data){$('#deviceStatus').html("Error getting pwmfrequency: "+data.responseText);})
@@ -400,7 +399,7 @@ $('#passwordInput').on('change',function(){
   .fail(function(){$('#passwordInput').css({'background':'red'});});
 });
 $('#oledOrientationSlider').on('change',function(){
-  $(this).val()==1?$('#oledOrientationValue').html('upsidedown'):$('#oledOrientationValue').html('normal');
+  $('#oledOrientationValue').html($(this).val()==1?'upsidedown':'normal');
   $.post("/api/setdevice",{oledorientation:$('#oledOrientationValue').html()})
   .done(function(data){$('#oledOrientationValue').html(data);})
   .fail(function(){getOledOrientation();});
@@ -457,6 +456,17 @@ $('#tftBrightnessSlider').on('change',function(){
   .done(function(data){$('#tftBrightnessSlider').val(data);})
   .fail(function(){getTftMaxBrightness();});
 });
+$('#tftOverrideButton').on('click',function(){
+  $.post("/api/setdevice",{tftstate:"forcetft"})
+  .done(function(){
+    getTftOrientation();
+    getTftMaxBrightness();
+    $('#deviceStatus').html("TFT forced until reboot");
+  })
+  .fail(function(data){
+    $('#deviceStatus').html(data.statusText);
+  });
+})
 $('#timeZoneTextBox').on('change',function(){
   $.post('/api/setdevice',{timezone:$(this).val()})
   .done(function(data){
@@ -492,11 +502,12 @@ $('.sensorNameInput').on('change',function(){
 });
 $('#sensorScan').on('click',function(){
   $.post("/api/setdevice",{sensorscan:true})
-  .done(function(data){
-    var updateSensors=setTimeout(getSensors,800);
+  .done(function(){
+    var updateSensors=setTimeout(getSensors,1500);
     $('p.item.sensorname').hide();
+    $('.sensorbutton').hide();
   })
-  .fail(function(data){console.log(data);});
+  .fail(function(){$('#deviceStatus').html("Error scanning sensors");});
 });
 $('.collapsable').on('click',function(){
   $('.collapsable').css('height','45px').css('cursor','pointer').css('background-color','beige').css('opacity',0.3);

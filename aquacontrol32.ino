@@ -22,6 +22,14 @@
 const char * wifi_network = "";    /* Change your WiFi username and password before compiling! */
 const char * wifi_password = "";   /* Or use https://github.com/EspressifApp/EsptouchForAndroid/releases/latest for Android phones */
                                    /* Or use https://github.com/EspressifApp/EsptouchForIOS/releases/tag/v1.0.0 for iPhones */
+
+const IPAddress STATIC_IP(192, 168, 0, 60);  /* THIS SHOULD BE OUTSIDE YOUR ROUTERS DHCP RANGE! */
+
+const IPAddress GATEWAY(192, 168, 0, 1);   // Set your Gateway IP address
+const IPAddress SUBNET(255, 255, 255, 0);   /* USUALLY 255,255,255,0 BUT CHECK IT IN YOUR ROUTER OR PC CONNECTED TO THE SAME ROUTER*/
+const IPAddress PRIMARY_DNS(192, 168, 0, 30); // CHECK IN YOUR ROUTER
+const IPAddress SECONDARY_DNS( 192, 168, 0, 50 ); // CHECK IN YOUR ROUTER
+
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
 
@@ -251,8 +259,8 @@ const TaskHandle_t startTFT() {
     NULL,                           /* Task input parameter */
     tftTaskPriority,                /* Priority of the task */
     &xTftTaskHandle,                /* Task handle. */
-    1);       
-    return xTftTaskHandle;
+    1);
+  return xTftTaskHandle;
 }
 
 void setup()
@@ -289,7 +297,7 @@ void setup()
   tft.begin( TFT_SPI_CLOCK );
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 ) {
-    if (!startTFT()) ESP_LOGE(TAG,"Could not start TFT task.");
+    if (!startTFT()) ESP_LOGE(TAG, "Could not start TFT task.");
   }
   else ESP_LOGI( TAG, "No ILI9341 found" );
 
@@ -360,7 +368,7 @@ void setup()
         OLED.drawString( 64, 20, errorffatStr );
         OLED.display();
       }
-    while (true) delay(1000); /* system is halted */;
+      while (true) delay(1000); /* system is halted */;
     }
   }
 

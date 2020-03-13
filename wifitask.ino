@@ -57,7 +57,13 @@ void wifiTask( void * pvParameters ) {
 
   waitForWifi();
 
-  WiFi.setAutoReconnect( true );
+  const IPAddress NO_IP(0, 0, 0, 0);
+  if (!WiFi.config(STATIC_IP, GATEWAY, SUBNET, PRIMARY_DNS, SECONDARY_DNS)) {
+    Serial.print( "STA Failed to configure" );
+    while (1) delay(10);
+  }
+
+  //WiFi.setAutoReconnect( true );
   /* We have succesfully connected */
   WiFi.onEvent( WiFiEvent );
   ESP_LOGI( TAG, "WiFi connected to '%s' %s %s",

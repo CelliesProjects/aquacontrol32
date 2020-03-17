@@ -23,12 +23,13 @@ const char * wifi_network = "";    /* Change your WiFi username and password bef
 const char * wifi_password = "";   /* Or use https://github.com/EspressifApp/EsptouchForAndroid/releases/latest for Android phones */
                                    /* Or use https://github.com/EspressifApp/EsptouchForIOS/releases/tag/v1.0.0 for iPhones */
 
-const IPAddress STATIC_IP(192, 168, 0, 60);  /* THIS SHOULD BE OUTSIDE YOUR ROUTERS DHCP RANGE! */
+#define SET_STATIC_IP              true                 /* If SET_STATIC_IP is set to true then STATIC_IP, GATEWAY, SUBNET and PRIMARY_DNS have to be set to some sane values also */
 
-const IPAddress GATEWAY(192, 168, 0, 1);   // Set your Gateway IP address
-const IPAddress SUBNET(255, 255, 255, 0);   /* USUALLY 255,255,255,0 BUT CHECK IT IN YOUR ROUTER OR PC CONNECTED TO THE SAME ROUTER*/
-const IPAddress PRIMARY_DNS(192, 168, 0, 30); // CHECK IN YOUR ROUTER
-const IPAddress SECONDARY_DNS( 192, 168, 0, 50 ); // CHECK IN YOUR ROUTER
+const IPAddress STATIC_IP(192, 168, 0, 60);              /* This should be outside your router dhcp range! */
+const IPAddress GATEWAY(192, 168, 0, 1);                 /* Set to your gateway IP address */
+const IPAddress SUBNET(255, 255, 255, 0);                /* Usually 255,255,255,0 but check in your router or pc connected to the same network*/
+const IPAddress PRIMARY_DNS(192, 168, 0, 30);            /* Check in your router */
+const IPAddress SECONDARY_DNS( 192, 168, 0, 50 );        /* Check in your router */
 
 #include "deviceSetup.h"
 #include "devicePinSetup.h"

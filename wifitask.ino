@@ -1,9 +1,16 @@
 void wifiTask( void * pvParameters ) {
   /* trying last accesspoint */
+
+  if (SET_STATIC_IP && !WiFi.config(STATIC_IP, GATEWAY, SUBNET, PRIMARY_DNS, SECONDARY_DNS))
+    ESP_LOGE(TAG, "Setting static IP failed");
+
   WiFi.mode( WIFI_STA );
   WiFi.setSleep( false );
 
-  if ( wifi_network != "" ) WiFi.begin( wifi_network, wifi_password );
+  if (!strcmp(wifi_network, "")) {
+    ESP_LOGI(TAG, "Connecting to %s.", wifi_network);
+    WiFi.begin(wifi_network, wifi_password);
+  }
   else WiFi.begin();
 
   if ( xTftTaskHandle ) {
@@ -57,13 +64,6 @@ void wifiTask( void * pvParameters ) {
 
   waitForWifi();
 
-  const IPAddress NO_IP(0, 0, 0, 0);
-  if (!WiFi.config(STATIC_IP, GATEWAY, SUBNET, PRIMARY_DNS, SECONDARY_DNS)) {
-    Serial.print( "STA Failed to configure" );
-    while (1) delay(10);
-  }
-
-  //WiFi.setAutoReconnect( true );
   /* We have succesfully connected */
   WiFi.onEvent( WiFiEvent );
   ESP_LOGI( TAG, "WiFi connected to '%s' %s %s",

@@ -19,7 +19,10 @@ void oledTask( void * pvParameters ) {
       snprintf( content, sizeof( content ), "%.2f kB RAM", esp_get_free_heap_size() / 1024.0 );
       OLED.drawString( 64, 10, content );
 
-      OLED.drawString( 64, 20, "IP: " +  WiFi.localIP().toString() );
+      if (!WiFi.isConnected())
+        OLED.drawString(64, 20, "WiFi ERROR");
+      else
+        OLED.drawString( 64, 20, "IP: " +  WiFi.localIP().toString() );
 
       snprintf( content, sizeof( content ), "%i Dallas sensors", logger.sensorCount() );
       OLED.drawString( 64, 30, content );
@@ -33,7 +36,10 @@ void oledTask( void * pvParameters ) {
       const uint8_t BARS_BORDER      = 4;
       const uint8_t BARS_WIDTH       = OLED.getWidth() / NUMBER_OF_CHANNELS;
 
-      OLED.drawString( 64, 0, WiFi.localIP().toString() );
+      if (!WiFi.isConnected())
+        OLED.drawString(64, 0, "WiFi ERROR");
+      else
+        OLED.drawString( 64, 0, "IP: " +  WiFi.localIP().toString() );
 
       for ( uint8_t thisChannel = 0; thisChannel < NUMBER_OF_CHANNELS; thisChannel++ ) {
         uint8_t x1 = BARS_WIDTH * thisChannel + BARS_BORDER;

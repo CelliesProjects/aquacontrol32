@@ -24,6 +24,7 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 - [Connecting a ILI9341](#connecting-a-ili9341)
 - [Lunar cycle night light](#lunar-cycle-night-light)
 - [SmartConfig and WiFi setup](#smartconfig-and-wifi-setup)
+- [DHCP or static IP](#DHCP-or-static-IP)
 - [Log files](#log-files)
 - [Known issues](#known-issues)
 - [Libraries in the web interface](#Libraries-used-in-web-interface)
@@ -37,8 +38,7 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
   - 5 channels led dimming (common anode) through 1.22kHz PWM at 16 bit (65535 steps) resolution. The dimming control task runs at 100Hz to ensure smooth dimming.
   - Lunar cycle night light.
   - 50 timers per channel with a 1 minute resolution.
-  - Password protected web interface to control the device. (default login is user:admin password:esp32)
-<br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
+  - Password protected web interface to control the device. (default login is user:admin password:esp32)<br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
   - SNTP timekeeping with timezone support.
   - 3x OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
   - SSD1306 128x64 OLED over I<sup>2</sup>C support.
@@ -86,8 +86,7 @@ The sensors and displays should be plug and play, except the ILI9341 when it has
 
 #### Compile notes
 
-  - Compare your installed libraries versions against the libraries in `aquacontrol32.ino`.
-  - Check your device options in `deviceSetup.h` an `devicePinSetup.h`.
+  - Check your device options in `deviceSetup.h` and `devicePinSetup.h`.
   - Source are compiled for `mhetesp32minikit` which has support for ESP_LOGX macros.
 <br>This can be changed to a particular esp32 board by changing the `--board` option in the `compile.sh` and `flash.sh` scripts.
 <br>Look in `~/Arduino/hardware/espressif/esp32/boards.txt` to find the relevant board desciption.
@@ -95,11 +94,11 @@ The sensors and displays should be plug and play, except the ILI9341 when it has
 <br>When you are still testing your hardware and setup, debug level can be set to anything depending on your needs.
 <br>(`esp32_info` is probably what you need, `esp32_verbose` gives the most info)
 
-Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information. 
+Toggle the `GIT_TAG` option in `deviceSetup.h` to enable or disable version information.
 <br>Setting `GIT_TAG` to `true` makes that the Arduino IDE can no longer compile or flash your script.
-<br>You then have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller. You might have to adjust these scripts for your particular OS.
+<br>You then have to use the script `compile.sh` to verify your sketch and `flash.sh` to verify/upload the sketch to the controller. You might have to adjust these scripts for your particular OS or setup.
 <br>Read [this blog post](https://wasietsmet.nl/arduino/add-git-tag-and-version-number-to-an-arduino-sketch/) to see why I choose this method.
-  
+
 #### Connecting a ILI9341
 
   - Check the [Aquacontrol hardware GitHub repo](https://github.com/CelliesProjects/aquacontrol-hardware).
@@ -137,6 +136,15 @@ Or use SmartConfig and take note of the next couple of things.
 ##### Note: ESP32s can only connect to a 2.4Ghz WiFi network. Connect your phone to a 2.4Ghz network before starting the SmartConfig app.
 
 ##### Note 2: Since Android 9 only the latest Espressif app seems to work. Android apps now requires location access to probe WiFi.
+
+#### DHCP or static IP
+
+By default aquacontrol will get an ip address from the DHCP server.
+
+Follow these steps to  to set a static ip address:
+
+1. Enable `SET_STATIC_IP` (set it to `true`) in `aquacontrol32.ino`.
+2. Change `STATIC_IP`, `GATEWAY`, `SUBNET`, `PRIMARY_DNS` and `SECONDARY_DNS` to the desired values.
 
 #### Log files
 

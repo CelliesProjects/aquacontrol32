@@ -4,7 +4,7 @@
 
 Aquacontrol32 can control 5 led strips to create gradual sunrises and sunsets in your aquarium. It is developed for and tested on [MH-ET LIVE MiniKit ESP32](http://mh.nodebb.com/topic/8/new-mh-et-live-minikit-for-esp32) MCUs. Other than the led dimming hardware, no additional hardware is needed to control the device.
 
-The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 100R gate resistors to 5 NPN mosfets that drive the led lights. You will need logic level mosfets. I use [IRLN44 mosfets](http://www.irf.com/product-info/datasheets/data/irlz44n.pdf).
+The minimum hardware would be a ESP32 board with at least 5 free output pins connected via 100R gate resistors to 5 NPN mosfets that drive the led lights. You will need logic level mosfets for example [IRLZ44N mosfets](http://www.irf.com/product-info/datasheets/data/irlz44n.pdf).
 
 With some modifications and provided there are enough pins broken out, Aquacontrol32 should run on basically any ESP32 based board. The built-in web interface already gives access to most functions. The goal is v2.0 as a single binary with all functions accessible via the web interface.
 

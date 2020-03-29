@@ -37,7 +37,7 @@ const IPAddress SECONDARY_DNS( 192, 168, 0, 50 );        /* Check in your router
 #if GIT_TAG
 #include "gitTagVersion.h"
 #else
-const char * sketchVersion = "v1.6.6-master";
+const char * sketchVersion = "v1.6.7-master";
 #endif
 
 /**************************************************************************

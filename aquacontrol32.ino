@@ -19,9 +19,18 @@
 #include <Task.h>                  /* Install 1.0.0 https://github.com/CelliesProjects/Task */
 #include "ledState.h"
 
-const char * wifi_network = "";    /* Change your WiFi username and password before compiling! */
-const char * wifi_password = "";   /* Or use https://github.com/EspressifApp/EsptouchForAndroid/releases/latest for Android phones */
-                                   /* Or use https://github.com/EspressifApp/EsptouchForIOS/releases/tag/v1.0.0 for iPhones */
+const char * wifi_network = "";                          /* Change your WiFi username and password before compiling! */
+const char * wifi_password = "";                         /* Or use https://github.com/EspressifApp/EsptouchForAndroid/releases/latest for Android phones */
+                                                         /* Or use https://github.com/EspressifApp/EsptouchForIOS/releases/tag/v1.0.0 for iPhones */
+
+#define SET_STATIC_IP              false                 /* If SET_STATIC_IP is set to true then STATIC_IP, GATEWAY, SUBNET and PRIMARY_DNS have to be set to some sane values */
+
+const IPAddress STATIC_IP(192, 168, 0, 60);              /* This should be outside your router dhcp range! */
+const IPAddress GATEWAY(192, 168, 0, 1);                 /* Set to your gateway ip address */
+const IPAddress SUBNET(255, 255, 255, 0);                /* Usually 255,255,255,0 but check in your router or pc connected to the same network */
+const IPAddress PRIMARY_DNS(192, 168, 0, 30);            /* Check in your router */
+const IPAddress SECONDARY_DNS( 192, 168, 0, 50 );        /* Check in your router */
+
 #include "deviceSetup.h"
 #include "devicePinSetup.h"
 
@@ -251,8 +260,8 @@ const TaskHandle_t startTFT() {
     NULL,                           /* Task input parameter */
     tftTaskPriority,                /* Priority of the task */
     &xTftTaskHandle,                /* Task handle. */
-    1);       
-    return xTftTaskHandle;
+    1);
+  return xTftTaskHandle;
 }
 
 void setup()
@@ -289,7 +298,7 @@ void setup()
   tft.begin( TFT_SPI_CLOCK );
 
   if ( TFT_HAS_NO_MISO || tft.readcommand8( ILI9341_RDSELFDIAG ) == 0xE0 ) {
-    if (!startTFT()) ESP_LOGE(TAG,"Could not start TFT task.");
+    if (!startTFT()) ESP_LOGE(TAG, "Could not start TFT task.");
   }
   else ESP_LOGI( TAG, "No ILI9341 found" );
 
@@ -360,7 +369,7 @@ void setup()
         OLED.drawString( 64, 20, errorffatStr );
         OLED.display();
       }
-    while (true) delay(1000); /* system is halted */;
+      while (true) delay(1000); /* system is halted */;
     }
   }
 

@@ -421,14 +421,17 @@ void showIPAddress() {
   char buff[15];
   int16_t x, y;
   uint16_t w, h;
-  snprintf( buff, sizeof( buff ), "%s", WiFi.localIP().toString().c_str() );
-  tft.fillRect( networkArea.x, networkArea.y, networkArea.w, networkArea.h, TFT_BACK_COLOR );
-  tft.setTextSize( networkArea.fontsize );
-  tft.getTextBounds( buff, 0, 0, &x, &y, &w, &h);
-  tft.setCursor( ( networkArea.x + networkArea.w / 2 ) - w / 2,
-                 ( networkArea.y + ( networkArea.h / 2 ) - h / 2 ) );
-  tft.setTextColor( TFT_TEXT_COLOR, TFT_BACK_COLOR );
-  tft.print( buff );
+  if (!WiFi.isConnected())
+    snprintf(buff, sizeof(buff), "%s", "WiFi ERROR");
+  else
+    snprintf(buff, sizeof(buff), "%s", WiFi.localIP().toString().c_str());
+  tft.fillRect(networkArea.x, networkArea.y, networkArea.w, networkArea.h, TFT_BACK_COLOR);
+  tft.setTextSize(networkArea.fontsize);
+  tft.getTextBounds(buff, 0, 0, &x, &y, &w, &h);
+  tft.setCursor((networkArea.x + networkArea.w / 2) - w / 2,
+                (networkArea.y + ( networkArea.h / 2) - h / 2));
+  tft.setTextColor(TFT_TEXT_COLOR, TFT_BACK_COLOR);
+  tft.print(buff);
 }
 
 void drawSensors() {

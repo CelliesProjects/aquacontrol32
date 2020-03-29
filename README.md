@@ -50,7 +50,7 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
 #### Requirements
 
   - The latest [aquacontrol32 release](https://github.com/CelliesProjects/aquacontrol32/releases/latest).
-  - The [Arduino IDE](https://arduino.cc/) 1.8.11.
+  - The [Arduino IDE](https://arduino.cc/) 1.8.12.
   - The [ESP32 Arduino Core 1.0.4](https://github.com/espressif/arduino-esp32/releases/tag/1.0.4).
 
 #### Libraries

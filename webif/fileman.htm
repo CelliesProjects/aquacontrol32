@@ -227,8 +227,8 @@ function loadHandler(event){
   $('#progressBar').attr({value:0,max:0});
   readFiles();
 }
-function errorHandler(event){$("#statusLine").html("Upload failed");}
-function abortHandler(event){$("#statusLine").html("Upload aborted");}
+function errorHandler(event){$("#statusLine").html("Upload failed");readFiles();updateDiskspace();}
+function abortHandler(event){$("#statusLine").html("Upload aborted");readFiles();updateDiskspace();}
 $('#fileSelection').on('change',function(){
   if($('#fileSelection').val()!="")$('#uploadButton').val("Upload").prop('disabled',false);
   else $('#uploadButton').val("Upload").prop('disabled',true);
@@ -237,9 +237,7 @@ $("#uploadButton").click(function(event){
   event.preventDefault();
   if($('#fileSelection').val()==""){return;}
   $.post('/api/upload',function(){
-    var str=$('#fileSelection').val();
-    var filename=str.split('\\');
-    $('#fileList').html('<p class="sysMessage">Uploading '+filename.pop()+'</p>');
+    $('#fileList').html('<p class="sysMessage">Uploading</p>');
   })
   .done(function(){
     $('#uploadButton').val("Uploading...").prop('disabled',true);
@@ -269,6 +267,7 @@ $("#uploadButton").click(function(event){
 $('#fileList').on('click','.deleteButton',function(){
   deleteFile(this.getAttribute("data-filename"));
 });
+/*
 $(':file').on('change',function(){
   var file=this.files[0];
   if(file.name==''){return;}
@@ -278,6 +277,7 @@ $(':file').on('change',function(){
     $('#uploadButton').prop("disabled",true);
   }
 });
+  */
 </script>
 </body>
 </html>

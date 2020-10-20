@@ -47,7 +47,8 @@ void wifiTask( void * pvParameters ) {
 
       if ( xTftTaskHandle ) {
         tft.setCursor( 70, 100 );
-        tft.print( remainingSCTime );
+        tft.print( END_TIME - time( NULL ) );
+        tft.println( " seconds left. " );
       }
       else
         digitalWrite( LED_BUILTIN, !gpio_get_level( gpio_num_t( LED_BUILTIN ) ) );

@@ -1,9 +1,9 @@
-#include "webif/index_htm.h"
-#include "webif/channels_htm.h"
-#include "webif/setup_htm.h"
-#include "webif/editor_htm.h"
-#include "webif/logs_htm.h"
-#include "webif/fileman_htm.h"
+#include "webif/index_htm_gz.h"
+#include "webif/channels_htm_gz.h"
+#include "webif/setup_htm_gz.h"
+#include "webif/editor_htm_gz.h"
+#include "webif/logs_htm_gz.h"
+#include "webif/fileman_htm_gz.h"
 
 #define INVALID_CHANNEL 100
 
@@ -24,6 +24,9 @@ void webServerTask ( void * pvParameters ) {
   static const char * INVALID_OPTION           = "Invalid option";
   static const char * NO_SENSORNUMBER          = "No sensornumber";
   static const char * INVALID_SENSORNUMBER     = "Invalid sensornumber";
+
+  static const char * CONTENT_ENCODING_HEADER  {"Content-Encoding"};
+  static const char * CONTENT_ENCODING_VALUE   {"gzip"};
 
   static AsyncWebServer server(80);
 
@@ -47,39 +50,44 @@ void webServerTask ( void * pvParameters ) {
 
   server.on( "/", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
     if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, index_htm, index_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, index_htm_gz, index_htm_gz_len );
     response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
+    response->addHeader(CONTENT_ENCODING_HEADER, CONTENT_ENCODING_VALUE);
     request->send( response );
   });
 
   //  /channels or 'channels.htm'
   server.on( "/channels", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
     if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, channels_htm, channels_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, channels_htm_gz, channels_htm_gz_len );
     response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
+    response->addHeader(CONTENT_ENCODING_HEADER, CONTENT_ENCODING_VALUE);
     request->send( response );
   });
 
   //  /editor or 'editor.htm'
   server.on( "/editor", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
     if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, editor_htm, editor_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, editor_htm_gz, editor_htm_gz_len );
     response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
+    response->addHeader(CONTENT_ENCODING_HEADER, CONTENT_ENCODING_VALUE);
     request->send( response );
   });
 
   //  /logs or 'logs.htm'
   server.on( "/logs", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
     if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, logs_htm, logs_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, logs_htm_gz, logs_htm_gz_len );
     response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
+    response->addHeader(CONTENT_ENCODING_HEADER, CONTENT_ENCODING_VALUE);
     request->send( response );
   });
 
   //  /setup or 'setup.htm'
   server.on( "/setup", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
     if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, setup_htm, setup_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, setup_htm_gz, setup_htm_gz_len );
+    response->addHeader(CONTENT_ENCODING_HEADER, CONTENT_ENCODING_VALUE);
     response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
     request->send( response );
   });
@@ -87,7 +95,8 @@ void webServerTask ( void * pvParameters ) {
   //  /filemanager or 'fileman.htm'
   server.on( "/filemanager", HTTP_GET, [] ( AsyncWebServerRequest * request ) {
     if ( htmlUnmodified( request, modifiedDate ) ) return request->send(304);
-    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, fileman_htm, fileman_htm_len );
+    AsyncWebServerResponse *response = request->beginResponse_P( 200, HEADER_HTML, fileman_htm_gz, fileman_htm_gz_len );
+    response->addHeader(CONTENT_ENCODING_HEADER, CONTENT_ENCODING_VALUE);
     response->addHeader( HEADER_LASTMODIFIED, modifiedDate );
     request->send( response );
   });

@@ -1,6 +1,6 @@
 ### This are the web interface files for aquacontrol32.
 
-This folder contains the html files for the web interface.
+This folder contains the html and gzipped files for the web interface.
 
 Before compiling these files have to gzipped and after that converted to C style header files.
 

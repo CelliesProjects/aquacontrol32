@@ -1,0 +1,305 @@
+<!doctype HTML>
+<html lang="de">
+<head>
+<title>Showlog</title>
+<meta charset="utf-8">
+<link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<style>
+html,body{
+  margin:0 auto;
+  background-color:grey;
+  width:1024px;
+  font-size:20px;
+  font-family:'Roboto',sans-serif;
+}
+a{
+  color:black;
+  text-decoration:none;
+  margin:0 10px;
+}
+#hostName{
+  margin:0;
+}
+.systemLink{
+  padding:3px 10px;
+}
+.systemLink:hover{
+  background:grey;
+}
+p{
+  margin:0;
+}
+.shadowedBox{
+  text-align:center;
+  box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
+  border-radius:15px;
+  margin:10px 0;
+}
+.controlBox{
+  position:relative;
+}
+#editorCanvas{
+  background-color:black;
+  margin:0;
+  display:none;
+}
+#sideBox{
+  width:210px;
+  height:400px;
+  float:right;
+  overflow:hidden;
+  margin:0;
+  display:none;
+}
+#fileList{
+  overflow-y:auto;
+  display:none;
+}
+.logFile{
+  font-size:20px;
+}
+.logFile:hover,button:hover{
+  cursor:pointer;
+}
+.rangeButton,.baseButton{
+  width:50%;
+  padding:10px;
+}
+#loaderBox{
+  line-height:400px;
+  background-color:black;
+  color:yellow;
+}
+#zapBox{
+  overflow:hidden;
+  white-space:nowrap;
+  display:none;
+}
+#prevbutton,#nextbutton{
+  width:10%;
+  padding:15px;
+}
+#datestr{
+  width:80%;
+  display:inline-block;
+}
+.noselect{
+-webkit-touch-callout:none;
+-webkit-user-select:none;
+-khtml-user-select:none;
+-moz-user-select:none;
+-ms-user-select:none;
+user-select:none;
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+<body class="noselect">
+<p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">STARTSEITE</a><a class="systemLink" href="channels">MONDLICHT EINS.</a><a class="systemLink" href="setup">EINSTELLUNGEN</a><a class="systemLink" href="editor">BEARBEITEN</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">DATEIBROWSER</a></p>
+<div class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Log dateien</p></div>
+<div class="shadowedBox" id="loaderBox">Überprüfe auf Log Dateien...</div>
+<canvas class="shadowedBox" id="editorCanvas" width="800px" height="400px"></canvas>
+<div id="sideBox" class="shadowedBox" style="background-color:beige;">
+<div class="controlBox "><p id="baseStatus">&nbsp;</p><button class="baseButton">&darr;</button><button class="baseButton">&uarr;</button></div>
+<div class="controlBox"><p id="rangeStatus">&nbsp;</p><button class="rangeButton">RANGE-</button><button class="rangeButton">RANGE+</button></div>
+<div id="fileList"></div>
+</div>
+<div id="zapBox" class="shadowedBox">
+  <button id="prevbutton" class="zapbutton"><<</button><p id="datestr"></p><button id="nextbutton" class="zapbutton">>></button>
+</div>
+<script>
+function map(x,in_min,in_max,out_min,out_max){return(x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;}
+var grapArea=document.getElementById('editorCanvas');
+var rangeBottom=10;
+var rangeTop   =30;
+var sensorColor=["rgba(255,70,70,1)","rgba(70,255,70,1)","rgba(70,70,255,1)"];
+var sensorName =[];
+var measurements;
+var currentFile=undefined;
+$(document).ready(function(){
+  $.get("/api/getdevice?hostname=")
+  .done(function(data){
+    $("#hostName").html(data);
+    document.title=data+' log files';
+    $.get('/api/getdevice?status=')
+    .done(function(data){
+      var statusData=data.split('\n');
+      var offset=7;
+      while(statusData[offset]){
+        var sensorData=statusData[offset].split(',');
+        sensorName[offset-7]=sensorData[0];
+        offset++;
+      }
+    loadLogFiles();
+    });
+  });
+});
+function loadLogFiles(){
+  var nolog="No log files found";
+  $.get('/api/getdevice?files=')
+  .done(function(data){
+    var fileArray=data.split('\n');fileArray.sort();
+    for(var f=0;f<fileArray.length;f++){if(fileArray[f].substring(11,15)=='.log'){$('#fileList').append('<p class="logFile">'+fileArray[f].substring(1,11)+"</p>");}}
+    if(0==$('.logFile').length){
+      $('#loaderBox')/*.show()*/.html(nolog);
+    }else{
+      $('#loaderBox').hide();
+      $('#sideBox').css("display","block");
+      $('#editorCanvas,#zapBox,#fileList').show();
+      $('#fileList').css("height",400-parseInt($('.controlBox').css("height"))*2+"px");
+      var tmp=$('.logFile').last();tmp.click();tmp[0].scrollIntoView();
+    }
+  })
+  .fail(function(){
+    $('#loaderBox').html(nolog);
+  });
+}
+function showChannelColor(sensor){
+  var ctx=grapArea.getContext("2d");
+  ctx.beginPath();
+  ctx.textBaseline="middle";
+  ctx.textAlign="left";
+  ctx.fillStyle=sensorColor[sensor];
+  ctx.strokeStyle="black";
+  ctx.fillText(sensorName[sensor],75,grapArea.height-50-(sensor)*20);
+  ctx.strokeStyle=ctx.fillStyle;
+  ctx.moveTo(30,grapArea.height-50-sensor*20);
+  ctx.lineTo(70,grapArea.height-50-sensor*20);
+  ctx.stroke();
+}
+function drawAllGraphs(){
+  var ctx=grapArea.getContext("2d");ctx.clearRect(0,0,grapArea.width,grapArea.height);
+  const opacity=0.37;
+  const lineDash=[2,2];
+  ctx.beginPath();
+  ctx.strokeStyle='rgba(255,165,0,'+opacity+')';ctx.fillStyle=ctx.strokeStyle;
+  ctx.font='15px Roboto';
+  for(hour=0;hour<25;hour++){
+    var x=map(hour,0,24,0,grapArea.width);
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,grapArea.height);
+    ctx.setLineDash([]);
+    ctx.textBaseline="middle";
+    ctx.textAlign="center";
+    ctx.fillText(hour+"h",x,10);
+    ctx.fillText(hour+"h",x,grapArea.height/2);
+    ctx.fillText(hour+"h",x,grapArea.height-10);
+    ctx.setLineDash(lineDash);
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.strokeStyle='rgba(255,255,255,'+ opacity+')';ctx.fillStyle=ctx.strokeStyle;
+  for(templine=rangeBottom;templine<=rangeTop;templine++){
+    var y=map(templine,rangeBottom,rangeTop,grapArea.height,0);
+    ctx.moveTo(0,y);
+    ctx.lineTo(grapArea.width,y);
+    var tempstr=parseInt(map(y,0,grapArea.height,rangeTop,rangeBottom));
+    tempstr+="°";
+    ctx.setLineDash([]);ctx.textBaseline="middle";ctx.textAlign="center";
+    ctx.fillText(tempstr,20,y);
+    ctx.fillText(tempstr,grapArea.width/2,y);
+    ctx.fillText(tempstr,grapArea.width-20,y);
+    ctx.setLineDash(lineDash) ;
+  }
+  ctx.stroke();
+  drawSingleChannel(1,measurements,grapArea,sensorColor[0],rangeBottom,rangeTop);
+  drawSingleChannel(2,measurements,grapArea,sensorColor[1],rangeBottom,rangeTop);
+  drawSingleChannel(3,measurements,grapArea,sensorColor[2],rangeBottom,rangeTop);
+  s=0;while(sensorName[s]){showChannelColor(s);s++;}
+}
+function drawLogFile(url){
+  $.get(url,function(data){
+    var ctx=grapArea.getContext("2d");
+    measurements=data.split('\n');
+    if(measurements.length){
+      showRange();
+      showBase();
+      drawAllGraphs();
+    }else{
+      ctx.textBaseline="middle";ctx.textAlign="center";ctx.font='20px Roboto';ctx.strokeStyle='rgba(255,255,255,1)';
+      ctx.strokeText("No sensor data found",grapArea.width/2,grapArea.height/2);
+    }
+    var counter=0;while(measurements[counter].charAt(0)=='#')counter++;
+    $('#datestr').html('<a href="'+url.substring(1)+'" target="_blank">'+new Date(measurements[counter].substr(0,measurements[counter].indexOf(',',0))*1000).toLocaleString(window.navigator.userLanguage||window.navigator.language,{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</a>');
+  });
+}
+function drawSingleChannel(sensor,data,canvas,color,mintemp,maxtemp){
+  var ctx=canvas.getContext("2d");
+  ctx.beginPath();
+  ctx.setLineDash([]);
+  ctx.strokeStyle=sensorColor[sensor-1];ctx.fillStyle=color;
+  /* draw the actual graph*/
+  var closeLine=true;
+  for(p=0;p<data.length;p++){
+    var temp=data[p].split(',');
+    var date=new Date(temp[0]*1000);
+
+    if(isNaN(date.getTime())){
+      closeLine=true;
+    }else{
+      var secondsToday=date.getHours()*3600;
+      secondsToday+=date.getMinutes()*60;
+      secondsToday+=date.getSeconds();
+      var y=map(temp[sensor],mintemp,maxtemp,canvas.height,0);
+      var x=map(secondsToday,0,86400,0,canvas.width);
+      if(closeLine){
+        ctx.moveTo(x,y);
+        closeLine=false;
+      }
+      ctx.lineTo(x,y);
+    }
+  }
+  ctx.stroke();
+}
+function showRange(){
+  $('#rangeStatus').html(rangeBottom+"°-"+rangeTop +"°");
+}
+$('.rangeButton').on('click',function(){
+  if($(this).index('.rangeButton')==0){
+    rangeBottom++;
+    rangeTop--;
+  }else{
+    rangeBottom--;
+    rangeTop++;
+  }
+  showRange();
+  drawAllGraphs();
+});
+function showBase(){
+  $('#baseStatus').html((rangeTop-(rangeTop-rangeBottom)/2)+"°");
+}
+$('.baseButton').on('click',function(){
+  if($(this).index('.baseButton')==0){
+    rangeBottom--;
+    rangeTop--;
+  }else{
+    rangeBottom++;
+    rangeTop++;
+  }
+  showBase();
+  showRange();
+  drawAllGraphs();
+});
+$('#sideBox').on('click','.logFile',function(){
+  if(currentFile==$(this).index())return;
+  $('#datestr').html('Loading...');
+  $('.logFile').css({"background-color":""});
+  $(this).css({"background-color":"yellow"});
+  var newurl='/';
+  newurl+=$(this).html()+'.log';
+  drawLogFile(newurl);
+  currentFile=$(this).index();
+});
+$('#prevbutton').on('click',function(){
+  if(currentFile==0)return;
+  var tmp=$('.logFile').eq(currentFile-1);
+  tmp.click();tmp[0].scrollIntoView();
+});
+$('#nextbutton').on('click',function(){
+  if(currentFile==$('.logFile').length-1)return;
+  var tmp=$('.logFile').eq(currentFile+1);
+  tmp.click();tmp[0].scrollIntoView();
+});
+</script>
+</body>
+</html>

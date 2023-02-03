@@ -38,7 +38,7 @@ Another cool feature is support for 3 Dallas DS18B20 temperature sensors, with t
   - 5 channels led dimming (common anode) through 1.22kHz PWM at 16 bit (65535 steps) resolution. The dimming control task runs at 100Hz to ensure smooth dimming.
   - Lunar cycle night light.
   - 50 timers per channel with a 1 minute resolution.
-  - Password protected web interface to control the device. (default login is user:admin password:esp32)<br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamanders](https://salamanders.wasietsmet.nl/) tank.
+  - Password protected web interface to control the device. (default login is user:admin password:esp32)<br>See it in action at my [fish](https://vissen.wasietsmet.nl/) and my [salamander](https://salamanders.wasietsmet.nl/) tank. (update 2023 - Both might be on or offline because running a reverse proxy all day is quite expensive energywise)
   - SNTP timekeeping with timezone support.
   - 3x OneWire DS18B20 sensor support and FFat storage with a 30 day temperature history.
   - SSD1306 128x64 OLED over I<sup>2</sup>C support.

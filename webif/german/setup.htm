@@ -1,0 +1,518 @@
+<!doctype HTML>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<style>
+html,body{
+  margin:0 auto;
+  background-color:grey;
+  text-align:center;
+  width:1024px;
+  font-size:20px;
+  font-family:'Roboto',sans-serif;
+}
+body{
+  opacity:0.4;
+}
+hr{
+  margin:0;
+}
+h3{
+  margin:10px;
+}
+p{
+  margin:0;
+}
+a{
+  color:black;
+  text-decoration:none;
+  margin:0 10px;
+}
+.webLink{
+  color:beige;
+}
+.systemLink{
+  padding:3px 10px;
+}
+.systemLink:hover{
+  background:grey;
+}
+.fileName a{
+  display:block;
+}
+.shadowedBox {
+  box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
+  border-radius:15px;
+  margin:10px 0;
+}
+#hostName{
+  margin:0;
+}
+.settingsBox{
+  width:800px;
+  margin:auto;
+}
+.item{
+  width:100%;
+  margin:10px 0;
+  height:30px;
+}
+.itemName,.itemValue{
+  float:left;
+  line-height:30px;
+}
+.itemName{
+  width:41%
+}
+.itemValue{
+  width:20%;
+  margin:0 30px;
+}
+.deleteButton:hover{
+  background:red;
+  cursor:pointer;
+}
+input{
+  margin:5px auto;
+  vertical-align:middle;
+  box-shadow:0px 0px 2px 0px rgba(0,0,0,1);
+  border-radius:5px;
+  font-size:15px;
+}
+input[type="text"],input[type="password"]{
+    background:beige;
+    height:25px;
+    margin:0;
+    vertical-align:middle;
+    text-align:center;
+    padding:0;
+}
+input[type="button"]{
+  height:30px;
+  width:150px;
+  padding:5px 20px;
+  margin:0 10px;
+}
+input[type="button"],input[type="range"]:hover{
+  cursor:pointer;
+}
+input[type="range"]{
+  width:18%;
+  height:10px;
+  box-shadow:unset;
+}
+.oledBar,.tftBar{
+  display:none;
+}
+input#timeZoneTextBox{
+  width:450px;
+}
+.sensorname,.sensorbutton{
+  display:none;
+}
+input.sensorNameInput,input#hostNameInput,input#passwordInput{
+  width:250px;
+}
+.collapsable{
+  height:45px;
+  overflow:hidden;
+}
+.noselect{
+-webkit-touch-callout:none;
+-webkit-user-select:none;
+-khtml-user-select:none;
+-moz-user-select:none;
+-ms-user-select:none;
+user-select:none;
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+</head>
+<body class="noselect">
+<p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">STARTSEITE</a><a class="systemLink" href="channels">MONDLICHT EINS.</a><a class="systemLink" href="setup">EINSTELLUNGEN</a><a class="systemLink" href="editor">BEARBEITEN</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">DATEIBROWSER</a></p>
+<div id="titleBox" class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Haupteinstellungen</p></div>
+<div class="shadowedBox">
+<p class="item"><span id="deviceStatus"></span></p>
+</div>
+<div class="shadowedBox collapsable">
+<h3>SYSTEM</h3>
+<div class="settingsBox">
+<p class="item"><span class="itemName">Zeitzone<a class="webLink" href="http://www.remotemonitoringsystems.ca/time-zone-abbreviations.php" target="_blank">-beispiele-</a></span><input type="text" id="timeZoneTextBox"></span></p>
+<p class="item"><span class="itemName">Gerätename</span><span><input type="text" id="hostNameInput" value=""></span></p>
+<p class="item"><span class="itemName">Ändere das Administrator Passwort</span><span><input type="password" id="passwordInput" value=""></span></p>
+<p class="item"><span class="itemName">Log reset reason</span><input type="button" id="bootlog"></p>
+</div></div>
+<div class="shadowedBox collapsable">
+<h3>LAMPEN</h3>
+<div class="settingsBox">
+<p class="item light"><span class="itemName">LAMPEN AUS</span><input type="button" id="lightsOff" value="LAMPEN AUS"></p>
+<p class="item light"><span class="itemName">LAMPEN AN</span><input type="button" id="lightsOn" value="LAMPEN AN"></p>
+<p class="item light"><span class="itemName">LAMPEN AUTOMATIK</span><input type="button" id="lightsProgram" value="LAMPEN AUTO"></p>
+</div></div>
+<div class="shadowedBox collapsable">
+<h3>SENSOREN</h3>
+<div class="settingsBox">
+<p class="item"><span class="itemName">Suche nach Sensoren</span><input type="button" id="sensorScan" value="SCAN"></p>
+<p class="item sensorbutton"><span class="itemName">Temperatur Loggen</span><input type="button" id="sensorLogging"></p>
+<p class="item sensorbutton"><span class="itemName">Sensoren Fehlermeldung Loggen</span><input type="button" id="sensorErrorLogging"></p>
+<p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
+<p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
+<p class="item sensorname"><span class="itemName">&nbsp;</span><span><input type="text" class="sensorNameInput" value=""></span></p>
+</div>
+</div>
+<div class="shadowedBox collapsable">
+<h3>DISPLAYS</h3>
+<div class="settingsBox">
+<p class="item tftBar" id="tftOverrideBar"><span class="itemName">ILI9341 force</span><span id="tftOverrideValue" class="itemValue">&nbsp;</span><input type="button" id="tftOverrideButton" value="Force"></p>
+<p class="item tftBar"><span class="itemName">ILI9341 Orientierung</span><span id="tftOrientation" class="itemValue">&nbsp;</span><input type="range" id="tftOrientationSlider" min="0" max="1"></p>
+<p class="item tftBar"><span class="itemName">ILI9341 Max. Helligkeit</span><span id="tftBrightnessValue" class="itemValue">&nbsp;</span><input type="range" id="tftBrightnessSlider" value="11" min="0" max="100" step="1"></p>
+<p class="item oledBar"><span class="itemName">SSD1306 Orientierung</span><span id="oledOrientationValue" class="itemValue">&nbsp;</span><input type="range" id="oledOrientationSlider" min="0" max="1"></p>
+<p class="item oledBar"><span class="itemName">SSD1306 Kontrast</span><span id="oledContrastValue" class="itemValue">&nbsp;</span><input type="range" id="oledContrastSlider" value="11" min="0" max="15" step="1"></p>
+</div>
+</div>
+<div class="shadowedBox collapsable">
+<h3>STATUS</h3>
+<div class="settingsBox">
+<p class="item" id="version"></p>
+<p class="item">System start:&nbsp;&nbsp;<span id="bootTime"></span></p>
+<p class="item">FATFS:&nbsp;&nbsp;<span id="freeDiskSpace"></span></p>
+<p class="item">PWM Status:&nbsp;&nbsp;<span id="pwmStatus"></span></p>
+<p class="item" id="wifissid"></p>
+</div>
+</div>
+<script>
+function formatBytes(bytes,decimals){
+  if(bytes==0)return'0 Bytes';
+  var k=1024,sizes=['Bytes','KB','MB','GB','TB','PB','EB','ZB','YB'],i=Math.floor(Math.log(bytes)/Math.log(k));
+  return parseFloat((bytes/Math.pow(k,i)).toFixed(decimals))+' '+sizes[i];
+}
+var getAllValues;
+$(document).ready(function(){
+  getAllValues=true;
+  $.get("/api/getdevice?hostname=")
+  .done(function(data){
+    $('#hostNameInput').val(data);
+    $('#hostName').html(data);
+    document.title=data+" setup";
+  })
+  .fail(function(){$('#deviceStatus').html("Problem getting hostname");})
+  .always(function(){if(getAllValues)getBootlog();})
+});
+function getBootlog(){
+  $.get("/api/getdevice?bootlog=")
+  .done(function(data){$('#bootlog').val(data.toUpperCase());})
+  .fail(function(){})
+  .always(function(){if(getAllValues)getOledOrientation();});
+}
+function getOledOrientation(){
+  $.get("/api/getdevice?oledorientation=")
+  .done(function(data){
+    $('.oledBar').show();
+    $('#oledOrientationValue').html(data);
+    if(data=='normal')$('#oledOrientationSlider').val(0);
+    if(data=='upsidedown')$('#oledOrientationSlider').val(1);
+  })
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html(data.statusText);})
+  .always(function(){if(getAllValues)getOledContrast();});
+}
+function getOledContrast(){
+  $.get("/api/getdevice?oledcontrast=")
+  .done(function(data){
+    $('#oledContrastValue').html(data);
+    $('#oledContrastSlider').val(data);
+  })
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html(data.statusText);})
+  .always(function(){if(getAllValues)getTftOrientation();});
+}
+function getTftOrientation(){
+  $.get("/api/getdevice?tftorientation=")
+  .done(function(data){
+    $('.tftBar').show();
+    $('#tftOverrideBar').hide();
+    $('#tftOrientation').html(data);
+    if(data=='normal'){$('#tftOrientationSlider').val(0);}
+    if(data=='upsidedown'){$('#tftOrientationSlider').val(1);}
+  })
+  .fail(function(data){
+    if(data.status==501){
+      $('#tftOverrideBar').show();
+      $('#tftOverrideButton').val("Force");
+      $('#tftOverrideValue').html("AUTO");
+    }
+    else{
+      $('#deviceStatus').html("Fehler Keine Display Orientierung gefunden");
+    }
+  })
+  .always(function(){if(getAllValues)getSensorLoggingStatus();});
+}
+
+function getSensorLoggingStatus(){
+  $.get("/api/getdevice?sensorlogging=")
+  .done( function(data){
+    $('#sensorLogging').prop('value',data);
+    $('.sensorbutton').show();
+  })
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Fehler keine Sensor Daten gefunden!");})
+  .always(function(){if(getAllValues)getSensorErrorLoggingStatus();});
+}
+function getSensorErrorLoggingStatus(){
+  $.get("/api/getdevice?sensorerrorlogging=")
+  .done(function(data){$('#sensorErrorLogging').prop('value',data);})
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Fehler keine Sensor Daten gefunden!");})
+  .always(function(){if(getAllValues)getTftMaxBrightness();});
+}
+function getTftMaxBrightness(){
+  $.get("/api/getdevice?tftbrightness=")
+  .done(function(data){
+    $('#tftBrightnessValue').html( parseInt(data)+"%");
+    $('#tftBrightnessSlider').val(data);
+  })
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Fehler keine Display Helligkeits informationen gefunden!");})
+  .always(function(){if(getAllValues)getTimeZone();});
+}
+function getTimeZone(){
+  $.get("/api/getdevice?timezone=")
+  .done(function(data){$('#timeZoneTextBox').val(data);})
+  .fail(function(data){$('#deviceStatus').html(data.statusText);})
+  .always(function(){if(getAllValues)getLightStatus();});
+}
+function getLightStatus(){
+  $.get("/api/getdevice?status=")
+  .done(function(data){
+    var item=data.split('\n');
+    var bttns=$('.light');
+    bttns.each(function(index){
+      if(item[6]==$(this).text()){
+        $('.light .itemName').eq(index).css("background-color","beige");
+        $('.light input').eq(index).css("background-color","aqua");
+      }else{
+        $('.light .itemName').eq(index).css("background-color","");
+        $('.light input').eq(index).css("background-color","");
+      }
+    });
+  })
+  .fail(function(){$('#deviceStatus').html("Fehler keine Lampeninformationen!");})
+  .always(function(){if(getAllValues)getSensors();});
+}
+function getSensors(){
+  $.get("/api/getdevice?sensors")
+  .done(function(data){
+    var item=data.split('\n');var sensor=0;
+    while(item[sensor]){
+      var tempArray=item[sensor].split(',');
+      var name=tempArray[0];var temp=tempArray[1];var sensorid=tempArray[2];
+      if(temp!="nan")temp+="°C";
+      else{
+        $('.sensorname .itemName').eq(sensor).css("background-color","red");
+        temp="Fehler!";
+      }
+      $('.sensorname .itemName').eq(sensor).html(String(sensorid).toUpperCase()+" - "+temp);
+      $('.sensorNameInput').eq(sensor).val(name);
+      $('.sensorname').eq(sensor).show();
+      $('.sensorbutton').show();
+      sensor++;
+    }
+    getSensorLoggingStatus();
+    getSensorErrorLoggingStatus()
+    $('#deviceStatus').html("");
+  })
+  .fail(function(data){if(!getAllValues)$('#deviceStatus').html("Keine Sensoren gefunden!");})
+  .always(function(){if(getAllValues)getWifiSSID()});
+}
+function getWifiSSID(){
+  $.get("/api/getdevice?wifissid=")
+  .done(function(data){$('#wifissid').html("WLAN Netzwerk: "+data);})
+  .fail(function(data){$('#wifissid').html("Fehler keine WLAN informationen gefunden: "+data.statusText);})
+  .always(function(){if(getAllValues)getBootTime();});
+}
+function getBootTime(){
+  $.get("/api/getdevice?boottime=")
+  .done(function(data){$('#bootTime').html(data);})
+  .fail(function(data){$('#deviceStatus').html("Error getting boottime: "+data.statusText);})
+  .always(function(){if(getAllValues)getDiskSpace();});
+}
+function getDiskSpace(){
+  $.get("/api/getdevice?diskspace=")
+  .done(function(data){
+    var tmp=data.split(',');
+    if(0==parseInt(tmp[1]))$('#freeDiskSpace').html("Keine FFAT PArtition gefunden!")
+    else $('#freeDiskSpace').html(formatBytes(tmp[0],1)+' free / '+formatBytes(tmp[1],1)+' total');
+  })
+  .fail(function(data){if(data.status!=501)$('#deviceStatus').html("Error getting diskspace: "+data.responseText);})
+  .always(function(){if(getAllValues)getPwmDepth();});
+}
+function getPwmDepth(){
+  $.get("/api/getdevice?pwmdepth=")
+  .done(function(data){$('#pwmStatus').html(data+"bit - ");})
+  .fail(function(data){$('#deviceStatus').html("Error getting pwmdepth "+data.responseText);})
+  .always(function(){if(getAllValues)getVersion();});
+}
+function getVersion(){
+  $.get("/api/getdevice?version=")
+  .done(function(data){
+    $('#version').html(data);
+    var sketchVersion;
+    if(!data.substr(0,data.search("-")))sketchVersion=data;
+    else sketchVersion=data.substr(0,data.search("-"));
+    $.getJSON("https://api.github.com/repos/CelliesProjects/aquacontrol32/releases/latest",function(data,status){
+      if(status==="success"&&sketchVersion!=data.tag_name)$('#version').append(' -<a href="https://github.com/CelliesProjects/aquacontrol32/releases/latest"  target="_blank">Latest release '+data.tag_name+" on GitHub.</a>");
+    });
+  })
+  .fail(function(data){$('#deviceStatus').html("Error getting version: "+data.responseText);})
+  .always(function(){if(getAllValues)getPwmFrequency();});
+}
+function getPwmFrequency(){
+  $.get("/api/getdevice?pwmfrequency=")
+  .done(function(data){$('#pwmStatus').append(data+"Hz");})
+  .fail(function(data){$('#deviceStatus').html("Error getting pwmfrequency: "+data.responseText);})
+  .always(function(){
+    getAllValues=false;
+    $('#deviceStatus').html("");
+    $('.collapsable').last().click();
+    $('input').prop('disabled',false);/* and enable the inputs again */
+    $('body').css('opacity','1');/* and show the page */
+  });
+}
+$('#timeZoneTextBox,#hostNameInput,#passwordInput,.sensorNameInput').on('input',function(){
+  $(this).css({'background':'yellow'});
+});
+$('input').on('input',function(){
+  $('#deviceStatus').html('');
+});
+$('input[type="button"]').on('click',function(){
+  $('#deviceStatus').html('');
+});
+$('#bootlog').on('click',function(){
+  var value;
+  if("OFF"==$(this).val())value="AN";
+  else if("ON"==$(this).val())value="AUS";
+  $.post("/api/setdevice",{bootlog:value})
+  .done(function(data){$('#bootlog').val(value)})
+  .fail(function(data){$('#deviceStatus').html(data.statusText)});
+});
+$('#passwordInput').on('change',function(){
+  if(!confirm("Sie sind dabei das Administrator Passwort zu ändern.\nSind Sie sich Sicher?")){return;}
+  $.post("/api/setdevice",{password:$(this).val()})
+  .done(function(data){$('#deviceStatus').html( data );})
+  .fail(function(){$('#passwordInput').css({'background':'red'});});
+});
+$('#oledOrientationSlider').on('change',function(){
+  $('#oledOrientationValue').html($(this).val()==1?'upsidedown':'normal');
+  $.post("/api/setdevice",{oledorientation:$('#oledOrientationValue').html()})
+  .done(function(data){$('#oledOrientationValue').html(data);})
+  .fail(function(){getOledOrientation();});
+});
+$('#tftOrientationSlider').on('change',function(){
+  if($(this).val()==0)$('#tftOrientation').html('normal');
+  if($(this).val()==1)$('#tftOrientation').html('upsidedown');
+  $.post("/api/setdevice",{tftorientation:$('#tftOrientation').html()})
+  .done(function(data){$('#tftOrientation').html(data)})
+  .fail(function(){getTftOrientation();});
+});
+$('#lightsOn').on('click',function(){
+  $.post("/api/setdevice",{lightson:""})
+  .done(function(){getLightStatus();})
+  .fail(function(data){$('#deviceStatus').html(data.statusText);});
+});
+$('#lightsOff').on('click',function(){
+  $.post("/api/setdevice",{lightsoff:""})
+  .done(function(){getLightStatus();})
+  .fail(function(data){$('#deviceStatus').html(data.statusText);});
+});
+$('#lightsProgram').on('click',function(){
+  $.post("/api/setdevice",{lightsprogram:""})
+  .done(function(){getLightStatus();})
+  .fail(function(data){$('#deviceStatus').html(data.statusText);});
+});
+$('#hostNameInput').on('change',function(){
+  $('#deviceStatus').html("Checking network for hostname "+$(this).val()+"...");
+  $.post("/api/setdevice",{hostname:$(this).val()})
+  .done(function(data){
+    $('#deviceStatus').html("Hostname changed. <a href=\"http://"+data+".local\">Click here to go to "+data+"</a>");
+    $('#hostNameInput').css({'background':'lightgreen'});
+    $('#hostName').html(data);
+  })
+  .fail(function(data){$('#hostNameInput').css({'background':'red'});
+  });
+});
+$('#oledContrastSlider').on('input',function(){
+  $('#oledContrastValue').html($(this).val());
+});
+$('#oledContrastSlider').on('change',function(){
+  $.post("/api/setdevice",{oledcontrast:$(this).val()})
+  .done(function(data){
+    $('#oledContrastValue').html( data );
+    $('#oledContrastSlider').val( data );
+  })
+  .fail(function(){getOledContrast();});
+});
+$('#tftBrightnessSlider').on('input',function(){
+  $('#tftBrightnessValue').html(parseInt($(this).val())+"%");
+});
+$('#tftBrightnessSlider').on('change',function(){
+  $.post("/api/setdevice",{tftbrightness:$(this).val()})
+  .done(function(data){$('#tftBrightnessSlider').val(data);})
+  .fail(function(){getTftMaxBrightness();});
+});
+$('#tftOverrideButton').on('click',function(){
+  $.post("/api/setdevice",{tftstate:"forcetft"})
+  .done(function(){
+    getTftOrientation();
+    getTftMaxBrightness();
+    $('#deviceStatus').html("TFT forced until reboot");
+  })
+  .fail(function(data){
+    $('#deviceStatus').html(data.statusText);
+  });
+})
+$('#timeZoneTextBox').on('change',function(){
+  $.post('/api/setdevice',{timezone:$(this).val()})
+  .done(function(data){
+    $('#timeZoneTextBox').css({'background':'lightgreen'});
+    $('#deviceStatus').html('Timezone set to '+data);
+  })
+  .fail(function(){$('#timeZoneTextBox').css({'background':'red'});});
+});
+$('#sensorErrorLogging').on('click',function(){
+  $.post("/api/setdevice",{sensorerrorlogging:$(this).val()==="OFF"?"ON":"OFF"})
+  .done(function(data){
+    $('#sensorErrorLogging').prop('value',data);
+    $('#deviceStatus').html('SENSOR ERROR LOGGING IS NOW '+data);
+  })
+  .fail(function(data){$('#deviceStatus').html(data.statusText);});
+});
+$('#sensorLogging').on('click',function(){
+  $.post("/api/setdevice",{sensorlogging:$(this).val()==="OFF"?"ON":"OFF"})
+  .done(function(data){
+    $('#sensorLogging').prop('value',data);
+    $('#deviceStatus').html('SENSOR LOGGING IS NOW '+data);
+  })
+  .fail(function(data){$('#deviceStatus').html(data.statusText);});
+});
+$('.sensorNameInput').on('change',function(){
+  var sensor=$(this).index('.sensorNameInput');
+  $.post("/api/setdevice",{sensorname:$(this).val(),number:sensor})
+  .done(function(data){
+    $('#deviceStatus').html("Sensorname changed to '"+data+"'");
+    $('.sensorNameInput').eq(sensor).css({'background':'lightgreen'});
+  })
+  .fail(function(){$('.sensorNameInput').eq(sensor).css({'background':'red'});});
+});
+$('#sensorScan').on('click',function(){
+  $.post("/api/setdevice",{sensorscan:true})
+  .done(function(){
+    var updateSensors=setTimeout(getSensors,1500);
+    $('p.item.sensorname').hide();
+    $('.sensorbutton').hide();
+  })
+  .fail(function(){$('#deviceStatus').html("Fehler keine Sensoren gefunden!");});
+});
+$('.collapsable').on('click',function(){
+  $('.collapsable').css('height','45px').css('cursor','pointer').css('background-color','beige').css('opacity',0.3);
+  $(this).css('height','auto').css('cursor','').css('background-color','').css('opacity',1);
+});
+</script>
+</body>
+</html>

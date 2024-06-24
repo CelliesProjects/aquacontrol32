@@ -1,0 +1,230 @@
+<!doctype HTML>
+<html lang="de">
+<head>
+<title>&nbsp;</title>
+<meta charset="utf-8">
+<link rel="icon" href="data:;base64,iVBORw0KGgo="><!--prevent favicon requests-->
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">  <!-- https://fonts.google.com/specimen/Roboto?selection.family=Roboto -->
+<style>
+html,body{
+  margin:0 auto;
+  background-color:grey;
+  text-align:center;
+  width:1024px;
+  font-size:20px;
+  font-family:'Roboto',sans-serif;
+}
+body{
+  opacity:0.4;
+}
+#menu{
+  overflow:inherit;
+}
+#hostName{
+  margin:0;
+}
+p{
+  margin:0;
+}
+.infobar{
+  width:625px;
+  margin:10px auto;
+}
+a{
+  color:black;
+  text-decoration:none;
+  margin:0 10px;
+}
+#lunarPhase{
+  width:625px;
+  margin:auto;
+}
+#copyright{
+  font-size:15px;
+}
+img{
+  background-color:black;
+  padding:10px;
+  width:256px;
+  height:256px;
+}
+.systemLink{
+  padding:3px 10px;
+}
+.systemLink:hover{
+  background:grey;
+}
+.fileName a{
+  display:block;
+}
+.shadowedBox{
+  box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
+  border-radius:15px;
+  margin:10px 0;
+  overflow:hidden;
+}
+.item{
+  margin:10px auto;
+  background-color:beige;
+}
+.item:hover{
+  background-color:yellow;
+}
+.itemName,.itemValue{
+  vertical-align:middle;
+}
+.itemName{
+  display:inline-block;
+  margin:8px;
+  padding:2px 2px;
+}
+.itemValue{
+  display:inline-block;
+  width:80px;
+  text-align:center;
+}
+input{
+  margin:5px ;
+  vertical-align:middle;
+  box-shadow:0px 0px 2px 0px rgba(0,0,0,1);
+  border-radius:5px;
+}
+input[type="text"]{
+  width:150px;
+  margin:5px;
+  vertical-align:middle;
+  text-align:center;
+  font-size:20px;
+}
+input[type="range"]{
+  width:150px;
+  height:10px;
+  margin:5px;
+  border:none;
+  box-shadow:unset;
+}
+input[type="color"]{
+  width:60px;
+  margin:0 15px 0 30px;
+}
+.noselect{
+-webkit-touch-callout:none;/* iOS Safari */
+-webkit-user-select:none;/* Safari */
+-khtml-user-select:none;/* Konqueror HTML */
+-moz-user-select:none;/* Firefox */
+-ms-user-select:none;/* Internet Explorer/Edge */
+user-select:none;/* Non-prefixed version,currently supported by Chrome and Opera */
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+</head>
+<body class="noselect">
+<p id="menu" class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">STARTSEITE</a><a class="systemLink" href="channels">MONDLICHT EINS.</a><a class="systemLink" href="setup">EINSTELLUNGEN</a><a class="systemLink" href="editor">BEARBEITEN</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">DATEIBROWSER</a></p>
+<div class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Lichtkanäle und Mondschein Einstellungen</p></div>
+<div class="shadowedBox"><p id="statusBox">&nbsp;</p></div>
+<div class="shadowedBox">
+<div id="lunarPhase"><p id="moonpercent" class="infobar">Lade aktuelle Mondphase...</p><img width="256px" height="256px" id="moonimg" src="https://aquacontrol.wasietsmet.nl/near_side_256x256x8/000.png"></div>
+<div id="copyright"><p>Mond Bild ersteller: Jay Tanner</p><p><a href="http://creativecommons.org/licenses/by-sa/3.0/legalcode" target="_blank">Bild Lizenzen unter: Creative Commons 3.0</a>-<a href="http://www.neoprogrammics.com/lunar_phase_images/" target="_blank">Original Bild Dateien</a></p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+  <div class="item"><input type="text" class="channelName"><input type="color" class="colorPicker"><input type="range" class="minLevel" value="0" min="0" max="0.99" step="0.01"><p class="itemValue">0%</p></div>
+</div>
+<script>
+var loadAll=true; // with loadAll set to true, all get calls will be daisy-chained
+$(document).ready(function(){
+  $.get("/api/getdevice?hostname=")
+  .done(function(data){$('#hostName').html(data);document.title=data+' channels';})
+  .always(function(){getMoonLevels();})
+});
+function getMoonLevels(){
+  $.get("/api/getdevice?moonlevels=")
+  .done(function(data){
+    var values=data.split("\n");
+    values.forEach(function(element,index){
+      $('.minLevel').eq(index).val(parseFloat(element));
+      $('.itemValue').eq(index).html(element.trim()+"%");
+    });
+  })
+  .fail(function(data){console.log(data);})
+  .always(function(){if(loadAll)getChannelNames();});
+}
+function getChannelNames(){
+  $.get("/api/getdevice?channelnames=")
+  .done(function(data){
+    var values=data.split("\n");
+    values.forEach(function(element,index){$('.channelName').eq(index).val(element);});
+  })
+  .fail(function(data){console.log(data);})
+  .always(function(){if(loadAll)getLunarPhase();});
+}
+function getLunarPhase(){
+  $.get("/api/getdevice?moonphase=")
+  .done(function(data){
+    var phase=data.split("\n");
+    if(phase[0]<100)phase[0]="0"+phase[0];if(phase[0]<10)phase[0]="0"+phase[0];
+    $('#moonpercent').html("Moon is "+Math.round(phase[1]*10000)/100+"% illuminated");
+    $('#moonimg').attr("src","https://aquacontrol.wasietsmet.nl/near_side_256x256x8/"+phase[0]+".png");
+    setTimeout(getLunarPhase,30*1000);
+  })
+  .fail(function(data){console.log(data);})
+  .always(function(){if(loadAll)getChannelColors();});
+}
+function getChannelColors(){
+  $.get("/api/getdevice?channelcolors=")
+  .done(function(data){
+    var values=data.split("\n");
+    values.forEach(function(element,index){$('.colorPicker').eq(index).val(element.trim());});
+  })
+  .fail(function(data){console.log(data);})
+  .always(function(){if(loadAll){$('body').css({'opacity':'1'});loadAll=false;}});
+}
+$('input').on('input',function(){
+  $('#statusBox').html('&nbsp;');
+});
+$('.minLevel').on('input',function(){
+  $('.itemValue').eq($(this).index('.minLevel')).html($(this).val()+'%');
+});
+$('.minLevel').on('change',function(){
+  $.post("/api/setchannel",
+  {
+    channel:$(this).index('.minLevel'),
+    minimum:$(this).val()
+  })
+  .done(function(data){$('#statusBox').html(data);})
+  .fail(function(data){
+    $('#statusBox').html( data.statusText );
+    getMoonLevels();
+  });
+});
+$('.channelName').on('input',function(){
+  $(this).css({'background':'#fffe75'});
+});
+$('.channelName').on('change',function(){
+  var thisInput=$(this);
+  $.post("/api/setchannel",
+  {
+    channel:$(this).index('.channelName'),
+    name:$(this).val()
+  })
+  .done(function(data){
+    $('#statusBox').html(data);
+    thisInput.css({'background':'#46ff44'});
+    getChannelNames();
+  })
+  .fail(function(data){
+    $('#statusBox').html(data.responseText);
+    thisInput.css({'background':'#ff5e5e'});
+  });
+});
+$('.colorPicker').on('change',function(){
+  var channel=$(this).index('.colorPicker');
+  var color=$(this).val().substr(1);
+  $.post("/api/setchannel",{channel:channel,color:color})
+  .done(function(data){$('#statusBox').html("Channel "+(channel)+" color set to <span style=\"color:#"+color+";\">#"+color+"</span>");})
+  .fail(function(data){$('#statusBox').html(data.statusText);getChannelColors();});
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!doctype HTML>
+<html lang="de">
+<head>
+<title>&nbsp;</title>
+<meta charset="utf-8">
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">  <!--prevent favicon requests-->
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<style>
+html,body{
+  margin:0 auto;
+  background-color:grey;
+  text-align:center;
+  width:1024px;
+  font-size:20px;
+  font-family:'Roboto',sans-serif;
+}
+body{
+  opacity:0.4;
+}
+#hostName{
+  margin:0;
+}
+h3{
+  margin:10px;
+}
+p{
+  margin:0;
+}
+a{
+  color:black;
+  text-decoration:none;
+  margin:0 10px;
+}
+.systemLink{
+  padding:3px 10px;
+}
+.systemLink:hover{
+  background:grey;
+}
+.fileName a{
+  display:block;
+  overflow:hidden;
+  white-space:nowrap;
+}
+.shadowedBox{
+  box-shadow:0px 0px 13px 0px rgba(0,0,0,1);
+  border-radius:15px;
+  margin:10px 0;
+}
+#fileInput{
+  display:block;
+  width:300px;
+  height:50px;
+  border:solid 1px black;
+}
+#fileList{
+  height:200px;
+  width:700px;
+  background-color:beige;
+  margin:auto;
+  overflow:auto;
+}
+.fileEntry{
+  overflow:auto;
+  width:100%;
+}
+.fileEntry:hover{
+  background:yellow;
+}
+.fileLink{
+  display:block;
+}
+.fileName,.fileSize,.deleteButton{
+  float:left;
+}
+.fileName{
+  width:60%;
+}
+.fileSize{
+  width:20%;
+  text-align:right;
+}
+.deleteButton{
+  width:20%;
+}
+.deleteButton:hover{
+  background:red;
+  cursor:pointer;
+}
+button{
+  margin:10px;
+}
+#uploadForm{
+  width:700px;
+  margin:0 auto;
+  text-align:center;
+}
+#fileSelection{
+  width:100%;
+  height:50px;
+  border:solid 1px lightgrey;
+}
+#fileSelection:hover{
+  cursor:pointer;
+}
+#progressBar,#statusLine{
+  margin:10px auto;
+  width:700px;
+}
+#statusLine{
+  padding:0 0 10px 0;
+}
+input{
+  margin:5px auto;
+  vertical-align:middle;
+  box-shadow:0px 0px 2px 0px rgba(0,0,0,1);
+  border-radius:5px;
+}
+input[type="file"]{
+  background-color:beige;
+  height:30px;
+}
+#uploadButton{
+  height:30px;
+  width:150px;
+  padding:5px 20px;
+}
+.sysMessage{
+  width:100%;
+  line-height:200px;
+}
+.noselect{
+-webkit-touch-callout:none;
+-webkit-user-select:none;
+-khtml-user-select:none;
+-moz-user-select:none;
+-ms-user-select:none;
+user-select:none;
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+</head>
+<body class="noselect">
+<p class="shadowedBox" style="background-color:beige;"><a class="systemLink" href="/">STARTSEITE</a><a class="systemLink" href="channels">MONDLICHT EINS.</a><a class="systemLink" href="setup">EINSTELLUNGEN</a><a class="systemLink" href="editor">BEARBEITEN</a> <a class="systemLink" href="logs">LOGS</a> <a class="systemLink" href="filemanager">DATEIBROWSER</a></p>
+<div class="shadowedBox"><h2 id="hostName">&nbsp;</h2><p>Dateibrowser</p></div>
+<div class="shadowedBox"><p id="diskSpace">&nbsp;</p></div>
+<div id="fileBox" class="shadowedBox">
+<div id="fileList"></div>
+</div>
+<div id="uploadBox" class="shadowedBox">
+<form id="uploadForm" enctype="multipart/form-data" method="post" action="api/upload">
+<progress id="progressBar" value="0" max="0"></progress>
+<input id="fileSelection" name="file" type="file" />
+<input id="uploadButton" type="submit" value="Hochladen" disabled="disabled"/>
+<p id="statusLine"></p>
+</form>
+</div>
+<script>
+const pickFile_Message="Klicke hier oder Schiebe eine Datei in die Box zum Hochladen!";
+var diskSpace=0;
+var diskSize=0;
+$(document).ready(function(){
+  $("#statusLine").html(pickFile_Message);
+  $.get("/api/getdevice?hostname=")
+  .done(function(data){
+    $("#hostName").html(data);
+    document.title=data+' file manager';
+  })
+  .fail(function(){console.log("Fehler Gerätename konnte nicht gelesen werden!");})
+  .always(readFiles());
+});
+function formatBytes(bytes,decimals){
+  if(bytes==0)return'0 Bytes';
+  var k=1024,sizes=['Bytes','KB','MB','GB','TB','PB','EB','ZB','YB'],i=Math.floor(Math.log(bytes)/Math.log(k));
+  return parseFloat((bytes/Math.pow(k,i)).toFixed(decimals))+' '+sizes[i];
+}
+function updateDiskspace(){
+  $.get("/api/getdevice?diskspace=")
+  .done(function(data){
+    var tmp=data.split(',');
+    if(0==parseInt(tmp[1]))$('#diskSpace').html("Keine FFAT Partition gefunden!");
+    else{
+      diskSpace=parseInt(tmp[0]);diskSize=parseInt(tmp[1]);
+      $('#progressBar').attr({value:diskSize-diskSpace,max:diskSize});
+      $('#diskSpace').html(formatBytes(diskSpace,1)+' free / '+formatBytes(diskSize,1)+' total');
+    }
+  })
+  .fail(function(){$('#diskSpace').html('<p class="sysMessage">Fehler Keinen Speicherplatz gefunden!</p>');});
+}
+function deleteFile(file){
+  if(confirm("Sind Sie sich Sicher das sie die Datei Löschen wollen '"+file+"'?")){
+    $('#fileList').html('<p class="sysMessage">Deleting '+file+'</p>');
+    $.post("/api/deletefile",{filename:file})
+    .done(function(data){$('#statusLine').html(data);readFiles();})
+    .fail(function(data){$('#statusLine').html('ERROR - '+data.statusText+':<br>'+file);readFiles();});
+  }
+}
+function readFiles(){
+  $('#fileList').html('');
+  $.get("/api/getdevice?files=")
+  .done(function(data){
+    var files=data.split("\n");
+    files.sort();
+    files.forEach(function(item){
+      if(item=="")return;
+      thisFile=item.split(",");
+      if(thisFile[0].startsWith("/")){thisFile[0]=thisFile[0].substring(1)};
+      $('#fileList').append('<div class="fileEntry"><p class="fileName"><a href="'+thisFile[0]+'" target="_blank">'+thisFile[0]+'</a></p><p class="fileSize">'+thisFile[1]+'</p><p class="deleteButton" data-filename="'+thisFile[0]+'">DELETE</p></div>');
+    });
+  })
+  .fail(function(){$('#fileList').html('<p class="sysMessage">Keine Dateien gefunden!</p>');})
+  .always(function(){
+    updateDiskspace();
+    $('body').css('opacity','1');
+  });
+}
+function uploadProgressHandler(event){
+  var percent=(event.loaded/event.total)*100;
+  var progress=Math.round(percent);
+  $("#statusLine").html(progress +"% wird Hochgeladen bitte warten...");
+  $('#progressBar').attr({value:event.loaded,max:event.total});
+}
+function loadHandler(event){
+  if(event.target.responseText)$("#statusLine").html(event.target.responseText);
+  else $("#statusLine").html(pickFile_Message);
+  $('#uploadButton').val("Hochladen");
+  $('#progressBar').attr({value:0,max:0});
+  readFiles();
+}
+function errorHandler(event){$("#statusLine").html("Hochladen fehlgeschlagen");}
+function abortHandler(event){$("#statusLine").html("Hochladen abgebrochen");}
+$('#fileSelection').on('change',function(){
+  if($('#fileSelection').val()!="")$('#uploadButton').val("Upload").prop('disabled',false);
+  else $('#uploadButton').val("Upload").prop('disabled',true);
+});
+$("#uploadButton").click(function(event){
+  event.preventDefault();
+  if($('#fileSelection').val()==""){return;}
+  $.post('/api/upload',function(){
+    var str=$('#fileSelection').val();
+    var filename=str.split('\\');
+    $('#fileList').html('<p class="sysMessage">Uploading '+filename.pop()+'</p>');
+  })
+  .done(function(){
+    $('#uploadButton').val("Hochladen...").prop('disabled',true);
+    var file=$("#fileSelection")[0].files[0];
+    $("#fileSelection").val("");
+    var formData=new FormData();
+    formData.append("file1",file);
+    $.ajax({
+      url:'/api/upload',
+      method:'POST',
+      type:'POST',
+      data:formData,
+      contentType:false,
+      processData:false,
+      xhr:function(){
+        var xhr=new window.XMLHttpRequest();
+        xhr.upload.addEventListener("progress",uploadProgressHandler,false);
+        xhr.addEventListener("load",loadHandler,false);
+        xhr.addEventListener("error",errorHandler,false);
+        xhr.addEventListener("abort",abortHandler,false);
+        return xhr;
+      }
+    });
+  })
+  .fail(function(){$('#statusLine').html("Nicht angemeldet.");});
+});
+$('#fileList').on('click','.deleteButton',function(){
+  deleteFile(this.getAttribute("data-filename"));
+});
+$(':file').on('change',function(){
+  var file=this.files[0];
+  if(file.name==''){return;}
+  if(file.size>diskSpace){
+    alert('Nicht ausreichend Speicherplatz vorhanden!\n'+formatBytes(diskSpace,1)+' free.\n'+formatBytes(file.size,1)+" in '"+file.name+"'");
+    $('#fileSelection').val("");
+    $('#uploadButton').prop("deaktiviert",true);
+  }
+});
+</script>
+</body>
+</html>
